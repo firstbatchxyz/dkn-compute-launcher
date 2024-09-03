@@ -33,13 +33,22 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          ${{ matrix.env }} go build -tags="${{ matrix.tags }}" -o dkn-launch-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }} .
+          ${{ matrix.env }} go build -tags="${{ matrix.tags }}" -o dkn-launch${{ matrix.extension }} .
+
+      - name: Prepare Launch Release Files
+        env:
+          ZIP_NAME: dkn-launch-${{ matrix.osname }}-${{ matrix.arch }}
+        run: |
+          mkdir $ZIP_NAME
+          cp ./dkn-launch${{ matrix.extension }} $ZIP_NAME/dkn-launch${{ matrix.extension }}
+          zip -r $ZIP_NAME.zip $ZIP_NAME
+
 
       - name: Upload Launch Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dkn-launch-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
-          path: dkn-launch-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
+          name: dkn-launch-${{ matrix.osname }}-${{ matrix.arch }}
+          path: dkn-launch-${{ matrix.osname }}-${{ matrix.arch }}.zip
 
   release:
     needs: build
@@ -82,5 +91,5 @@ jobs:
           name: ${{ env.NEW_TAG }}
           tag: ${{ env.NEW_TAG }}
           artifacts: "artifacts/*"
-          artifactContentType: application/octet-stream
+          artifactContentType: application/zip
           draft: true
