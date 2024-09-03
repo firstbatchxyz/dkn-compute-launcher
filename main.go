@@ -179,7 +179,9 @@ func main() {
 	}
 
 	// dump the final env
-	godotenv.Write(envvars, filepath.Join(working_dir, ".env"))
+	if err := godotenv.Write(envvars, filepath.Join(working_dir, ".env")); err != nil {
+		fmt.Printf("Failed to dump the .env file, continuing to running the node though. error message: %s\n", err)
+	}
 
 	if *background {
 		fmt.Printf("\nStarting in BACKGROUND mode...\n")
