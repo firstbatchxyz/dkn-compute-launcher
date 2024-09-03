@@ -37,11 +37,12 @@ jobs:
 
       - name: Prepare Launch Release Files
         env:
+          FOLDER_NAME: dkn-compute-node
           ZIP_NAME: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}
         run: |
-          mkdir $ZIP_NAME
-          cp ./dkn-compute-launcher${{ matrix.extension }} $ZIP_NAME/dkn-compute-launcher${{ matrix.extension }}
-          zip -r $ZIP_NAME.zip $ZIP_NAME
+          mkdir $FOLDER_NAME
+          cp ./dkn-compute-launcher${{ matrix.extension }} $FOLDER_NAME/dkn-compute-launcher${{ matrix.extension }}
+          zip -r $ZIP_NAME.zip $FOLDER_NAME
 
 
       - name: Upload Launch Artifacts
