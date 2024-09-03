@@ -67,34 +67,24 @@ jobs:
           merge-multiple: true
           path: ./artifacts
 
-      - name: Get latest code release tag
+      - name: Get the latest tag
         id: get_latest_tag
-        run: |
-          # Fetch all tags
-          git fetch --tags
-          
-          # find the latest tag that does not have a -launch suffix
-          latest_tag=""
-          for tag in $(git tag --list --sort=-v:refname); do
-            if [[ "$tag" != *-launch ]]; then
-              latest_tag=$tag
-              break
-            fi
-          done
+        run: echo "latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_ENV
 
+      - name: Calculate new tag
+        id: calculate_tag
+        run: |
+          latest_tag=${{ env.latest_tag }}
           if [ -z "$latest_tag" ]; then
-            echo "Error: No valid code release tag found."
-            exit 1
+            new_tag="v1.0.0"
+          else
+            IFS='.' read -ra VERSION_PARTS <<< "${latest_tag#v}"
+            major=${VERSION_PARTS[0]}
+            minor=${VERSION_PARTS[1]}
+            patch=${VERSION_PARTS[2]}
+            new_patch=$((patch + 1))
+            new_tag="v${major}.${minor}.${new_patch}"
           fi
-
-          echo "Latest code release tag: $latest_tag"
-          echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
-
-      - name: Create launch release tag
-        id: create_launch_tag
-        run: |
-          new_tag="${LATEST_TAG}-launch"
-          echo "New launch release tag: $new_tag"
           echo "NEW_TAG=$new_tag" >> $GITHUB_ENV
 
       - name: Create release with artifacts
