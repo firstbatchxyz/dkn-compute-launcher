@@ -2,6 +2,15 @@ package utils
 
 import "fmt"
 
+// CheckDockerComposeCommand checks whether the system has Docker Compose installed and returns
+// the appropriate command and arguments for starting and stopping Docker containers.
+//
+// Returns:
+//   - string: The command to use for Docker Compose ("docker" or "docker-compose").
+//   - []string: A slice of arguments for bringing up the Docker containers.
+//   - []string: A slice of arguments for bringing down the Docker containers.
+//
+// Exits the program with a delay if neither Docker Compose nor docker-compose is installed.
 func CheckDockerComposeCommand() (string, []string, []string) {
 	// check docker compose
 	if _, err := RunCommand("", false, true, nil, "docker", "compose", "version"); err == nil {
@@ -20,6 +29,10 @@ func CheckDockerComposeCommand() (string, []string, []string) {
 	return "", nil, nil
 }
 
+// IsDockerUp checks if Docker is running on the system by executing the "docker info" command.
+//
+// Returns:
+//   - bool: Returns true if Docker is running (i.e., "docker info" executes successfully), otherwise false.
 func IsDockerUp() bool {
 	_, err := RunCommand("", false, true, nil, "docker", "info")
 	return err == nil

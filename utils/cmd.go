@@ -11,13 +11,32 @@ import (
 	"time"
 )
 
+// IsCommandAvailable checks if a given command is available in the system PATH.
+//
+// Parameters:
+//   - command: The name of the command to check for availability.
+//
+// Returns:
+//   - bool: Returns true if the command is available, otherwise false.
 func IsCommandAvailable(command string) bool {
-	// LookPath searches for an executable named command in the directories
-	// named by the PATH environment variable.
 	_, err := exec.LookPath(command)
 	return err == nil
 }
 
+// RunCommand executes a command in a specified working directory, with options to print output
+// to stdout, wait for completion, and set custom environment variables.
+//
+// Parameters:
+//   - working_dir: The directory where the command will be executed.
+//   - printToStdout: If true, the command's stdout and stderr are connected to the terminal.
+//   - wait: If true, waits for the command to finish before returning.
+//   - envs: A slice of environment variables to set for the command, in the form of key=value.
+//   - command: The command to execute.
+//   - args: Additional arguments for the command.
+//
+// Returns:
+//   - int: The PID of the started command.
+//   - error: Returns an error if the command fails to start or completes with an error, otherwise nil.
 func RunCommand(working_dir string, printToStdout, wait bool, envs []string, command string, args ...string) (int, error) {
 	cmd := exec.Command(command, args...)
 
@@ -56,8 +75,15 @@ func RunCommand(working_dir string, printToStdout, wait bool, envs []string, com
 	return pid, nil
 }
 
+// PickModels prompts the user to pick models from the available OpenAI and Ollama models.
+//
+// Parameters:
+//   - openai_models: A slice of available OpenAI model names.
+//   - ollama_models: A slice of available Ollama model names.
+//
+// Returns:
+//   - string: A comma-separated string of selected model names.
 func PickModels(openai_models, ollama_models []string) string {
-	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("\nPlease pick the model you want to run:\n\n")
 	fmt.Printf("ID\tProvider\tName\n")
 	for id, model := range openai_models {
@@ -66,13 +92,8 @@ func PickModels(openai_models, ollama_models []string) string {
 	for id, model := range ollama_models {
 		fmt.Printf("%d\tOllama\t%s\n", len(openai_models)+id+1, model)
 	}
-	fmt.Printf("Enter the model ids (comma seperated, e.g: 1,2,4): ")
-	models, err := reader.ReadString('\n')
-	if err != nil {
-		return ""
-	}
-	models = strings.TrimSpace(models)
-	models = strings.Split(models, "\n")[0]
+	models := GetUserInput("Enter the model ids (comma separated, e.g: 1,2,4): ", true)
+
 	models = strings.ReplaceAll(models, " ", "")
 	models_list := strings.Split(models, ",")
 	picked_models_map := make(map[int]bool, 0)
@@ -117,6 +138,14 @@ func PickModels(openai_models, ollama_models []string) string {
 	return picked_models_str
 }
 
+// GetUserInput reads a line of input from the terminal and optionally trims spaces.
+//
+// Parameters:
+//   - message: The message to display to the user before reading input.
+//   - trim: If true, trims spaces from the input.
+//
+// Returns:
+//   - string: The user's input as a trimmed string.
 func GetUserInput(message string, trim bool) string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("%s: ", message)
@@ -133,22 +162,23 @@ func GetUserInput(message string, trim bool) string {
 	return answer
 }
 
+// ExitWithDelay exits the program with a specified exit code after a 5-second delay.
+//
+// Parameters:
+//   - code: The exit code to return when terminating the program.
 func ExitWithDelay(code int) {
 	fmt.Println("Terminating in 5 seconds...")
 	time.Sleep(5 * time.Second)
 	os.Exit(code)
 }
 
+// GetDknSecretKey prompts the user to enter their DKN Wallet Secret Key, validates it, and returns it.
+//
+// Returns:
+//   - string: The validated DKN Wallet Secret Key.
+//   - error: Returns an error if the key is not 32-bytes hex encoded or if there are decoding issues.
 func GetDknSecretKey() (string, error) {
-	reader := bufio.NewReader(os.Stdin)
-	// get DKN_WALLET_SECRET_KEY
-	fmt.Print("Please enter your DKN Wallet Secret Key (32-bytes hex encoded): ")
-	skey, err := reader.ReadString('\n')
-	if err != nil {
-		return "", fmt.Errorf("couldn't get DKN Wallet Secret Key")
-	}
-	skey = strings.TrimSpace(skey)
-	skey = strings.Split(skey, "\n")[0]
+	skey := GetUserInput("Please enter your DKN Wallet Secret Key (32-bytes hex encoded): ", true)
 	skey = strings.TrimPrefix(skey, "0x")
 	// decode the hex string into bytes
 	decoded_skey, err := hex.DecodeString(skey)
@@ -162,8 +192,10 @@ func GetDknSecretKey() (string, error) {
 	return skey, nil
 }
 
+// ModelList is a type that allows multiple values for the -m command-line flag.
 type ModelList []string
 
+// String returns the ModelList as a comma-separated string.
 func (models *ModelList) String() string {
 	str := ""
 	for _, m := range *models {
@@ -172,6 +204,13 @@ func (models *ModelList) String() string {
 	return str
 }
 
+// Set appends a new model name to the ModelList.
+//
+// Parameters:
+//   - value: The model name to add to the list.
+//
+// Returns:
+//   - error: Returns nil as there are no constraints to enforce here.
 func (models *ModelList) Set(value string) error {
 	*models = append(*models, value)
 	return nil

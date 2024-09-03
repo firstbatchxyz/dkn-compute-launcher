@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"net/http"
-	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
@@ -17,6 +16,15 @@ var (
 	OLLAMA_MAX_RETRIES  = 5
 )
 
+// IsOllamaRequired checks if any of the picked models are in the list of Ollama models,
+// indicating whether Ollama is required.
+//
+// Parameters:
+//   - picked_models: A comma-separated string of model names selected by the user.
+//   - ollama_models: A pointer to a slice of strings containing available Ollama model names.
+//
+// Returns:
+//   - bool: Returns true if any of the picked models require Ollama, otherwise false.
 func IsOllamaRequired(picked_models string, ollama_models *[]string) bool {
 	required := false
 	for _, model := range strings.Split(picked_models, ",") {
@@ -30,6 +38,14 @@ func IsOllamaRequired(picked_models string, ollama_models *[]string) bool {
 	return required
 }
 
+// IsOllamaServing checks if the Ollama service is running by making an HTTP GET request to the specified host and port.
+//
+// Parameters:
+//   - host: The host address of the Ollama service.
+//   - port: The port number on which the Ollama service is expected to be running.
+//
+// Returns:
+//   - bool: Returns true if the service is running (i.e., returns HTTP 200 OK), otherwise false.
 func IsOllamaServing(host, port string) bool {
 	client := http.Client{
 		Timeout: 2 * time.Second,
@@ -44,9 +60,16 @@ func IsOllamaServing(host, port string) bool {
 	return resp.StatusCode == http.StatusOK
 }
 
+// RunOllamaServe starts the Ollama service on the specified host and port, and checks if it starts successfully.
+//
+// Parameters:
+//   - host: The host address where Ollama should run.
+//   - port: The port number on which Ollama should listen.
+//
+// Returns:
+//   - int: The process ID (PID) of the Ollama service.
+//   - error: Returns an error if the Ollama service fails to start, otherwise nil.
 func RunOllamaServe(host, port string) (int, error) {
-	var cmd *exec.Cmd
-
 	ollama_env := fmt.Sprintf("OLLAMA_HOST=%s:%s", host, port)
 	pid, err := RunCommand("", false, false, []string{ollama_env}, "ollama", "serve")
 	if err != nil {
@@ -61,10 +84,21 @@ func RunOllamaServe(host, port string) (int, error) {
 		time.Sleep(2 * time.Second)
 	}
 
-	cmd.Process.Kill()
 	return pid, fmt.Errorf("ollama failed to start after %d retries", OLLAMA_MAX_RETRIES)
 }
 
+// HandleOllamaEnv sets up the environment for running the Ollama service, either locally or using Docker.
+//
+// Parameters:
+//   - ollamaHost: The initial host address for Ollama (can be overridden based on checks).
+//   - ollamaPort: The initial port number for Ollama (can be overridden based on checks).
+//   - dockerOllama: A boolean indicating whether to use Docker to run Ollama.
+//
+// Returns:
+//   - string: The final host address for Ollama.
+//   - string: The final port number for Ollama.
+//   - string: The Docker network mode to use ("bridge" or "host").
+//   - string: The Docker compose profile to use based on the GPU type (e.g., "ollama-cuda", "ollama-rocm", or "ollama-cpu").
 func HandleOllamaEnv(ollamaHost, ollamaPort string, dockerOllama bool) (string, string, string, string) {
 	// local ollama
 	if !dockerOllama {

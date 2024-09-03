@@ -30,6 +30,26 @@ var (
 	DKN_ADMIN_PUBLIC_KEY = "0208ef5e65a9c656a6f92fb2c770d5d5e2ecffe02a6aade19207f75110be6ae658"
 )
 
+// main is the entry point of the DKN Compute Node Launcher.
+// It sets up the environment, checks required conditions, and launches the compute node using Docker.
+//
+// The function processes command-line flags, including:
+//
+//	-h, --help: Display help message.
+//	-m, --model: Specify models to be used in the compute node (multiple models can be specified).
+//	-b, --background: Run the compute node in background mode.
+//	--dev: Set logging level to debug.
+//	--trace: Set logging level to trace.
+//	--docker-ollama: Use Ollama Docker image.
+//	--dkn-admin-public-key: Set the DKN Admin Node Public Key.
+//	--pick-models: Pick models interactively, suppressing the -m flags.
+//
+// The function performs the following tasks:
+//  1. Initializes the environment, checking for required files and fetching them if necessary.
+//  2. Loads environment variables from .env files or fetches them from the dkn-compute-node repository if not present.
+//  3. Configures and verifies models, API keys, and logging settings.
+//  4. Starts the compute node using Docker Compose, either in foreground or background mode.
+//  5. Handles graceful shutdown in foreground mode by capturing interrupt signals.
 func main() {
 	fmt.Println("************ DKN - Compute Node ************")
 
@@ -65,10 +85,13 @@ func main() {
 		utils.ExitWithDelay(1)
 	}
 
-	// TODO fetch compose.yml if not exists
 	if !utils.FileExists(working_dir, "compose.yml") {
 		fmt.Println("Couldn't find compose.yml, fetching it from github.com/firstbatchxyz/dkn-compute-node")
-		utils.FetchComposeFileFromDknRepo(working_dir)
+		if err := utils.FetchComposeFileFromDknRepo(working_dir); err != nil {
+			fmt.Printf("ERROR during fetching the compose.yml file from the repo %s\n", err)
+			utils.ExitWithDelay(1)
+		}
+
 	}
 
 	// first load .env file if exists
@@ -89,7 +112,7 @@ func main() {
 
 	// override DKN_ADMIN_PUBLIC_KEY if flag is a different value
 	DKN_ADMIN_PUBLIC_KEY = *dkn_admin_pkey_flag
-	utils.CheckRequiredEnvVars(envvars, DKN_ADMIN_PUBLIC_KEY)
+	utils.CheckRequiredEnvVars(&envvars, DKN_ADMIN_PUBLIC_KEY)
 
 	// if -m flag is given, set them as DKN_MODELS
 	if len(models) != 0 {
