@@ -1,4 +1,4 @@
-name: start.go Build and Launch Releases
+name: Build and Publish Launch Releases
 
 on:
   push:
@@ -76,7 +76,7 @@ jobs:
         run: |
           latest_tag=${{ env.latest_tag }}
           if [ -z "$latest_tag" ]; then
-            new_tag="v1.0.0"
+            new_tag="v0.0.1"
           else
             IFS='.' read -ra VERSION_PARTS <<< "${latest_tag#v}"
             major=${VERSION_PARTS[0]}
