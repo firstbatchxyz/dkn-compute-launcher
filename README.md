@@ -23,16 +23,16 @@ This repository contains the CLI application for the [DKN Compute Node](https://
 
 ## Quick Start
 
-1. **Download the executable**: Simply download the latest executable for your operating system from the [releases page]().
+1. **Download the executable**: Simply download the latest executable for your operating system from the [releases page](https://github.com/firstbatchxyz/dkn-compute-launcher/releases/tag/v0.0.1).
 
 2. **Run the Launcher**: Double-click the executable or run it via the command line. Use `-h` or `--help` to see all available options.
 
    ```sh
    # macos or linux
-   ./start --help
+   ./dkn-compute-launcher --help
 
    # windows
-   .\start.exe --help
+   .\dkn-compute-launcher.exe --help
    ```
 
 3. **Select Models**: Choose the models to be used in your node setup. You can pass multiple `-m` or `--model` flags or use the interactive model picker.
