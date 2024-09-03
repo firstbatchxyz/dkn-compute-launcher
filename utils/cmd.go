@@ -92,7 +92,7 @@ func PickModels(openai_models, ollama_models []string) string {
 	for id, model := range ollama_models {
 		fmt.Printf("%d\tOllama\t%s\n", len(openai_models)+id+1, model)
 	}
-	models := GetUserInput("Enter the model ids (comma separated, e.g: 1,2,4): ", true)
+	models := GetUserInput("Enter the model ids (comma separated, e.g: 1,2,4) ", true)
 
 	models = strings.ReplaceAll(models, " ", "")
 	models_list := strings.Split(models, ",")
@@ -178,7 +178,7 @@ func ExitWithDelay(code int) {
 //   - string: The validated DKN Wallet Secret Key.
 //   - error: Returns an error if the key is not 32-bytes hex encoded or if there are decoding issues.
 func GetDknSecretKey() (string, error) {
-	skey := GetUserInput("Please enter your DKN Wallet Secret Key (32-bytes hex encoded): ", true)
+	skey := GetUserInput("Please enter your DKN Wallet Secret Key (32-bytes hex encoded) ", true)
 	skey = strings.TrimPrefix(skey, "0x")
 	// decode the hex string into bytes
 	decoded_skey, err := hex.DecodeString(skey)

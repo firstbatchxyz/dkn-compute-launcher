@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -18,25 +18,52 @@ import (
 // Returns:
 //   - string: The path to the working directory. Exits the program with a delay if an error occurs.
 func GetWorkingDir() string {
-	// Check if running in a binary or with `go run`
-	if runtime.Compiler == "gc" {
-		// Using `go run`, find the current working directory
-		workingDir, err := os.Getwd()
-		if err != nil {
-			fmt.Printf("Error getting the current working directory: %s\n", err)
-			ExitWithDelay(1)
-		}
-		return workingDir
+	ex, err := os.Executable()
+	if err != nil {
+		fmt.Printf("Error getting the executable path: %s\n", err)
+		ExitWithDelay(1)
+	}
+
+	if strings.Contains(filepath.Dir(ex), os.TempDir()) {
+		// since "go run" runs the program in temp dir, return the current directory as working dir
+		return "./"
 	} else {
-		// Running as a compiled binary
-		ex, err := os.Executable()
-		if err != nil {
-			fmt.Printf("Error getting the executable path: %s\n", err)
-			ExitWithDelay(1)
-		}
+		// running from a built binary
 		workingDir := filepath.Dir(ex)
 		return workingDir
 	}
+}
+
+// LoadEnv loads environment variables from a .env file in the specified working directory.
+// If the .env file is not present, it attempts to load from a .env.example file.
+// If neither file is found, it fetches a new .env.example file from the DKN Compute Node repository.
+//
+// Parameters:
+//   - working_dir: A string representing the path to the working directory where the .env or .env.example files are located.
+//
+// Returns:
+//   - map[string]string: A map containing the loaded environment variables.
+//   - error: Returns an error if fetching the .env.example file from the repository fails, otherwise nil.
+func LoadEnv(working_dir string) (map[string]string, error) {
+	// first load .env file if exists
+	envvars, err := godotenv.Read(filepath.Join(working_dir, ".env"))
+	if err != nil {
+		// if couldn't find or load the .env, use .env.example
+		envvars, err = godotenv.Read(filepath.Join(working_dir, ".env.example"))
+		if err != nil {
+			// no .env/.env.example found, fetch it from dkn-compute-node repo
+			fmt.Printf("Couldn't find both .env and .env.example, fetching .env.example from github.com/firstbatchxyz/dkn-compute-node as base\n\n")
+			envvars, err = FetchEnvFileFromDknRepo(working_dir)
+			if err != nil {
+				return nil, fmt.Errorf("ERROR during fetching the .env.example file from the repo %s", err)
+			}
+		} else {
+			fmt.Printf("Loaded %s as base env\n\n", filepath.Join(working_dir, ".env.example"))
+		}
+	} else {
+		fmt.Printf("Loaded %s as env\n\n", filepath.Join(working_dir, ".env"))
+	}
+	return envvars, nil
 }
 
 // CheckRequiredEnvVars checks if the required environment variables are set in the provided map pointer.

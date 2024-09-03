@@ -94,20 +94,11 @@ func main() {
 
 	}
 
-	// first load .env file if exists
-	envvars, err := godotenv.Read(filepath.Join(working_dir, ".env"))
+	// load the env vars
+	envvars, err := utils.LoadEnv(working_dir)
 	if err != nil {
-		// if couldnt load the .env, use .env.example
-		envvars, err = godotenv.Read(filepath.Join(working_dir, ".env.example"))
-		if err != nil {
-			// no .env/.env.example found, fetch it from dkn-compute-node repo
-			fmt.Println("Couldn't find both .env and .env.example, fetching .env.example from github.com/firstbatchxyz/dkn-compute-node as base")
-			envvars, err = utils.FetchEnvFileFromDknRepo(working_dir)
-			if err != nil {
-				fmt.Printf("ERROR during fetching the .env.example file from the repo %s\n", err)
-				utils.ExitWithDelay(1)
-			}
-		}
+		fmt.Println(err)
+		utils.ExitWithDelay(1)
 	}
 
 	// override DKN_ADMIN_PUBLIC_KEY if flag is a different value
