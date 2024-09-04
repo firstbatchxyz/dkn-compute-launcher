@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'main.go'
+      - 'utils/**'
+      - 'go.mod'
+      - 'go.sum'
 
 jobs:
   build:
