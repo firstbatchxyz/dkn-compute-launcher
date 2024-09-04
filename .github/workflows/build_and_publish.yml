@@ -41,7 +41,15 @@ jobs:
           ZIP_NAME: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}
         run: |
           mkdir $FOLDER_NAME
+          # copy the binary
           cp ./dkn-compute-launcher${{ matrix.extension }} $FOLDER_NAME/dkn-compute-launcher${{ matrix.extension }}
+          
+          # download .env.example and save it as .env
+          curl -o $FOLDER_NAME/.env https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/.env.example
+
+          # download compose.yml
+          curl -o $FOLDER_NAME/compose.yml https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/compose.yml
+
           zip -r $ZIP_NAME.zip $FOLDER_NAME
 
 
