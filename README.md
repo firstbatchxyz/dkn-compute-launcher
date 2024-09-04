@@ -35,6 +35,15 @@ This repository contains the CLI application for the [DKN Compute Node](https://
    .\dkn-compute-launcher.exe --help
    ```
 
+> [!TIP]
+>
+> Some Apple devices need you to bypass macOS's security warning. If you see "macOS cannot verify that this app is free from malware," when running the node use the following command:
+>
+> ```sh
+> xattr -d com.apple.quarantine dkn-compute-launcher
+> ```
+
+
 3. **Select Models**: Choose the models to be used in your node setup. You can pass multiple `-m` or `--model` flags or use the interactive model picker.
 
 4. **Start the Node**: Follow the prompts to complete the setup and start your node.
