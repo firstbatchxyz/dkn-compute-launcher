@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"context"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -24,54 +25,75 @@ func IsCommandAvailable(command string) bool {
 }
 
 // RunCommand executes a command in a specified working directory, with options to print output
-// to stdout, wait for completion, and set custom environment variables.
+// to stdout, wait for completion, set custom environment variables, and optionally specify a timeout.
 //
 // Parameters:
 //   - working_dir: The directory where the command will be executed.
 //   - printToStdout: If true, the command's stdout and stderr are connected to the terminal.
 //   - wait: If true, waits for the command to finish before returning.
+//   - timeout: If provided, the duration after which the command will be killed. If 0, no timeout will be applied.
 //   - envs: A slice of environment variables to set for the command, in the form of key=value.
 //   - command: The command to execute.
 //   - args: Additional arguments for the command.
 //
 // Returns:
 //   - int: The PID of the started command.
-//   - error: Returns an error if the command fails to start or completes with an error, otherwise nil.
-func RunCommand(working_dir string, printToStdout, wait bool, envs []string, command string, args ...string) (int, error) {
-	cmd := exec.Command(command, args...)
+//   - error: Returns an error if the command fails to start, times out, or completes with an error.
+func RunCommand(working_dir string, printToStdout, wait bool, timeout time.Duration, envs []string, command string, args ...string) (int, error) {
+	var cmd *exec.Cmd
+	var ctx context.Context
+	var cancel context.CancelFunc
 
-	// Set the environment variable
+	// create the command with or without a timeout depending on the timeout value
+	if timeout > 0 {
+		// create a context with timeout
+		ctx, cancel = context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+		cmd = exec.CommandContext(ctx, command, args...)
+	} else {
+		// no timeout, use regular command
+		cmd = exec.Command(command, args...)
+	}
+
+	// set the environment variable
 	cmd.Env = append(os.Environ(), envs...)
 
 	// set working dir
 	cmd.Dir = working_dir
 
+	// handle output to stdout and stderr
 	if printToStdout {
-		// Connect stdout and stderr to the terminal
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	} else {
-		// Capture output if not printing to stdout
 		cmd.Stdout = nil
 		cmd.Stderr = nil
 	}
 
-	// Start the command
+	// start the command
 	err := cmd.Start()
 	if err != nil {
 		return 0, fmt.Errorf("failed to start command: %w", err)
 	}
 
-	// Get the PID
+	// get the PID
 	pid := cmd.Process.Pid
 
-	// Wait for the command to finish
+	// wait for the command to finish or timeout
 	if wait {
 		err = cmd.Wait()
+
+		// check if the context timed out
+		if timeout > 0 && ctx.Err() == context.DeadlineExceeded {
+			return pid, ctx.Err()
+		}
+
+		// return an error if the command finishes with an error
 		if err != nil {
 			return pid, fmt.Errorf("command finished with error: %w", err)
 		}
 	}
+
 	return pid, nil
 }
 

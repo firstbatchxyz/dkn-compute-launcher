@@ -1,6 +1,10 @@
 package utils
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"time"
+)
 
 // CheckDockerComposeCommand checks whether the system has Docker Compose installed and returns
 // the appropriate command and arguments for starting and stopping Docker containers.
@@ -13,12 +17,12 @@ import "fmt"
 // Exits the program with a delay if neither Docker Compose nor docker-compose is installed.
 func CheckDockerComposeCommand() (string, []string, []string) {
 	// check docker compose
-	if _, err := RunCommand("", false, true, nil, "docker", "compose", "version"); err == nil {
+	if _, err := RunCommand("", false, true, 0, nil, "docker", "compose", "version"); err == nil {
 		return "docker", []string{"compose", "up", "-d"}, []string{"compose", "down"}
 	}
 
 	// check docker-compose
-	if _, err := RunCommand("", false, true, nil, "docker-compose", "version"); err == nil {
+	if _, err := RunCommand("", false, true, 0, nil, "docker-compose", "version"); err == nil {
 		return "docker-compose", []string{"up", "-d"}, []string{"down"}
 	}
 
@@ -33,7 +37,21 @@ func CheckDockerComposeCommand() (string, []string, []string) {
 //
 // Returns:
 //   - bool: Returns true if Docker is running (i.e., "docker info" executes successfully), otherwise false.
-func IsDockerUp() bool {
-	_, err := RunCommand("", false, true, nil, "docker", "info")
-	return err == nil
+func IsDockerUp(timeout time.Duration) bool {
+	_, err := RunCommand("", false, true, timeout, nil, "docker", "info")
+	if err != nil {
+		if err == context.DeadlineExceeded {
+			fmt.Println("Error: Docker did not respond within the expected time.")
+			fmt.Println("Suggested actions:")
+			fmt.Println("  1. Quit and restart Docker Desktop.")
+			fmt.Println("  3. Try restarting Docker with 'sudo systemctl restart docker' (Linux/macOS) or 'Restart-Service docker' (Windows).")
+			fmt.Println("  4. Verify that your Docker daemon has sufficient resources.")
+			fmt.Println("")
+		} else {
+			fmt.Println("Error: Docker is not up, please start Docker-Desktop first.")
+		}
+		return false
+	}
+
+	return true
 }
