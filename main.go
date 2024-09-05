@@ -16,7 +16,7 @@ import (
 
 var (
 	OLLAMA_MODELS = []string{
-		"adrienbrault/nous-hermes2theta-llama3-8b:q8_0",
+		"finalend/hermes-3-llama-3.1:8b-q8_0",
 
 		"phi3:14b-medium-4k-instruct-q4_1",
 		"phi3:14b-medium-128k-instruct-q4_1",
