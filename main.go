@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -73,18 +74,20 @@ func main() {
 		os.Exit(0)
 	}
 
-	fmt.Printf("Setting up the environment...\n\n")
+	fmt.Printf("Setting up the environment...\n")
 
 	// get the current working directory
 	working_dir := utils.GetWorkingDir()
 
 	// Check Docker Compose
+	fmt.Println("Checking Docker...")
 	composeCommand, composeUpArgs, composeDownArgs := utils.CheckDockerComposeCommand()
-	if !utils.IsDockerUp() {
-		fmt.Println("ERROR: Docker is not up")
+	// check docker is up by waiting 10 seconds
+	if !utils.IsDockerUp(10 * time.Second) {
 		utils.ExitWithDelay(1)
 	}
 
+	// check compose.yml
 	if !utils.FileExists(working_dir, "compose.yml") {
 		fmt.Println("Couldn't find compose.yml, fetching it from github.com/firstbatchxyz/dkn-compute-node")
 		if err := utils.FetchComposeFileFromDknRepo(working_dir); err != nil {
@@ -163,7 +166,7 @@ func main() {
 
 	// Update the image
 	fmt.Println("Pulling the latest compute node image...")
-	_, err = utils.RunCommand(working_dir, true, true, []string{"DOCKER_CLI_HINTS=false"}, "docker", "pull", "firstbatch/dkn-compute-node:latest")
+	_, err = utils.RunCommand(working_dir, true, true, 0, []string{"DOCKER_CLI_HINTS=false"}, "docker", "pull", "firstbatch/dkn-compute-node:latest")
 	if err != nil {
 		fmt.Println("Error during pulling the latest compute node image")
 		utils.ExitWithDelay(1)
@@ -174,18 +177,19 @@ func main() {
 		fmt.Printf("Failed to dump the .env file, continuing to running the node though. error message: %s\n", err)
 	}
 
+	// log final status
+	fmt.Printf("\nLog level: %s\n", envvars["RUST_LOG"])
+	fmt.Printf("Models: %s\n", envvars["DKN_MODELS"])
+	fmt.Printf("Operating System: %s\n", runtime.GOOS)
+	fmt.Printf("COMPOSE_PROFILES: [%s]\n", envvars["COMPOSE_PROFILES"])
 	if *background {
 		fmt.Printf("\nStarting in BACKGROUND mode...\n")
 	} else {
 		fmt.Printf("\nStarting in FOREGROUND mode...\n")
 	}
-	fmt.Printf("Log level: %s\n", envvars["RUST_LOG"])
-	fmt.Printf("Models: %s\n", envvars["DKN_MODELS"])
-	fmt.Printf("Operating System: %s\n", runtime.GOOS)
-	fmt.Printf("COMPOSE_PROFILES: %s\n\n", envvars["COMPOSE_PROFILES"])
 
 	// Run docker-compose up
-	_, err = utils.RunCommand(working_dir, true, true, utils.MapToList(envvars), composeCommand, composeUpArgs...)
+	_, err = utils.RunCommand(working_dir, true, true, 0, utils.MapToList(envvars), composeCommand, composeUpArgs...)
 	if err != nil {
 		fmt.Printf("ERROR: docker-compose, %s", err)
 		utils.ExitWithDelay(1)
@@ -202,7 +206,7 @@ func main() {
 		<-sig
 
 		fmt.Println("\nShutting down...")
-		_, err = utils.RunCommand(working_dir, true, true, utils.MapToList(envvars), composeCommand, composeDownArgs...)
+		_, err = utils.RunCommand(working_dir, true, true, 0, utils.MapToList(envvars), composeCommand, composeDownArgs...)
 		if err != nil {
 			fmt.Printf("Error during docker compose down; %s\n", err)
 		}

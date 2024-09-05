@@ -71,7 +71,7 @@ func IsOllamaServing(host, port string) bool {
 //   - error: Returns an error if the Ollama service fails to start, otherwise nil.
 func RunOllamaServe(host, port string) (int, error) {
 	ollama_env := fmt.Sprintf("OLLAMA_HOST=%s:%s", host, port)
-	pid, err := RunCommand("", false, false, []string{ollama_env}, "ollama", "serve")
+	pid, err := RunCommand("", false, false, 0, []string{ollama_env}, "ollama", "serve")
 	if err != nil {
 		return 0, fmt.Errorf("failed during running ollama serve: %w", err)
 	}
