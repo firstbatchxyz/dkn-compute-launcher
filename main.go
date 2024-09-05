@@ -17,15 +17,24 @@ import (
 var (
 	OLLAMA_MODELS = []string{
 		"adrienbrault/nous-hermes2theta-llama3-8b:q8_0",
+
 		"phi3:14b-medium-4k-instruct-q4_1",
 		"phi3:14b-medium-128k-instruct-q4_1",
-		"phi3:3.8b",
+
 		"phi3.5:3.8b",
 		"phi3.5:3.8b-mini-instruct-fp16",
+
 		"llama3.1:latest",
 		"llama3.1:8b-instruct-q8_0",
+
+		"gemma2:9b-instruct-q8_0",
 	}
-	OPENAI_MODELS = []string{"gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o", "gpt-4o-mini"}
+	OPENAI_MODELS = []string{
+		"gpt-3.5-turbo",
+		"gpt-4-turbo",
+		"gpt-4o",
+		"gpt-4o-mini",
+	}
 
 	// Default admin public key, it will be used unless --dkn-admin-public-key is given
 	DKN_ADMIN_PUBLIC_KEY = "0208ef5e65a9c656a6f92fb2c770d5d5e2ecffe02a6aade19207f75110be6ae658"
