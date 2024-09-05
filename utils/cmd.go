@@ -106,14 +106,36 @@ func RunCommand(working_dir string, printToStdout, wait bool, timeout time.Durat
 // Returns:
 //   - string: A comma-separated string of selected model names.
 func PickModels(openai_models, ollama_models []string) string {
+
+	// column widths
+	idWidth := 4
+	providerWidth := 10
+	nameWidth := 50
+
+	header := fmt.Sprintf("| %-*s | %-*s | %-*s |", idWidth, "ID", providerWidth, "Provider", nameWidth, "Name")
+	separator := "+" + strings.Repeat("-", idWidth+2) + "+" + strings.Repeat("-", providerWidth+2) + "+" + strings.Repeat("-", nameWidth+2) + "+"
+
+	// print the table
 	fmt.Print("\nPlease pick the model you want to run:\n\n")
-	fmt.Printf("ID\tProvider\tName\n")
+	fmt.Println(separator)
+	fmt.Println(header)
+	fmt.Println(separator)
+
+	// print the rows
 	for id, model := range openai_models {
-		fmt.Printf("%d\tOpenAI\t%s\n", id+1, model)
+		modelId := id + 1
+		provider := "OpenAI"
+		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
 	}
 	for id, model := range ollama_models {
-		fmt.Printf("%d\tOllama\t%s\n", len(openai_models)+id+1, model)
+		modelId := len(openai_models) + id + 1
+		provider := "Ollama"
+		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
 	}
+
+	// print end
+	fmt.Println(separator)
+
 	models := GetUserInput("Enter the model ids (comma separated, e.g: 1,2,4) ", true)
 
 	models = strings.ReplaceAll(models, " ", "")
