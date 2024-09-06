@@ -19,10 +19,10 @@ jobs:
     strategy:
       matrix:
         include:
-          # - { runner: macos-latest,  goos: darwin,  osname: macOS,   arch: amd64, tags: netcgo        }
+          - { runner: macos-latest,  goos: darwin,  osname: macOS,   arch: amd64, tags: netcgo        }
           - { runner: macos-latest,  goos: darwin,  osname: macOS,   arch: arm64, tags: netcgo        }
-          # - { runner: ubuntu-latest, goos: linux,   osname: linux,   arch: amd64, env:  CGO_ENABLED=0 }
-          # - { runner: ubuntu-latest, goos: linux,   osname: linux,   arch: arm64, env:  CGO_ENABLED=0 }
+          - { runner: ubuntu-latest, goos: linux,   osname: linux,   arch: amd64, env:  CGO_ENABLED=0 }
+          - { runner: ubuntu-latest, goos: linux,   osname: linux,   arch: arm64, env:  CGO_ENABLED=0 }
           # - { runner: ubuntu-latest, goos: windows, osname: windows, arch: amd64, env:  CGO_ENABLED=0, extension: ".exe" }
           # - { runner: ubuntu-latest, goos: windows, osname: windows, arch: arm64, env:  CGO_ENABLED=0, extension: ".exe" }
 
@@ -48,12 +48,11 @@ jobs:
           FOLDER_NAME: dkn-compute-node
           ZIP_NAME: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}
         run: |
-          # download exe
-          mkdir node_exe
-          cd node_exe
-          echo "Downloading dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip..."
-          # todo: fix the latest tag url
-          if curl -L -o dkn-compute-node-binary https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-binary-${{ matrix.osname }}-${{ matrix.arch }}; then
+          # download node binary
+          mkdir node_binary
+          cd node_binary
+          echo "Downloading dkn-compute-binary-${{ matrix.osname }}-${{ matrix.arch }}"
+          if curl -L -o dkn-compute-binary https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-binary-${{ matrix.osname }}-${{ matrix.arch }}; then
               echo "Download completed."
               ls
           else
@@ -75,12 +74,7 @@ jobs:
           curl -o $FOLDER_NAME/.env https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/.env.example
 
           # copy exe to zip folder
-          cd node_exe
-
-          # unzip dkn-compute-node-exe.zip
-          # tar -xzf dkn-compute-node-exe.tar.gz
-          cp dkn-compute-node-binary${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
-          cd ..
+          cp ./node_binary/dkn-compute-binary ../$FOLDER_NAME/dkn-compute
 
           zip -r $ZIP_NAME.zip $FOLDER_NAME
 
