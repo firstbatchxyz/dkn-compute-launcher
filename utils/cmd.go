@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -39,56 +41,82 @@ func IsCommandAvailable(command string) bool {
 // Returns:
 //   - int: The PID of the started command.
 //   - error: Returns an error if the command fails to start, times out, or completes with an error.
-func RunCommand(working_dir string, printToStdout, wait bool, timeout time.Duration, envs []string, command string, args ...string) (int, error) {
+func RunCommand(working_dir string, outputDest string, wait bool, timeout time.Duration, envs []string, command string, args ...string) (int, error) {
 	var cmd *exec.Cmd
 	var ctx context.Context
 	var cancel context.CancelFunc
 
-	// create the command with or without a timeout depending on the timeout value
+	// Create the command with or without a timeout depending on the timeout value
 	if timeout > 0 {
-		// create a context with timeout
+		// Create a context with timeout
 		ctx, cancel = context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 		cmd = exec.CommandContext(ctx, command, args...)
 	} else {
-		// no timeout, use regular command
+		// No timeout, use regular command
 		cmd = exec.Command(command, args...)
 	}
 
-	// set the environment variable
+	// Set environment variables
 	cmd.Env = append(os.Environ(), envs...)
 
-	// set working dir
+	// Set working dir
 	cmd.Dir = working_dir
 
-	// handle output to stdout and stderr
-	if printToStdout {
+	var logFile *os.File
+	var err error
+
+	// Set output handling based on outputDest
+	switch outputDest {
+	case "stdout":
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-	} else {
+	case "file":
+		logFile, err = os.OpenFile(filepath.Join(working_dir, "logs.txt"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			return 0, fmt.Errorf("failed to open log file: %w", err)
+		}
+		// Close the log file when the function ends
+		defer logFile.Close()
+		cmd.Stdout = logFile
+		cmd.Stderr = logFile
+	case "none":
 		cmd.Stdout = nil
 		cmd.Stderr = nil
+	default:
+		return 0, fmt.Errorf("invalid output destination: %s", outputDest)
 	}
 
-	// start the command
-	err := cmd.Start()
+	// Start the command
+	err = cmd.Start()
 	if err != nil {
 		return 0, fmt.Errorf("failed to start command: %w", err)
 	}
 
-	// get the PID
+	// Get the PID
 	pid := cmd.Process.Pid
 
-	// wait for the command to finish or timeout
-	if wait {
-		err = cmd.Wait()
+	// If wait is false, handle output asynchronously
+	if !wait {
+		go func() {
+			// Handle logging asynchronously, so it continues even after the main program ends
+			if logFile != nil {
+				stdoutPipe, _ := cmd.StdoutPipe()
+				stderrPipe, _ := cmd.StderrPipe()
 
-		// check if the context timed out
+				// Start goroutines to copy the command's stdout and stderr to the log file
+				go io.Copy(logFile, stdoutPipe)
+				go io.Copy(logFile, stderrPipe)
+			}
+			// Ensure the process runs to completion
+			cmd.Wait()
+		}()
+	} else {
+		// If wait is true, wait for the command to finish
+		err = cmd.Wait()
 		if timeout > 0 && ctx.Err() == context.DeadlineExceeded {
 			return pid, ctx.Err()
 		}
-
-		// return an error if the command finishes with an error
 		if err != nil {
 			return pid, fmt.Errorf("command finished with error: %w", err)
 		}

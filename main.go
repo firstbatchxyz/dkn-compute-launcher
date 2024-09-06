@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -41,7 +40,7 @@ var (
 )
 
 // main is the entry point of the DKN Compute Node Launcher.
-// It sets up the environment, checks required conditions, and launches the compute node using Docker.
+// It sets up the environment, checks required conditions, and launches the compute node using dkn-compute executable.
 //
 // The function processes command-line flags, including:
 //
@@ -50,7 +49,6 @@ var (
 //	-b, --background: Run the compute node in background mode.
 //	--dev: Set logging level to debug.
 //	--trace: Set logging level to trace.
-//	--docker-ollama: Use Ollama Docker image.
 //	--dkn-admin-public-key: Set the DKN Admin Node Public Key.
 //	--pick-models: Pick models interactively, suppressing the -m flags.
 //
@@ -58,7 +56,7 @@ var (
 //  1. Initializes the environment, checking for required files and fetching them if necessary.
 //  2. Loads environment variables from .env files or fetches them from the dkn-compute-node repository if not present.
 //  3. Configures and verifies models, API keys, and logging settings.
-//  4. Starts the compute node using Docker Compose, either in foreground or background mode.
+//  4. Starts the compute node, either in foreground or background mode.
 //  5. Handles graceful shutdown in foreground mode by capturing interrupt signals.
 func main() {
 	fmt.Println("************ DKN - Compute Node ************")
@@ -72,7 +70,6 @@ func main() {
 	flag.BoolVar(background, "background", false, "Enables background mode for running the node (default: FOREGROUND)")
 	dev := flag.Bool("dev", false, "Sets the logging level to debug (default: false)")
 	trace := flag.Bool("trace", false, "Sets the logging level to trace (default: false)")
-	dockerOllama := flag.Bool("docker-ollama", false, "Indicates the Ollama docker image is being used (default: false)")
 	dkn_admin_pkey_flag := flag.String("dkn-admin-public-key", DKN_ADMIN_PUBLIC_KEY, "DKN Admin Node Public Key, usually dont need this since it's given by default")
 	pick_model := flag.Bool("pick-models", false, "Pick the models using cli, supprases the -m flags (default: false)")
 	flag.Parse()
@@ -87,24 +84,6 @@ func main() {
 
 	// get the current working directory
 	working_dir := utils.GetWorkingDir()
-
-	// Check Docker Compose
-	fmt.Println("Checking Docker...")
-	composeCommand, composeUpArgs, composeDownArgs := utils.CheckDockerComposeCommand()
-	// check docker is up by waiting 10 seconds
-	if !utils.IsDockerUp(10 * time.Second) {
-		utils.ExitWithDelay(1)
-	}
-
-	// check compose.yml
-	if !utils.FileExists(working_dir, "compose.yml") {
-		fmt.Println("Couldn't find compose.yml, fetching it from github.com/firstbatchxyz/dkn-compute-node")
-		if err := utils.FetchComposeFileFromDknRepo(working_dir); err != nil {
-			fmt.Printf("ERROR during fetching the compose.yml file from the repo %s\n", err)
-			utils.ExitWithDelay(1)
-		}
-
-	}
 
 	// load the env vars
 	envvars, err := utils.LoadEnv(working_dir)
@@ -144,13 +123,11 @@ func main() {
 
 	// check ollama environment
 	if utils.IsOllamaRequired(envvars["DKN_MODELS"], &OLLAMA_MODELS) {
-		ollamaHost, ollamaPort, dockerNetworkMode, composeProfile := utils.HandleOllamaEnv(envvars["OLLAMA_HOST"], envvars["OLLAMA_PORT"], *dockerOllama)
+		ollamaHost, ollamaPort := utils.HandleOllamaEnv(envvars["OLLAMA_HOST"], envvars["OLLAMA_PORT"])
 		envvars["OLLAMA_HOST"] = ollamaHost
 		envvars["OLLAMA_PORT"] = ollamaPort
-		envvars["COMPOSE_PROFILES"] = composeProfile
-		envvars["DKN_DOCKER_NETWORK_MODE"] = dockerNetworkMode
 
-		fmt.Printf("Ollama host: %s (network mode: %s)\n\n", envvars["OLLAMA_HOST"], envvars["DKN_DOCKER_NETWORK_MODE"])
+		fmt.Printf("Ollama host: %s\n\n", envvars["OLLAMA_HOST"])
 	} else {
 		fmt.Printf("No Ollama model provided. Skipping the Ollama execution\n\n")
 	}
@@ -173,14 +150,6 @@ func main() {
 		envvars["RUST_LOG"] = "none,dkn_compute=info"
 	}
 
-	// Update the image
-	fmt.Println("Pulling the latest compute node image...")
-	_, err = utils.RunCommand(working_dir, true, true, 0, []string{"DOCKER_CLI_HINTS=false"}, "docker", "pull", "firstbatch/dkn-compute-node:latest")
-	if err != nil {
-		fmt.Println("Error during pulling the latest compute node image")
-		utils.ExitWithDelay(1)
-	}
-
 	// dump the final env
 	if err := godotenv.Write(envvars, filepath.Join(working_dir, ".env")); err != nil {
 		fmt.Printf("Failed to dump the .env file, continuing to running the node though. error message: %s\n", err)
@@ -190,37 +159,51 @@ func main() {
 	fmt.Printf("\nLog level: %s\n", envvars["RUST_LOG"])
 	fmt.Printf("Models: %s\n", envvars["DKN_MODELS"])
 	fmt.Printf("Operating System: %s\n", runtime.GOOS)
-	fmt.Printf("COMPOSE_PROFILES: [%s]\n", envvars["COMPOSE_PROFILES"])
+
+	dkn_compute_exe := ""
+	if runtime.GOOS == "windows" {
+		dkn_compute_exe = ".\\dkn-compute.exe"
+	} else {
+		dkn_compute_exe = "./dkn-compute"
+	}
+
 	if *background {
-		fmt.Printf("\nStarting in BACKGROUND mode...\n")
+		fmt.Printf("\nStarting in BACKGROUND mode...\n\n")
+		dkn_pid, err := utils.RunCommand(working_dir, "file", false, 0, utils.MapToList(envvars), dkn_compute_exe)
+		if err != nil {
+			fmt.Printf("ERROR during running exe, %s", err)
+			utils.ExitWithDelay(1)
+		}
+
+		fmt.Printf("All good! Compute node is up and running with PID: %d\n", dkn_pid)
+		fmt.Printf("You can check the logs from %s\n", filepath.Join(working_dir, "logs.txt"))
+
+		fmt.Printf("For stopping the background node you can run the following command: ")
+		if runtime.GOOS == "windows" {
+			fmt.Printf("taskkill /PID %d /F\n", dkn_pid)
+		} else {
+			fmt.Printf("kill %d\n", dkn_pid)
+		}
 	} else {
 		fmt.Printf("\nStarting in FOREGROUND mode...\n")
-	}
 
-	// Run docker-compose up
-	_, err = utils.RunCommand(working_dir, true, true, 0, utils.MapToList(envvars), composeCommand, composeUpArgs...)
-	if err != nil {
-		fmt.Printf("ERROR: docker-compose, %s", err)
-		utils.ExitWithDelay(1)
-	}
-
-	fmt.Println("All good! Compute node is up and running.")
-	fmt.Println("You can check logs with: docker compose logs -f compute.")
-
-	// Foreground mode
-	if !(*background) {
+		// Run dkn-compute exe
+		_, err := utils.RunCommand(working_dir, "stdout", true, 0, utils.MapToList(envvars), dkn_compute_exe)
+		if err != nil {
+			fmt.Printf("ERROR during running exe, %s", err)
+			utils.ExitWithDelay(1)
+		}
+		fmt.Println("All good! Compute node is up and running.")
 		fmt.Println("\nUse Control-C to exit")
+
 		sig := make(chan os.Signal, 1)
 		signal.Notify(sig, os.Interrupt)
 		<-sig
 
 		fmt.Println("\nShutting down...")
-		_, err = utils.RunCommand(working_dir, true, true, 0, utils.MapToList(envvars), composeCommand, composeDownArgs...)
-		if err != nil {
-			fmt.Printf("Error during docker compose down; %s\n", err)
-		}
 
 		fmt.Println("\nbye")
 		os.Exit(0)
 	}
+
 }

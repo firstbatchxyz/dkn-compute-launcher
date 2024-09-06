@@ -164,21 +164,3 @@ func FetchEnvFileFromDknRepo(working_dir string) (map[string]string, error) {
 
 	return envvars, nil
 }
-
-// FetchComposeFileFromDknRepo downloads the Docker Compose file from the DKN GitHub repository
-// and saves it to the specified working directory.
-//
-// Parameters:
-//   - working_dir: The directory where the compose.yml file will be saved.
-//
-// Returns:
-//   - error: Returns an error if the download fails, otherwise nil.
-func FetchComposeFileFromDknRepo(working_dir string) error {
-	// fetch from github
-	url := "https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/compose.yml"
-	path := filepath.Join(working_dir, "compose.yml")
-	if err := DownloadFile(url, path); err != nil {
-		return err
-	}
-	return nil
-}
