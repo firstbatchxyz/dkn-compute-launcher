@@ -165,6 +165,12 @@ func main() {
 		dkn_compute_exe = ".\\dkn-compute.exe"
 	} else {
 		dkn_compute_exe = "./dkn-compute"
+		// chmod compute node binary
+		_, err = utils.RunCommand(working_dir, "stdout", true, 0, nil, "chmod", "+x", dkn_compute_exe)
+		if err != nil {
+			fmt.Println("Coudln't give exec privileges to the dkn-compute binary")
+			utils.ExitWithDelay(1)
+		}
 	}
 
 	if *background {
