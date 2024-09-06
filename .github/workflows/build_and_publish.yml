@@ -53,20 +53,13 @@ jobs:
           cd node_exe
           echo "Downloading dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip..."
           # todo: fix the latest tag url
-          if curl -L -o dkn-compute-node-exe.tar.gz https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.tar.gz; then
+          if curl -L -o dkn-compute-node-exe.tar.gz https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-node-binary-${{ matrix.osname }}-${{ matrix.arch }}.tar.gz; then
               echo "Download completed."
               ls
           else
               echo "Error: Failed to download the zip file."
               exit 1
           fi
-
-
-      - name: Extract tgz
-        uses: ihiroky/extract-action@v1
-        with:
-          file_path: node_exe/dkn-compute-node-exe.tar.gz
-          extract_dir: node_exe/
 
 
       - name: Prepare Launch Release Files
@@ -81,14 +74,14 @@ jobs:
           # download .env.example and save it as .env
           curl -o $FOLDER_NAME/.env https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/.env.example
 
-          # unzip and copy exe to launcher-zip folder
-          # cd node_exe
-          # # unzip dkn-compute-node-exe.zip
-          # tar -xzf dkn-compute-node-exe.tar.gz
-          # cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
-          # cd ..
+          # copy exe to zip folder
+          cd node_exe
 
-          cp node_exe/dkn-compute${{ matrix.extension }} $FOLDER_NAME/dkn-compute${{ matrix.extension }}
+          # unzip dkn-compute-node-exe.zip
+          tar -xzf dkn-compute-node-exe.tar.gz
+          cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
+          cd ..
+
           zip -r $ZIP_NAME.zip $FOLDER_NAME
 
 
