@@ -74,7 +74,7 @@ jobs:
           curl -o $FOLDER_NAME/.env https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/.env.example
 
           # copy exe to zip folder
-          cp ./node_binary/dkn-compute-binary ../$FOLDER_NAME/dkn-compute
+          cp ./node_binary/dkn-compute-binary $FOLDER_NAME/dkn-compute
 
           zip -r $ZIP_NAME.zip $FOLDER_NAME
 
