@@ -62,6 +62,13 @@ jobs:
           fi
 
 
+      - name: Extract tgz
+        uses: ihiroky/extract-action@v1
+        with:
+          file_path: node_exe/dkn-compute-node-exe.tar.gz
+          extract_dir: node_exe/
+
+
       - name: Prepare Launch Release Files
         env:
           FOLDER_NAME: dkn-compute-node
@@ -74,14 +81,14 @@ jobs:
           # download .env.example and save it as .env
           curl -o $FOLDER_NAME/.env https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/.env.example
 
-          # copy exe to zip folder
-          cd node_exe
+          # unzip and copy exe to launcher-zip folder
+          # cd node_exe
+          # # unzip dkn-compute-node-exe.zip
+          # tar -xzf dkn-compute-node-exe.tar.gz
+          # cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
+          # cd ..
 
-          # unzip dkn-compute-node-exe.zip
-          tar -xzf dkn-compute-node-exe.tar.gz
-          cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
-          cd ..
-
+          cp node_exe/dkn-compute${{ matrix.extension }} $FOLDER_NAME/dkn-compute${{ matrix.extension }}
           zip -r $ZIP_NAME.zip $FOLDER_NAME
 
 
