@@ -9,7 +9,7 @@ on:
       - 'utils/**'
       - 'go.mod'
       - 'go.sum'
-      - 'workflows/build_and_publish.yml'
+      - '.github/workflows/build_and_publish.yml'
 
 jobs:
   build:
