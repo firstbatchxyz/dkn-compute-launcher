@@ -12,6 +12,7 @@ var (
 	DEFAULT_OLLAMA_PORT = 11434
 	LOCAL_HOST          = "http://localhost"
 	OLLAMA_MAX_RETRIES  = 5
+	DOCKER_HOST         = "http://host.docker.internal"
 )
 
 // IsOllamaRequired checks if any of the picked models are in the list of Ollama models,
@@ -102,7 +103,7 @@ func HandleOllamaEnv(ollamaHost, ollamaPort string) (string, string) {
 		// if not script runs ollama serve command manually and stores its pid
 
 		// prepare local ollama url
-		if ollamaHost == "" {
+		if ollamaHost == "" || ollamaHost == DOCKER_HOST {
 			ollamaHost = LOCAL_HOST
 		}
 		if ollamaPort == "" {

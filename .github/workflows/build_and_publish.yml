@@ -76,6 +76,18 @@ jobs:
 
           # copy exe to zip folder
           cd node_exe
+          if [ ! -f dkn-compute-node-exe.zip ]; then
+              echo "Error: ZIP file not found!"
+              exit 1
+          fi
+
+          # Test the ZIP file for corruption
+          unzip -t dkn-compute-node-exe.zip
+          if [ $? -ne 0 ]; then
+              echo "Error: Corrupted ZIP file!"
+              exit 1
+          fi
+
           unzip dkn-compute-node-exe.zip
           cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
           cd ..
