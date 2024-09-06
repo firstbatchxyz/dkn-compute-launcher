@@ -73,7 +73,7 @@ jobs:
           curl -o $FOLDER_NAME/.env https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/.env.example
 
           # copy dkn-compute binary
-          cp ./node_binary/dkn-compute-binary${{ matrix.extension }} $FOLDER_NAME/dkn-compute
+          cp ./node_binary/dkn-compute-binary${{ matrix.extension }} $FOLDER_NAME/dkn-compute${{ matrix.extension }}
 
           zip -r $ZIP_NAME.zip $FOLDER_NAME
 
