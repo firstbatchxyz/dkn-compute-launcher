@@ -55,6 +55,7 @@ jobs:
           # todo: fix the latest tag url
           if curl -L -o dkn-compute-node-exe.zip https://github.com/firstbatchxyz/dkn-compute-node/releases/download/v0.2.0/dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip; then
               echo "Download completed."
+              ls
           else
               echo "Error: Failed to download the zip file."
               exit 1
