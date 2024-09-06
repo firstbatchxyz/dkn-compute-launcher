@@ -41,6 +41,24 @@ jobs:
         run: |
           ${{ matrix.env }} go build -tags="${{ matrix.tags }}" -o dkn-compute-launcher${{ matrix.extension }} .
 
+
+      - name: Download dkn-compute binaries
+        env:
+          FOLDER_NAME: dkn-compute-node
+          ZIP_NAME: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}
+        run: |
+          # download exe
+          mkdir node_exe
+          cd node_exe
+          echo "Downloading dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip..."
+          if curl -L -o dkn-compute-node-exe.zip https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip; then
+              echo "Download completed."
+          else
+              echo "Error: Failed to download the zip file."
+              exit 1
+          fi
+
+
       - name: Prepare Launch Release Files
         env:
           FOLDER_NAME: dkn-compute-node
@@ -53,23 +71,13 @@ jobs:
           # download .env.example and save it as .env
           curl -o $FOLDER_NAME/.env https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/.env.example
 
-          # download exe
-          mkdir node_exe
+          # copy exe to zip folder
           cd node_exe
-          echo "Downloading dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip..."
-          if curl -L -o dkn-compute-node-exe.zip https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip; then
-              echo "Download completed."
-              # copy exe to zip folder
-              unzip ./dkn-compute-node-exe.zip
-              cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
-              cd ..
+          unzip dkn-compute-node-exe.zip
+          cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
+          cd ..
 
-              zip -r $ZIP_NAME.zip $FOLDER_NAME
-
-          else
-              echo "Error: Failed to download the zip file."
-              exit 1
-          fi
+          zip -r $ZIP_NAME.zip $FOLDER_NAME
 
 
       - name: Upload Launch Artifacts
