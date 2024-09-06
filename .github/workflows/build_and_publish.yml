@@ -54,15 +54,21 @@ jobs:
 
           # download exe
           mkdir node_exe
-          curl -L -o node_exe/dkn-compute-node-exe.zip https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip
-
-          # copy exe to zip folder
           cd node_exe
-          unzip dkn-compute-node-exe.zip
-          cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
-          cd ..
+          echo "Downloading dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip..."
+          if curl -L -o dkn-compute-node-exe.zip https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip; then
+              echo "Download completed."
+              # copy exe to zip folder
+              unzip ./dkn-compute-node-exe.zip
+              cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
+              cd ..
 
-          zip -r $ZIP_NAME.zip $FOLDER_NAME
+              zip -r $ZIP_NAME.zip $FOLDER_NAME
+
+          else
+              echo "Error: Failed to download the zip file."
+              exit 1
+          fi
 
 
       - name: Upload Launch Artifacts
