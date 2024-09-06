@@ -53,7 +53,7 @@ jobs:
           cd node_exe
           echo "Downloading dkn-compute-node-${{ matrix.osname }}-${{ matrix.arch }}.zip..."
           # todo: fix the latest tag url
-          if curl -L -o dkn-compute-node-exe.tar.gz https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-${{ matrix.osname }}-${{ matrix.arch }}.tar.gz; then
+          if curl -L -o dkn-compute-node-binary https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/dkn-compute-binary-${{ matrix.osname }}-${{ matrix.arch }}; then
               echo "Download completed."
               ls
           else
@@ -78,8 +78,8 @@ jobs:
           cd node_exe
 
           # unzip dkn-compute-node-exe.zip
-          tar -xzf dkn-compute-node-exe.tar.gz
-          cp dkn-compute${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
+          # tar -xzf dkn-compute-node-exe.tar.gz
+          cp dkn-compute-node-binary${{ matrix.extension }} ../$FOLDER_NAME/dkn-compute${{ matrix.extension }}
           cd ..
 
           zip -r $ZIP_NAME.zip $FOLDER_NAME
@@ -94,7 +94,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/dkn-compute-exe'
     
     steps:
       - name: Checkout code
