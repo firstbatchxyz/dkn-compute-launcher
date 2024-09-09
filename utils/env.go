@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -163,4 +164,34 @@ func FetchEnvFileFromDknRepo(working_dir string) (map[string]string, error) {
 	}
 
 	return envvars, nil
+}
+
+func GetOSAndArch() (string, string) {
+	// Get the OS and architecture from runtime package
+	os := runtime.GOOS
+	arch := runtime.GOARCH
+
+	// Normalize OS to desired format
+	switch os {
+	case "darwin":
+		os = "macos"
+	case "windows":
+		// Already "windows", no change needed
+	case "linux":
+		// Already "linux", no change needed
+	default:
+		os = "unknown"
+	}
+
+	// Normalize arch to desired format
+	switch arch {
+	case "amd64":
+		// Already "amd64", no change needed
+	case "arm64":
+		// Already "arm64", no change needed
+	default:
+		arch = "unknown"
+	}
+
+	return os, arch
 }

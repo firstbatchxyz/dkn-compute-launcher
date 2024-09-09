@@ -150,6 +150,37 @@ func main() {
 		envvars["RUST_LOG"] = "none,dkn_compute=info"
 	}
 
+	// get latest dkn_compute binary version
+	latestVersion, err := utils.GetComputeLatestTag()
+	if err != nil {
+		fmt.Println("Couldn't get the latest dkn-compute version")
+		utils.ExitWithDelay(1)
+	}
+	dkn_compute_binary := utils.ComputeBinaryFileName()
+
+	// check dkn-compute binary has already installed
+	if utils.FileExists(utils.ComputeBinaryFileName()) {
+		// compare current and latest versions
+		if latestVersion != envvars["DKN_COMPUTE_VERSION"] {
+			fmt.Printf("New dkn-compute version detected (%s), downloading it...\n", latestVersion)
+			if err := utils.DownloadLatestComputeBinary(working_dir, dkn_compute_binary); err != nil {
+				fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
+				utils.ExitWithDelay(1)
+			}
+			envvars["DKN_COMPUTE_VERSION"] = latestVersion
+		} else {
+			fmt.Printf("Current version is up to date (%s)\n", envvars["DKN_COMPUTE_VERSION"])
+		}
+	} else {
+		// couldn't find the dkn-compute binary, download it
+		fmt.Printf("Downloading the latest dkn-compute binary (%s)\n", latestVersion)
+		if err := utils.DownloadLatestComputeBinary(working_dir, dkn_compute_binary); err != nil {
+			fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
+			utils.ExitWithDelay(1)
+		}
+		envvars["DKN_COMPUTE_VERSION"] = latestVersion
+	}
+
 	// dump the final env
 	if err := godotenv.Write(envvars, filepath.Join(working_dir, ".env")); err != nil {
 		fmt.Printf("Failed to dump the .env file, continuing to running the node though. error message: %s\n", err)
@@ -160,22 +191,18 @@ func main() {
 	fmt.Printf("Models: %s\n", envvars["DKN_MODELS"])
 	fmt.Printf("Operating System: %s\n", runtime.GOOS)
 
-	dkn_compute_exe := ""
+	// get the binary execution command; "./dkn-compute" (linux/macos), ".\\dkn-compute.exe" (windows)
+	exec_command := ""
 	if runtime.GOOS == "windows" {
-		dkn_compute_exe = ".\\dkn-compute.exe"
+		exec_command = fmt.Sprintf(".\\%s", dkn_compute_binary)
 	} else {
-		dkn_compute_exe = "./dkn-compute"
-		// chmod compute node binary
-		_, err = utils.RunCommand(working_dir, "stdout", true, 0, nil, "chmod", "+x", dkn_compute_exe)
-		if err != nil {
-			fmt.Println("Coudln't give exec privileges to the dkn-compute binary")
-			utils.ExitWithDelay(1)
-		}
+		exec_command = fmt.Sprintf("./%s", dkn_compute_binary)
 	}
 
+	// Run dkn-compute
 	if *background {
 		fmt.Printf("\nStarting in BACKGROUND mode...\n\n")
-		dkn_pid, err := utils.RunCommand(working_dir, "file", false, 0, utils.MapToList(envvars), dkn_compute_exe)
+		dkn_pid, err := utils.RunCommand(working_dir, "file", false, 0, utils.MapToList(envvars), exec_command)
 		if err != nil {
 			fmt.Printf("ERROR during running exe, %s", err)
 			utils.ExitWithDelay(1)
@@ -193,8 +220,7 @@ func main() {
 	} else {
 		fmt.Printf("\nStarting in FOREGROUND mode...\n")
 
-		// Run dkn-compute exe
-		_, err := utils.RunCommand(working_dir, "stdout", true, 0, utils.MapToList(envvars), dkn_compute_exe)
+		_, err := utils.RunCommand(working_dir, "stdout", true, 0, utils.MapToList(envvars), exec_command)
 		if err != nil {
 			fmt.Printf("ERROR during running exe, %s", err)
 			utils.ExitWithDelay(1)
