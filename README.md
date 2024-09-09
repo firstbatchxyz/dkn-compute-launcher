@@ -11,13 +11,13 @@
 
 ## About
 
-This repository contains the CLI application for the [DKN Compute Node](https://github.com/firstbatchxyz/dkn-compute-node). It provides a simple and efficient way to set up and run the Dria Compute Node. The launcher handles environment setup, model selection, and Docker Compose execution, making it easy to start the node with minimal configuration.
+This repository contains the CLI application for the [DKN Compute Node](https://github.com/firstbatchxyz/dkn-compute-node). It provides a simple and efficient way to set up and run the Dria Compute Node. The launcher automatically handles environment setup, model selection, and binary management, making it easy to start the node with minimal configuration.
 
 ## Features
 
 - **Environment Setup:** Automatically loads and manages environment variables.
 - **Model Selection:** Supports both predefined models from OpenAI and Ollama. Users can choose models interactively or via command-line flags.
-- **Docker Integration:** Ensures Docker is up and running, checks for necessary files, and pulls the latest node image.
+- **Binary Management:** The launcher automatically pulls the latest binary from the main repository and checks for updates each time it runs.
 - **Flexible Logging:** Allows setting different logging levels for easier debugging and monitoring.
 - **Background/Foreground Modes:** Run the node in either background or foreground mode based on your preference.
 
