@@ -37,7 +37,7 @@ var (
 		"gpt-4o-mini",
 		
 		"o1-mini",
-		"o1-preview"
+		"o1-preview",
 	}
 
 	// Default admin public key, it will be used unless --dkn-admin-public-key is given
