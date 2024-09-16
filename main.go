@@ -14,6 +14,7 @@ import (
 )
 
 var (
+	// https://github.com/andthattoo/ollama-workflows/edit/main/src/program/models.rs#L13
 	OLLAMA_MODELS = []string{
 		"finalend/hermes-3-llama-3.1:8b-q8_0",
 
@@ -23,16 +24,20 @@ var (
 		"phi3.5:3.8b",
 		"phi3.5:3.8b-mini-instruct-fp16",
 
+		"gemma2:9b-instruct-q8_0",
+		"gemma2:9b-instruct-fp16",
+		
 		"llama3.1:latest",
 		"llama3.1:8b-instruct-q8_0",
-
-		"gemma2:9b-instruct-q8_0",
+		"llama3.1:8b-instruct-fp16",
 	}
 	OPENAI_MODELS = []string{
-		"gpt-3.5-turbo",
 		"gpt-4-turbo",
 		"gpt-4o",
 		"gpt-4o-mini",
+		
+		"o1-mini",
+		"o1-preview"
 	}
 
 	// Default admin public key, it will be used unless --dkn-admin-public-key is given
