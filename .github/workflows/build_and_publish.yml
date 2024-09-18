@@ -1,15 +1,8 @@
 name: Build and Publish Launch Releases
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'main.go'
-      - 'utils/**'
-      - 'go.mod'
-      - 'go.sum'
-      - '.github/workflows/build_and_publish.yml'
+  release:
+    types: [published]
 
 jobs:
   build:
@@ -65,11 +58,12 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all tags and history
 
       - name: Download Launch Artifacts
         uses: actions/download-artifact@v4
@@ -79,29 +73,26 @@ jobs:
 
       - name: Get the latest tag
         id: get_latest_tag
-        run: echo "latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_ENV
-
-      - name: Calculate new tag
-        id: calculate_tag
         run: |
-          latest_tag=${{ env.latest_tag }}
-          if [ -z "$latest_tag" ]; then
-            new_tag="v0.0.1"
-          else
-            IFS='.' read -ra VERSION_PARTS <<< "${latest_tag#v}"
-            major=${VERSION_PARTS[0]}
-            minor=${VERSION_PARTS[1]}
-            patch=${VERSION_PARTS[2]}
-            new_patch=$((patch + 1))
-            new_tag="v${major}.${minor}.${new_patch}"
-          fi
-          echo "NEW_TAG=$new_tag" >> $GITHUB_ENV
+          # latest release tag
+          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "untagged")
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+
+          # latest release name
+          LATEST_RELEASE=$(curl -s \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.name // "no-release-found"')
+          echo "LATEST_RELEASE=$LATEST_RELEASE" >> $GITHUB_ENV
+          
+          echo "Latest Tag: $LATEST_TAG"
+          echo "Latest Release: $LATEST_RELEASE"
 
       - name: Create release with artifacts
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ env.NEW_TAG }}
-          tag: ${{ env.NEW_TAG }}
+          name: ${{ env.LATEST_RELEASE }}
+          tag: ${{ env.LATEST_TAG }}
           artifacts: "artifacts/*"
           artifactContentType: application/zip
-          draft: true
+          allowUpdates: true
+          # draft: true
