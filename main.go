@@ -26,6 +26,9 @@ var (
 
 		"gemma2:9b-instruct-q8_0",
 		"gemma2:9b-instruct-fp16",
+
+		"qwen2:7b-instruct-q5_0",
+		"qwen2:7b-instruct-fp16",
 		
 		"llama3.1:latest",
 		"llama3.1:8b-instruct-q8_0",
