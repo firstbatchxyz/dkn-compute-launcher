@@ -27,18 +27,21 @@ var (
 		"gemma2:9b-instruct-q8_0",
 		"gemma2:9b-instruct-fp16",
 
-		"qwen2:7b-instruct-q5_0",
-		"qwen2:7b-instruct-fp16",
-		
+		"qwen2.5:7b-instruct-q5_0",
+		"qwen2.5:7b-instruct-fp16",
+		"qwen2.5:32b-instruct-fp16",
+
 		"llama3.1:latest",
 		"llama3.1:8b-instruct-q8_0",
 		"llama3.1:8b-instruct-fp16",
+		"llama3.1:70b-instruct-q4_0",
+		"llama3.1:70b-instruct-q8_0",
 	}
 	OPENAI_MODELS = []string{
 		"gpt-4-turbo",
 		"gpt-4o",
 		"gpt-4o-mini",
-		
+
 		"o1-mini",
 		"o1-preview",
 	}
