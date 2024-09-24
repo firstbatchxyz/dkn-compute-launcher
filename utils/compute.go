@@ -7,15 +7,20 @@ import (
 	"net/http"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // GetComputeLatestTag fetches the latest tag from the DKN Compute Node repository on GitHub.
 // This tag represents the latest version of the compute node.
 //
+// Parameters:
+//   - dev: A boolean parameter. If true, it returns the latest tag with the '-dev' suffix.
+//     If false, it returns the latest tag without the '-dev' suffix.
+//
 // Returns:
-//   - string: The latest tag (version) as a string.
-//   - error: An error if the request fails or the response cannot be parsed.
-func GetComputeLatestTag() (string, error) {
+//   - string: The latest tag (version) as a string, filtered by the '-dev' suffix based on the dev parameter.
+//   - error: An error if the request fails, the response cannot be parsed, or no valid tags are found.
+func GetComputeLatestTag(dev bool) (string, error) {
 	url := "https://api.github.com/repos/firstbatchxyz/dkn-compute-node/tags"
 
 	// get and parse the tags
@@ -40,12 +45,28 @@ func GetComputeLatestTag() (string, error) {
 	if len(tags) == 0 {
 		return "", fmt.Errorf("no tags found")
 	}
-	latestTag, ok := tags[0]["name"].(string)
-	if !ok {
-		return "", fmt.Errorf("failed to extract tag name")
+
+	// Iterate through the tags and return the first one based on the 'dev' parameter
+	for _, tag := range tags {
+		tagName, ok := tag["name"].(string)
+		if !ok {
+			return "", fmt.Errorf("failed to extract tag name")
+		}
+
+		if dev {
+			// Return the first tag with '-dev' suffix if dev is true
+			if strings.HasSuffix(tagName, "-dev") {
+				return tagName, nil
+			}
+		} else {
+			// Return the first tag without '-dev' suffix if dev is false
+			if !strings.HasSuffix(tagName, "-dev") {
+				return tagName, nil
+			}
+		}
 	}
 
-	return latestTag, nil
+	return "", fmt.Errorf("no valid tags found")
 }
 
 // DownloadLatestComputeBinary downloads the latest compute binary for the current operating system and architecture
@@ -57,14 +78,15 @@ func GetComputeLatestTag() (string, error) {
 //
 // Returns:
 //   - error: An error if the download or file preparation fails.
-func DownloadLatestComputeBinary(workingDir, file string) error {
+func DownloadLatestComputeBinary(version, workingDir, file string) error {
 	os, arch := GetOSAndArch()
 	extension := ""
 	if os == "windows" {
 		extension = ".exe"
 	}
 	asset_name := fmt.Sprintf("dkn-compute-binary-%s-%s%s", os, arch, extension)
-	url := fmt.Sprintf("https://github.com/firstbatchxyz/dkn-compute-node/releases/latest/download/%s", asset_name)
+	// releases/download/v0.2.4-dev
+	url := fmt.Sprintf("https://github.com/firstbatchxyz/dkn-compute-node/releases/download/%s/%s", version, asset_name)
 	destPath := filepath.Join(workingDir, file)
 	if err := DownloadFile(url, destPath); err != nil {
 		return err

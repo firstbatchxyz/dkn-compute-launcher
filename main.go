@@ -83,6 +83,7 @@ func main() {
 	trace := flag.Bool("trace", false, "Sets the logging level to trace (default: false)")
 	dkn_admin_pkey_flag := flag.String("dkn-admin-public-key", DKN_ADMIN_PUBLIC_KEY, "DKN Admin Node Public Key, usually dont need this since it's given by default")
 	pick_model := flag.Bool("pick-models", false, "Pick the models using cli, supprases the -m flags (default: false)")
+	use_compute_dev_version := flag.Bool("compute-dev-version", false, "For using the latest dev version of dkn-compute node (optional, only for development purposes)")
 	flag.Parse()
 
 	// Display help and exit if -h or --help is provided
@@ -162,7 +163,7 @@ func main() {
 	}
 
 	// get latest dkn_compute binary version
-	latestVersion, err := utils.GetComputeLatestTag()
+	latestVersion, err := utils.GetComputeLatestTag(*use_compute_dev_version)
 	if err != nil {
 		fmt.Println("Couldn't get the latest dkn-compute version")
 		utils.ExitWithDelay(1)
@@ -174,7 +175,7 @@ func main() {
 		// compare current and latest versions
 		if latestVersion != envvars["DKN_COMPUTE_VERSION"] {
 			fmt.Printf("New dkn-compute version detected (%s), downloading it...\n", latestVersion)
-			if err := utils.DownloadLatestComputeBinary(working_dir, dkn_compute_binary); err != nil {
+			if err := utils.DownloadLatestComputeBinary(latestVersion, working_dir, dkn_compute_binary); err != nil {
 				fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
 				utils.ExitWithDelay(1)
 			}
@@ -185,7 +186,7 @@ func main() {
 	} else {
 		// couldn't find the dkn-compute binary, download it
 		fmt.Printf("Downloading the latest dkn-compute binary (%s)\n", latestVersion)
-		if err := utils.DownloadLatestComputeBinary(working_dir, dkn_compute_binary); err != nil {
+		if err := utils.DownloadLatestComputeBinary(latestVersion, working_dir, dkn_compute_binary); err != nil {
 			fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
 			utils.ExitWithDelay(1)
 		}
