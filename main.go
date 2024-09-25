@@ -36,6 +36,8 @@ var (
 		"llama3.1:8b-instruct-fp16",
 		"llama3.1:70b-instruct-q4_0",
 		"llama3.1:70b-instruct-q8_0",
+		"llama3.2:1b",
+		"llama3.2:3b",
 	}
 	OPENAI_MODELS = []string{
 		"gpt-4-turbo",
