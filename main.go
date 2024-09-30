@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	// https://github.com/andthattoo/ollama-workflows/edit/main/src/program/models.rs#L13
+	// https://github.com/andthattoo/ollama-workflows/edit/main/src/program/models.rs#L14
 	OLLAMA_MODELS = []string{
 		"finalend/hermes-3-llama-3.1:8b-q8_0",
 
@@ -27,18 +27,24 @@ var (
 		"gemma2:9b-instruct-q8_0",
 		"gemma2:9b-instruct-fp16",
 
-		"qwen2.5:7b-instruct-q5_0",
-		"qwen2.5:7b-instruct-fp16",
-		"qwen2.5:32b-instruct-fp16",
-
-		"llama3.1:latest",
+                "llama3.1:latest",
 		"llama3.1:8b-instruct-q8_0",
 		"llama3.1:8b-instruct-fp16",
 		"llama3.1:70b-instruct-q4_0",
 		"llama3.1:70b-instruct-q8_0",
 		"llama3.2:1b",
 		"llama3.2:3b",
+
+		"qwen2.5:7b-instruct-q5_0",
+		"qwen2.5:7b-instruct-fp16",
+		"qwen2.5:32b-instruct-fp16",
+		"qwen2.5-coder:1.5b",
+		
+		"deepseek-coder:6.7b",
+		
+		"mixtral:8x7b",
 	}
+	// https://github.com/andthattoo/ollama-workflows/edit/main/src/program/models.rs#L76
 	OPENAI_MODELS = []string{
 		"gpt-4-turbo",
 		"gpt-4o",
