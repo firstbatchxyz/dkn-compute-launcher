@@ -162,12 +162,12 @@ func main() {
 
 	// log level
 	if *dev {
-		envvars["RUST_LOG"] = "none,dkn_compute=debug,ollama_workflows=info"
+		envvars["RUST_LOG"] = "none,dkn_compute=debug,dkn_p2p=debug,dkn_workflows=debug,ollama_workflows=info"
 	} else if *trace {
-		envvars["RUST_LOG"] = "none,dkn_compute=trace"
+		envvars["RUST_LOG"] = "none,dkn_compute=trace,dkn_p2p=trace,dkn_workflows=trace"
 	} else {
 		// default level info
-		envvars["RUST_LOG"] = "none,dkn_compute=info"
+		envvars["RUST_LOG"] = "none,dkn_compute=info,dkn_p2p=info,dkn_workflows=info"
 	}
 
 	// get latest dkn_compute binary version
