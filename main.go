@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -27,7 +26,7 @@ var (
 		"gemma2:9b-instruct-q8_0",
 		"gemma2:9b-instruct-fp16",
 
-                "llama3.1:latest",
+		"llama3.1:latest",
 		"llama3.1:8b-instruct-q8_0",
 		"llama3.1:8b-instruct-fp16",
 		"llama3.1:70b-instruct-q4_0",
@@ -39,9 +38,9 @@ var (
 		"qwen2.5:7b-instruct-fp16",
 		"qwen2.5:32b-instruct-fp16",
 		"qwen2.5-coder:1.5b",
-		
+
 		"deepseek-coder:6.7b",
-		
+
 		"mixtral:8x7b",
 	}
 	// https://github.com/andthattoo/ollama-workflows/edit/main/src/program/models.rs#L76
@@ -245,14 +244,6 @@ func main() {
 			fmt.Printf("ERROR during running exe, %s", err)
 			utils.ExitWithDelay(1)
 		}
-		fmt.Println("All good! Compute node is up and running.")
-		fmt.Println("\nUse Control-C to exit")
-
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, os.Interrupt)
-		<-sig
-
-		fmt.Println("\nShutting down...")
 
 		fmt.Println("\nbye")
 		os.Exit(0)
