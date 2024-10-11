@@ -170,7 +170,7 @@ func main() {
 	}
 
 	// get latest dkn_compute binary version
-	latestVersion, err := utils.GetComputeLatestTag(*use_compute_dev_version)
+	latestVersion, err := utils.GetComputeLatestTag(!(*use_compute_dev_version), *use_compute_dev_version, false)
 	if err != nil {
 		fmt.Println("Couldn't get the latest dkn-compute version")
 		utils.ExitWithDelay(1)
