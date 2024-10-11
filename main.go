@@ -245,7 +245,6 @@ func main() {
 			utils.ExitWithDelay(1)
 		}
 
-		fmt.Println("\nbye")
 		os.Exit(0)
 	}
 
