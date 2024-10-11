@@ -170,7 +170,7 @@ func main() {
 	}
 
 	// get latest dkn_compute binary version
-	latestVersion, err := utils.GetComputeLatestTag(!(*use_compute_dev_version), *use_compute_dev_version, false)
+	computeVersion, err := utils.GetComputeVersionTag(!(*use_compute_dev_version), *use_compute_dev_version, false)
 	if err != nil {
 		fmt.Println("Couldn't get the latest dkn-compute version")
 		utils.ExitWithDelay(1)
@@ -180,24 +180,24 @@ func main() {
 	// check dkn-compute binary has already installed
 	if utils.FileExists(utils.ComputeBinaryFileName()) {
 		// compare current and latest versions
-		if latestVersion != envvars["DKN_COMPUTE_VERSION"] {
-			fmt.Printf("New dkn-compute version detected (%s), downloading it...\n", latestVersion)
-			if err := utils.DownloadLatestComputeBinary(latestVersion, working_dir, dkn_compute_binary); err != nil {
+		if computeVersion != envvars["DKN_COMPUTE_VERSION"] {
+			fmt.Printf("New dkn-compute version detected (%s), downloading it...\n", computeVersion)
+			if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary); err != nil {
 				fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
 				utils.ExitWithDelay(1)
 			}
-			envvars["DKN_COMPUTE_VERSION"] = latestVersion
+			envvars["DKN_COMPUTE_VERSION"] = computeVersion
 		} else {
 			fmt.Printf("Current version is up to date (%s)\n", envvars["DKN_COMPUTE_VERSION"])
 		}
 	} else {
 		// couldn't find the dkn-compute binary, download it
-		fmt.Printf("Downloading the latest dkn-compute binary (%s)\n", latestVersion)
-		if err := utils.DownloadLatestComputeBinary(latestVersion, working_dir, dkn_compute_binary); err != nil {
+		fmt.Printf("Downloading the latest dkn-compute binary (%s)\n", computeVersion)
+		if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary); err != nil {
 			fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
 			utils.ExitWithDelay(1)
 		}
-		envvars["DKN_COMPUTE_VERSION"] = latestVersion
+		envvars["DKN_COMPUTE_VERSION"] = computeVersion
 	}
 
 	// dump the final env

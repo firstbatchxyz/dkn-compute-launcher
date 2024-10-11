@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// GetComputeLatestTag fetches a specific tag from the DKN Compute Node repository on GitHub based on the provided parameters.
+// GetComputeVersionTag fetches a specific tag from the DKN Compute Node repository on GitHub based on the provided parameters.
 // It can return the latest stable release, the latest development version, or the previous stable release.
 //
 // Parameters:
@@ -27,7 +27,7 @@ import (
 //   - If `dev` is true, it searches for the latest tag with the '-dev' suffix from the sorted tags.
 //   - If `previous_latest` is true, it returns the previous stable release tag (ignoring '-dev' tags).
 //   - The function prioritizes parameters in the following order: latest, dev, previous_latest.
-func GetComputeLatestTag(latest bool, dev bool, previous_latest bool) (string, error) {
+func GetComputeVersionTag(latest bool, dev bool, previous_latest bool) (string, error) {
 	if latest {
 		url := "https://api.github.com/repos/firstbatchxyz/dkn-compute-node/releases/latest"
 
@@ -172,7 +172,7 @@ func DownloadLatestComputeBinary(version, workingDir, file string) error {
 			// if the release exists but the downloads responds with 404, it means the build didn't finished yet
 			// use the previous latest version
 			fmt.Println("Warning: The latest compute binaries are currently being built. Downloading the previous version. You can restart the launcher in ~20 minutes to run the latest version.")
-			version, err = GetComputeLatestTag(false, false, true)
+			version, err = GetComputeVersionTag(false, false, true)
 			if err != nil {
 				return err
 			}
