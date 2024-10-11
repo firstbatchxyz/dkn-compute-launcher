@@ -107,37 +107,43 @@ func FileExists(parts ...string) bool {
 }
 
 // DownloadFile downloads a file from the specified URL and saves it to the specified path.
+// It returns the HTTP response status code and an error if any issue occurs during the download or file writing process.
 //
 // Parameters:
 //   - url: The URL from which to download the file.
 //   - path: The local file path where the downloaded file will be saved.
 //
 // Returns:
-//   - error: Returns an error if the download or file writing fails, otherwise nil.
-func DownloadFile(url, path string) error {
+//   - int: The HTTP response status code if the download is successful or the specific response code if a failure occurs.
+//     If the error is unrelated to the HTTP response (e.g., file creation error), it returns -1.
+//   - error: Returns an error if the download, HTTP response, or file writing fails; otherwise, returns nil.
+func DownloadFile(url, path string) (int, error) {
 	resp, err := http.Get(url)
+	// use -1 for errors unrelated to http response
+	response_status_code := -1
 	if err != nil {
-		return fmt.Errorf("failed to download file: %v", err)
+		return response_status_code, fmt.Errorf("failed to download file: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("bad status: %s", resp.Status)
+		response_status_code = resp.StatusCode
+		return response_status_code, fmt.Errorf("bad status: %s", resp.Status)
 	}
 
 	// write it as .env
 	out, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("failed to create file: %v", err)
+		return -1, fmt.Errorf("failed to create file: %v", err)
 	}
 	defer out.Close()
 
 	// write the body to file
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to write to file: %v", err)
+		return -1, fmt.Errorf("failed to write to file: %v", err)
 	}
-	return nil
+	return 200, nil
 }
 
 // FetchEnvFileFromDknRepo downloads the .env example file from the DKN GitHub repository
@@ -153,7 +159,7 @@ func FetchEnvFileFromDknRepo(working_dir string) (map[string]string, error) {
 	// fetch from github
 	url := "https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/.env.example"
 	path := filepath.Join(working_dir, ".env")
-	if err := DownloadFile(url, path); err != nil {
+	if _, err := DownloadFile(url, path); err != nil {
 		return nil, err
 	}
 

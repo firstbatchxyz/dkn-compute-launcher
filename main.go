@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -27,7 +26,7 @@ var (
 		"gemma2:9b-instruct-q8_0",
 		"gemma2:9b-instruct-fp16",
 
-                "llama3.1:latest",
+		"llama3.1:latest",
 		"llama3.1:8b-instruct-q8_0",
 		"llama3.1:8b-instruct-fp16",
 		"llama3.1:70b-instruct-q4_0",
@@ -39,9 +38,9 @@ var (
 		"qwen2.5:7b-instruct-fp16",
 		"qwen2.5:32b-instruct-fp16",
 		"qwen2.5-coder:1.5b",
-		
+
 		"deepseek-coder:6.7b",
-		
+
 		"mixtral:8x7b",
 	}
 	// https://github.com/andthattoo/ollama-workflows/edit/main/src/program/models.rs#L76
@@ -171,7 +170,7 @@ func main() {
 	}
 
 	// get latest dkn_compute binary version
-	latestVersion, err := utils.GetComputeLatestTag(*use_compute_dev_version)
+	computeVersion, err := utils.GetComputeVersionTag(!(*use_compute_dev_version), *use_compute_dev_version, false)
 	if err != nil {
 		fmt.Println("Couldn't get the latest dkn-compute version")
 		utils.ExitWithDelay(1)
@@ -181,24 +180,24 @@ func main() {
 	// check dkn-compute binary has already installed
 	if utils.FileExists(utils.ComputeBinaryFileName()) {
 		// compare current and latest versions
-		if latestVersion != envvars["DKN_COMPUTE_VERSION"] {
-			fmt.Printf("New dkn-compute version detected (%s), downloading it...\n", latestVersion)
-			if err := utils.DownloadLatestComputeBinary(latestVersion, working_dir, dkn_compute_binary); err != nil {
+		if computeVersion != envvars["DKN_COMPUTE_VERSION"] {
+			fmt.Printf("New dkn-compute version detected (%s), downloading it...\n", computeVersion)
+			if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary); err != nil {
 				fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
 				utils.ExitWithDelay(1)
 			}
-			envvars["DKN_COMPUTE_VERSION"] = latestVersion
+			envvars["DKN_COMPUTE_VERSION"] = computeVersion
 		} else {
 			fmt.Printf("Current version is up to date (%s)\n", envvars["DKN_COMPUTE_VERSION"])
 		}
 	} else {
 		// couldn't find the dkn-compute binary, download it
-		fmt.Printf("Downloading the latest dkn-compute binary (%s)\n", latestVersion)
-		if err := utils.DownloadLatestComputeBinary(latestVersion, working_dir, dkn_compute_binary); err != nil {
+		fmt.Printf("Downloading the latest dkn-compute binary (%s)\n", computeVersion)
+		if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary); err != nil {
 			fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
 			utils.ExitWithDelay(1)
 		}
-		envvars["DKN_COMPUTE_VERSION"] = latestVersion
+		envvars["DKN_COMPUTE_VERSION"] = computeVersion
 	}
 
 	// dump the final env
@@ -245,16 +244,7 @@ func main() {
 			fmt.Printf("ERROR during running exe, %s", err)
 			utils.ExitWithDelay(1)
 		}
-		fmt.Println("All good! Compute node is up and running.")
-		fmt.Println("\nUse Control-C to exit")
 
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, os.Interrupt)
-		<-sig
-
-		fmt.Println("\nShutting down...")
-
-		fmt.Println("\nbye")
 		os.Exit(0)
 	}
 
