@@ -99,14 +99,19 @@ func RunCommand(working_dir string, outputDest string, wait bool, timeout time.D
 	// If wait is false, handle output asynchronously
 	if !wait {
 		go func() {
-			// Handle logging asynchronously, so it continues even after the main program ends
+			// Ensure to check if logFile is not nil
 			if logFile != nil {
-				stdoutPipe, _ := cmd.StdoutPipe()
-				stderrPipe, _ := cmd.StderrPipe()
-
 				// Start goroutines to copy the command's stdout and stderr to the log file
-				go io.Copy(logFile, stdoutPipe)
-				go io.Copy(logFile, stderrPipe)
+				stdoutPipe, stdoutErr := cmd.StdoutPipe()
+				stderrPipe, stderrErr := cmd.StderrPipe()
+
+				// Check for pipe errors before starting goroutines
+				if stdoutErr == nil && stdoutPipe != nil {
+					go io.Copy(logFile, stdoutPipe)
+				}
+				if stderrErr == nil && stderrPipe != nil {
+					go io.Copy(logFile, stderrPipe)
+				}
 			}
 			// Ensure the process runs to completion
 			cmd.Wait()
