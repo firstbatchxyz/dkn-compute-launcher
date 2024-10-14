@@ -38,6 +38,9 @@ var (
 		"qwen2.5:7b-instruct-fp16",
 		"qwen2.5:32b-instruct-fp16",
 		"qwen2.5-coder:1.5b",
+		"qwen2.5-coder:7b-instruct",
+		"qwen2.5-coder:7b-instruct-q8_0",
+		"qwen2.5-coder:7b-instruct-fp16",
 
 		"deepseek-coder:6.7b",
 
