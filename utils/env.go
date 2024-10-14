@@ -131,7 +131,7 @@ func DownloadFile(url, path string) (int, error) {
 		return response_status_code, fmt.Errorf("bad status: %s", resp.Status)
 	}
 
-	// write it as .env
+	// create the file
 	out, err := os.Create(path)
 	if err != nil {
 		return -1, fmt.Errorf("failed to create file: %v", err)
@@ -213,4 +213,28 @@ func RemoveEmptyEnvVars(envvars *map[string]string) {
 			delete(*envvars, key)
 		}
 	}
+}
+
+// Function to dump envvars to a given path without double quotes
+func DumpEnvVarsToFile(envvars *map[string]string, filepath string) error {
+	if envvars == nil {
+		return fmt.Errorf("envvars is nil")
+	}
+
+	// Create or truncate the file at the given path
+	file, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write each envvar to the file
+	for key, value := range *envvars {
+		_, err := fmt.Fprintf(file, "%s=%s\n", key, value)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
