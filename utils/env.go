@@ -201,3 +201,16 @@ func GetOSAndArch() (string, string) {
 
 	return os, arch
 }
+
+// Function to remove empty values from envvars
+func RemoveEmptyEnvVars(envvars *map[string]string) {
+	if envvars == nil {
+		return
+	}
+
+	for key, value := range *envvars {
+		if value == "" {
+			delete(*envvars, key)
+		}
+	}
+}

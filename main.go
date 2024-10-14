@@ -204,6 +204,7 @@ func main() {
 	}
 
 	// dump the final env
+	utils.RemoveEmptyEnvVars(&envvars)
 	if err := godotenv.Write(envvars, filepath.Join(working_dir, ".env")); err != nil {
 		fmt.Printf("Failed to dump the .env file, continuing to running the node though. error message: %s\n", err)
 	}
