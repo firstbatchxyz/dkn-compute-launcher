@@ -130,15 +130,16 @@ func RunCommand(working_dir string, outputDest string, wait bool, timeout time.D
 	return pid, nil
 }
 
-// PickModels prompts the user to pick models from the available OpenAI and Ollama models.
+// PickModels prompts the user to pick models from the available OpenAI, Google and Ollama models.
 //
 // Parameters:
 //   - openai_models: A slice of available OpenAI model names.
+//   - gemini_models: A slice of available Gemini model names.
 //   - ollama_models: A slice of available Ollama model names.
 //
 // Returns:
 //   - string: A comma-separated string of selected model names.
-func PickModels(openai_models, ollama_models []string) string {
+func PickModels(openai_models, gemini_models, ollama_models []string) string {
 
 	// column widths
 	idWidth := 4
@@ -160,8 +161,13 @@ func PickModels(openai_models, ollama_models []string) string {
 		provider := "OpenAI"
 		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
 	}
-	for id, model := range ollama_models {
+	for id, model := range gemini_models {
 		modelId := len(openai_models) + id + 1
+		provider := "Google"
+		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
+	}
+	for id, model := range ollama_models {
+		modelId := len(openai_models) + len(gemini_models) + id + 1
 		provider := "Ollama"
 		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
 	}
@@ -195,12 +201,19 @@ func PickModels(openai_models, ollama_models []string) string {
 				picked_models_map[id] = true
 				picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, openai_models[id-1])
 			}
-		} else if id > len(openai_models) && id <= len(ollama_models)+len(openai_models) {
+		} else if id > len(openai_models) && id <= len(gemini_models)+len(openai_models) {
+			// gemini model picked
+			if !picked_models_map[id] {
+				// if not already picked, add it to bin
+				picked_models_map[id] = true
+				picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, gemini_models[id-len(openai_models)-1])
+			}
+		} else if id > len(openai_models)+len(gemini_models) && id <= len(ollama_models)+len(gemini_models)+len(openai_models) {
 			// ollama model picked
 			if !picked_models_map[id] {
 				// if not already picked, add it to bin
 				picked_models_map[id] = true
-				picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, ollama_models[id-len(openai_models)-1])
+				picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, ollama_models[id-len(gemini_models)-len(openai_models)-1])
 			}
 		} else {
 			// out of index, invalid
@@ -209,9 +222,8 @@ func PickModels(openai_models, ollama_models []string) string {
 		}
 	}
 	if len(invalid_selections) != 0 {
-		fmt.Printf("Skipping the invalid selections: %s \n", FormatMapKeys(invalid_selections))
+		fmt.Printf("Skipping the invalid selections: %s \n\n", FormatMapKeys(invalid_selections))
 	}
-	fmt.Printf("\n")
 	return picked_models_str
 }
 
