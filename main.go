@@ -54,6 +54,18 @@ var (
 		"o1-preview",
 	}
 
+	GEMINI_MODELS = []string{
+		"gemini-1.0-pro",
+
+		"gemini-1.5-pro",
+		"gemini-1.5-pro-exp-0827",
+		"gemini-1.5-flash",
+
+		"gemma-2-2b-it",
+		"gemma-2-9b-it",
+		"gemma-2-27b-it",
+	}
+
 	// Default admin public key, it will be used unless --dkn-admin-public-key is given
 	DKN_ADMIN_PUBLIC_KEY = "0208ef5e65a9c656a6f92fb2c770d5d5e2ecffe02a6aade19207f75110be6ae658"
 )
@@ -123,7 +135,7 @@ func main() {
 
 	// if DKN_MODELS are still empty, pick model interactively
 	if envvars["DKN_MODELS"] == "" || *pick_model {
-		pickedModels := utils.PickModels(OPENAI_MODELS, OLLAMA_MODELS)
+		pickedModels := utils.PickModels(OPENAI_MODELS, GEMINI_MODELS, OLLAMA_MODELS)
 		if pickedModels == "" {
 			fmt.Println("No valid model picked")
 			utils.ExitWithDelay(1)
@@ -139,6 +151,16 @@ func main() {
 			utils.ExitWithDelay(1)
 		}
 		envvars["OPENAI_API_KEY"] = apikey
+	}
+
+	// check gemini api key
+	if utils.IsGeminiRequired(envvars["DKN_MODELS"], &GEMINI_MODELS) && envvars["GEMINI_API_KEY"] == "" {
+		apikey := utils.GetUserInput("Enter your Gemini API Key", true)
+		if apikey == "" {
+			fmt.Println("Invalid input, please place your GEMINI_API_KEY to .env file")
+			utils.ExitWithDelay(1)
+		}
+		envvars["GEMINI_API_KEY"] = apikey
 	}
 
 	// check ollama environment
