@@ -163,7 +163,7 @@ func PickModels(openai_models, gemini_models, ollama_models []string) string {
 	}
 	for id, model := range gemini_models {
 		modelId := len(openai_models) + id + 1
-		provider := "Google"
+		provider := "Gemini"
 		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
 	}
 	for id, model := range ollama_models {
