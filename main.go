@@ -122,7 +122,7 @@ func main() {
 	trace := flag.Bool("trace", false, "Sets the logging level to trace (default: false)")
 	dkn_admin_pkey_flag := flag.String("dkn-admin-public-key", DKN_ADMIN_PUBLIC_KEY, "DKN Admin Node Public Key, usually dont need this since it's given by default")
 	pick_model := flag.Bool("pick-models", false, "Pick the models using cli, supprases the -m flags (default: false)")
-	use_compute_dev_version := flag.Bool("compute-dev-version", false, "For using the latest dev version of dkn-compute node (optional, only for development purposes)")
+	// use_compute_dev_version := flag.Bool("compute-dev-version", false, "For using the latest dev version of dkn-compute node (optional, only for development purposes)")
 	flag.Parse()
 
 	// Display help and exit if -h or --help is provided
@@ -212,35 +212,35 @@ func main() {
 	}
 
 	// get latest dkn_compute binary version
-	computeVersion, err := utils.GetComputeVersionTag(!(*use_compute_dev_version), *use_compute_dev_version, false)
-	if err != nil {
-		fmt.Println("Couldn't get the latest dkn-compute version")
-		utils.ExitWithDelay(1)
-	}
+	// computeVersion, err := utils.GetComputeVersionTag(!(*use_compute_dev_version), *use_compute_dev_version, false)
+	// if err != nil {
+	// 	fmt.Println("Couldn't get the latest dkn-compute version")
+	// 	utils.ExitWithDelay(1)
+	// }
 	dkn_compute_binary := utils.ComputeBinaryFileName()
 
 	// check dkn-compute binary has already installed
-	if utils.FileExists(utils.ComputeBinaryFileName()) {
-		// compare current and latest versions
-		if computeVersion != envvars["DKN_COMPUTE_VERSION"] {
-			fmt.Printf("New dkn-compute version detected (%s), downloading it...\n", computeVersion)
-			if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary, true); err != nil {
-				fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
-				utils.ExitWithDelay(1)
-			}
-			envvars["DKN_COMPUTE_VERSION"] = computeVersion
-		} else {
-			fmt.Printf("Current version is up to date (%s)\n", envvars["DKN_COMPUTE_VERSION"])
-		}
-	} else {
-		// couldn't find the dkn-compute binary, download it
-		fmt.Printf("Downloading the latest dkn-compute binary (%s)\n", computeVersion)
-		if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary, true); err != nil {
-			fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
-			utils.ExitWithDelay(1)
-		}
-		envvars["DKN_COMPUTE_VERSION"] = computeVersion
-	}
+	// if utils.FileExists(utils.ComputeBinaryFileName()) {
+	// 	// compare current and latest versions
+	// 	if computeVersion != envvars["DKN_COMPUTE_VERSION"] {
+	// 		fmt.Printf("New dkn-compute version detected (%s), downloading it...\n", computeVersion)
+	// 		if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary, true); err != nil {
+	// 			fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
+	// 			utils.ExitWithDelay(1)
+	// 		}
+	// 		envvars["DKN_COMPUTE_VERSION"] = computeVersion
+	// 	} else {
+	// 		fmt.Printf("Current version is up to date (%s)\n", envvars["DKN_COMPUTE_VERSION"])
+	// 	}
+	// } else {
+	// 	// couldn't find the dkn-compute binary, download it
+	// 	fmt.Printf("Downloading the latest dkn-compute binary (%s)\n", computeVersion)
+	// 	if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary, true); err != nil {
+	// 		fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
+	// 		utils.ExitWithDelay(1)
+	// 	}
+	// 	envvars["DKN_COMPUTE_VERSION"] = computeVersion
+	// }
 
 	// dump the final env
 	utils.RemoveEmptyEnvVars(&envvars)
@@ -324,10 +324,12 @@ func main() {
 
 			// new version check loop
 			for {
-				time.Sleep(60 * time.Minute)
+				time.Sleep(30 * time.Second)
 				logger.Printf("Checking the new version...")
 				// Check if a new version is available
-				newVersionAvailable, newVersion := utils.IsNewVersionAvaliable(envvars["DKN_COMPUTE_VERSION"])
+				// newVersionAvailable, newVersion := utils.IsNewVersionAvaliable(envvars["DKN_COMPUTE_VERSION"])
+				newVersionAvailable := true
+				newVersion := "v0.2.18"
 				if newVersionAvailable {
 					logger.Printf("A new compute-node version detected, downloading the new version...")
 					newBinaryTempName := fmt.Sprintf("temp-%s", dkn_compute_binary)

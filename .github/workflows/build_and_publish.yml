@@ -1,19 +1,11 @@
 name: Build and Publish Launch Releases
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - test
 
 jobs:
-
-  check_release:
-    if: "! contains(github.event.release.tag_name, '-dev')"  # skip if the tag ends with -dev
-    runs-on: ubuntu-latest
-    steps:
-      - name: Echo tag
-        run: |
-          echo "tag name: ${{ github.event.release.tag_name }}"
-          echo "release name: ${{ github.event.release.name }}"
 
   build:
     runs-on: ${{ matrix.runner }}
@@ -42,7 +34,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          ${{ matrix.env }} go build -ldflags="-X main.version=${{ github.event.release.tag_name }}" -tags="${{ matrix.tags }}" -o dkn-compute-launcher${{ matrix.extension }} .
+          ${{ matrix.env }} go build -ldflags="-X main.version=v0.1.14" -tags="${{ matrix.tags }}" -o dkn-compute-launcher${{ matrix.extension }} .
 
       - name: Prepare Launch Release Files
         env:
@@ -84,9 +76,9 @@ jobs:
       - name: Create release with artifacts
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ github.event.release.name }}
-          tag: ${{ github.event.release.tag_name }}
+          name: test
+          tag: v0.1.14
           artifacts: "artifacts/*"
           artifactContentType: application/zip
           allowUpdates: true
-          # draft: true
+          draft: true
