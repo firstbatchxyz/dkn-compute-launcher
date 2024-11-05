@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -123,7 +124,7 @@ func RunCommand(working_dir string, outputDest string, wait bool, timeout time.D
 			return pid, ctx.Err()
 		}
 		if err != nil {
-			return pid, fmt.Errorf("command finished with error: %w", err)
+			return pid, fmt.Errorf("command finished with error; %w", err)
 		}
 	}
 
@@ -302,5 +303,62 @@ func (models *ModelList) String() string {
 //   - error: Returns nil as there are no constraints to enforce here.
 func (models *ModelList) Set(value string) error {
 	*models = append(*models, value)
+	return nil
+}
+
+// isProcessRunning checks if a process with the given PID is running.
+func IsProcessRunning(pid int) bool {
+	// Try to find the process
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		// If there's an error finding the process, it's not running
+		return false
+	}
+
+	// Try to send signal 0 to the process (this does not kill it)
+	err = process.Signal(syscall.Signal(0))
+	return err == nil
+}
+
+// stopProcess stops a process by its PID.
+func StopProcess(pid int) error {
+	// Find the process by PID
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return fmt.Errorf("could not find process: %w", err)
+	}
+
+	// Send the SIGTERM signal to the process to terminate it gracefully
+	if err := process.Signal(syscall.SIGTERM); err != nil {
+		return fmt.Errorf("could not terminate process: %w", err)
+	}
+
+	return fmt.Errorf("")
+}
+
+// renameFile renames a file in the given working directory.
+func RenameFile(workingDir, oldName, newName string) error {
+	// Construct full paths for the old and new file names
+	oldPath := filepath.Join(workingDir, oldName)
+	newPath := filepath.Join(workingDir, newName)
+
+	// Rename the file
+	if err := os.Rename(oldPath, newPath); err != nil {
+		return fmt.Errorf("could not rename file: %w", err)
+	}
+
+	return nil
+}
+
+// deleteFile deletes a file in the given working directory.
+func DeleteFile(workingDir, fileName string) error {
+	// Construct the full path to the file
+	filePath := filepath.Join(workingDir, fileName)
+
+	// Delete the file
+	if err := os.Remove(filePath); err != nil {
+		return fmt.Errorf("could not delete file: %w", err)
+	}
+
 	return nil
 }
