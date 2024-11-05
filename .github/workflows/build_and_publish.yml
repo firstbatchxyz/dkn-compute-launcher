@@ -5,6 +5,16 @@ on:
     types: [published]
 
 jobs:
+
+  check_release:
+    if: "! contains(github.event.release.tag_name, '-dev')"  # skip if the tag ends with -dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo tag
+        run: |
+          echo "tag name: ${{ github.event.release.tag_name }}"
+          echo "release name: ${{ github.event.release.name }}"
+
   build:
     runs-on: ${{ matrix.runner }}
 
@@ -32,7 +42,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          ${{ matrix.env }} go build -tags="${{ matrix.tags }}" -o dkn-compute-launcher${{ matrix.extension }} .
+          ${{ matrix.env }} go build -ldflags="-X main.version={{ github.event.release.tag_name }}" -tags="${{ matrix.tags }}" -o dkn-compute-launcher${{ matrix.extension }} .
 
       - name: Prepare Launch Release Files
         env:
@@ -71,27 +81,11 @@ jobs:
           merge-multiple: true
           path: ./artifacts
 
-      - name: Get the latest tag
-        id: get_latest_tag
-        run: |
-          # latest release tag
-          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "untagged")
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
-
-          # latest release name
-          LATEST_RELEASE=$(curl -s \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.name // "no-release-found"')
-          echo "LATEST_RELEASE=$LATEST_RELEASE" >> $GITHUB_ENV
-          
-          echo "Latest Tag: $LATEST_TAG"
-          echo "Latest Release: $LATEST_RELEASE"
-
       - name: Create release with artifacts
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ env.LATEST_RELEASE }}
-          tag: ${{ env.LATEST_TAG }}
+          name: ${{ github.event.release.name }}
+          tag: ${{ github.event.release.tag_name }}
           artifacts: "artifacts/*"
           artifactContentType: application/zip
           allowUpdates: true
