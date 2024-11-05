@@ -4,10 +4,12 @@ import (
 	"dkn-compute-launcher/utils"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 var (
@@ -74,6 +76,9 @@ var (
 	DKN_ADMIN_PUBLIC_KEY = "0208ef5e65a9c656a6f92fb2c770d5d5e2ecffe02a6aade19207f75110be6ae658"
 )
 
+// version will be coming on the build phase via -ldflags. this assignment is for dev purposes
+var version = "dev"
+
 // main is the entry point of the DKN Compute Node Launcher.
 // It sets up the environment, checks required conditions, and launches the compute node using dkn-compute executable.
 //
@@ -94,6 +99,15 @@ var (
 //  4. Starts the compute node, either in foreground or background mode.
 //  5. Handles graceful shutdown in foreground mode by capturing interrupt signals.
 func main() {
+	logger := log.New(os.Stdout, "[DKN-COMPUTE-LAUNCHER] ", log.Ldate|log.Ltime)
+	launcherVersion, err := utils.GetLauncherLatestVersion()
+	if err != nil {
+		fmt.Printf("Error during checking the launcher latest version; %s", err)
+	}
+	if launcherVersion != version {
+		fmt.Printf("Dria Compute Launcher has a new version! To be able to use latest models please update it from: https://dria.co/join\n\n")
+	}
+
 	fmt.Println("************ DKN - Compute Node ************")
 
 	help := flag.Bool("h", false, "Displays this help message")
@@ -209,7 +223,7 @@ func main() {
 		// compare current and latest versions
 		if computeVersion != envvars["DKN_COMPUTE_VERSION"] {
 			fmt.Printf("New dkn-compute version detected (%s), downloading it...\n", computeVersion)
-			if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary); err != nil {
+			if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary, true); err != nil {
 				fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
 				utils.ExitWithDelay(1)
 			}
@@ -220,7 +234,7 @@ func main() {
 	} else {
 		// couldn't find the dkn-compute binary, download it
 		fmt.Printf("Downloading the latest dkn-compute binary (%s)\n", computeVersion)
-		if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary); err != nil {
+		if err := utils.DownloadLatestComputeBinary(computeVersion, working_dir, dkn_compute_binary, true); err != nil {
 			fmt.Printf("Error during downloading the latest dkn-compute binary %s\n", err)
 			utils.ExitWithDelay(1)
 		}
@@ -267,13 +281,74 @@ func main() {
 	} else {
 		fmt.Printf("\nStarting in FOREGROUND mode...\n")
 
-		_, err := utils.RunCommand(working_dir, "stdout", true, 0, utils.MapToList(envvars), exec_command)
-		if err != nil {
-			fmt.Printf("ERROR during running exe, %s", err)
-			utils.ExitWithDelay(1)
+		// FOREGROUND MODE PROCESS:
+		// 1. Starts the compute node binary.
+		// 2. Periodically checks for a new version:
+		//    a. If a new version is detected, downloads it with a temporary name, stops the running process, renames the new file, and restarts.
+		//    b. If no new version is found, continues running the current version.
+		// 3. If the compute node ends or crashes, exits the loop and terminates.
+		for {
+			pid, err := utils.RunCommand(working_dir, "stdout", false, 0, utils.MapToList(envvars), exec_command)
+			if err != nil {
+				fmt.Printf("ERROR during running exe, %s\n", err)
+				utils.ExitWithDelay(1)
+			}
+			logger.Printf("Compute node started with pid: %d", pid)
+
+			// new version check loop
+			newVersionReady := false
+			for utils.IsProcessRunning(pid) {
+				time.Sleep(60 * time.Minute)
+				logger.Printf("Checking the new version...")
+				// Check if a new version is available
+				newVersionAvailable, newVersion := utils.IsNewVersionAvaliable(envvars["DKN_COMPUTE_VERSION"]) // Implement this function
+				if newVersionAvailable {
+					logger.Printf("A new compute-node version detected, downloading the new version...")
+					newBinaryTempName := fmt.Sprintf("temp-%s", dkn_compute_binary)
+					if err := utils.DownloadLatestComputeBinary(newVersion, working_dir, newBinaryTempName, false); err != nil {
+						logger.Printf("Error during downloading the latest dkn-compute binary %s\nWill continue to run current one and check again in an hour", err)
+					} else {
+						// successfully downloaded the new binary, now terminating the running one
+						logger.Printf("Succesfully downloaded the new version, now terminating the running node...")
+						if err := utils.StopProcess(pid); err != nil {
+							logger.Printf("Error stopping the already running node; %s\n", err)
+							utils.ExitWithDelay(1)
+						}
+
+						// delete the old binary
+						logger.Printf("Node successfully terminated by the launcher, changing the new version binary with the old one...")
+						if err := utils.DeleteFile(working_dir, dkn_compute_binary); err != nil {
+							logger.Printf("Error during deleting the old binary file; %s\n", err)
+							utils.ExitWithDelay(1)
+						}
+
+						// rename the new downloaded file
+						if err := utils.RenameFile(working_dir, newBinaryTempName, dkn_compute_binary); err != nil {
+							logger.Printf("Error during renaming the new version binary; %s\n", err)
+							utils.ExitWithDelay(1)
+						}
+						// new binaries are ready, now break this loop to restart with the new binaries
+						envvars["DKN_COMPUTE_VERSION"] = newVersion
+						newVersionReady = true
+						break
+					}
+				} else {
+					// no new version detected, will check it again after a bit
+					logger.Printf("No new compute-node version detected, will check again in an hour.")
+				}
+			}
+
+			// two conditions breaks the previous loop, either new version detected or node is crashed
+			if newVersionReady {
+				// restart the node
+				logger.Printf("All good, now restarting the node with new version...")
+				continue
+			} else {
+				// this means the node is crashed or finished, break to exit
+				break
+			}
 		}
 
-		os.Exit(0)
+		fmt.Println("bye")
 	}
-
 }

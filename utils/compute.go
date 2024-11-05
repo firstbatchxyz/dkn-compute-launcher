@@ -156,19 +156,18 @@ func GetSortedTags() ([]map[string]interface{}, error) {
 //   - If the specified version cannot be downloaded (e.g., due to a 404 error), the function attempts to download the previous stable version.
 //   - If the previous version download also fails, an error is returned.
 //   - After downloading, the function applies necessary permissions to the binary by calling `PrepareComputeBinary`.
-func DownloadLatestComputeBinary(version, workingDir, file string) error {
+func DownloadLatestComputeBinary(version, workingDir, file string, downloadPreviousIfNotFound bool) error {
 	os, arch := GetOSAndArch()
 	extension := ""
 	if os == "windows" {
 		extension = ".exe"
 	}
 	asset_name := fmt.Sprintf("dkn-compute-binary-%s-%s%s", os, arch, extension)
-	// releases/download/v0.2.4-dev
 	url := fmt.Sprintf("https://github.com/firstbatchxyz/dkn-compute-node/releases/download/%s/%s", version, asset_name)
 	destPath := filepath.Join(workingDir, file)
 	status_code, err := DownloadFile(url, destPath)
 	if err != nil {
-		if status_code == 404 {
+		if status_code == 404 && downloadPreviousIfNotFound {
 			// if the release exists but the downloads responds with 404, it means the build didn't finished yet
 			// use the previous latest version
 			fmt.Println("Warning: The latest compute binaries are currently being built. Downloading the previous version. You can restart the launcher in ~20 minutes to run the latest version.")
@@ -226,4 +225,49 @@ func ComputeBinaryFileName() string {
 		dkn_compute_exe += ".exe"
 	}
 	return dkn_compute_exe
+}
+
+func IsNewVersionAvaliable(currentVersion string) (bool, string) {
+	latestVersion, err := GetComputeVersionTag(true, false, false)
+	if err != nil {
+		fmt.Printf("Couldn't checked the new version tag: %s\n", err)
+		return false, ""
+	}
+	if latestVersion != currentVersion {
+		return true, latestVersion
+	}
+	return false, ""
+}
+
+func GetLauncherLatestVersion() (string, error) {
+	url := "https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("failed to make request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to get latest release, status code: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response: %w", err)
+	}
+
+	// Create a map to store the response
+	var result map[string]interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", fmt.Errorf("failed to parse JSON: %v", err)
+	}
+
+	// Extract the tag_name from the map
+	tagName, ok := result["tag_name"].(string)
+	if !ok {
+		return "", fmt.Errorf("tag_name not found or not a string")
+	}
+
+	return tagName, nil
 }
