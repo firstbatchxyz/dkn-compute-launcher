@@ -295,9 +295,20 @@ func main() {
 			}
 			logger.Printf("Compute node started with pid: %d", pid)
 
+			// start a goroutine to monitor the node's running status, if it ends or crashes exit the launcher
+			go func() {
+				for {
+					// check if the compute node is running
+					if !utils.IsProcessRunning(pid) {
+						os.Exit(0)
+					}
+					// wait for a bit before checking again
+					time.Sleep(5 * time.Second)
+				}
+			}()
+
 			// new version check loop
-			newVersionReady := false
-			for utils.IsProcessRunning(pid) {
+			for {
 				time.Sleep(60 * time.Minute)
 				logger.Printf("Checking the new version...")
 				// Check if a new version is available
@@ -329,7 +340,7 @@ func main() {
 						}
 						// new binaries are ready, now break this loop to restart with the new binaries
 						envvars["DKN_COMPUTE_VERSION"] = newVersion
-						newVersionReady = true
+						logger.Printf("All good, now restarting the node with new version...")
 						break
 					}
 				} else {
@@ -337,18 +348,6 @@ func main() {
 					logger.Printf("No new compute-node version detected, will check again in an hour.")
 				}
 			}
-
-			// two conditions breaks the previous loop, either new version detected or node is crashed
-			if newVersionReady {
-				// restart the node
-				logger.Printf("All good, now restarting the node with new version...")
-				continue
-			} else {
-				// this means the node is crashed or finished, break to exit
-				break
-			}
 		}
-
-		fmt.Println("bye")
 	}
 }
