@@ -42,7 +42,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          ${{ matrix.env }} go build -ldflags="-X main.version={{ github.event.release.tag_name }}" -tags="${{ matrix.tags }}" -o dkn-compute-launcher${{ matrix.extension }} .
+          ${{ matrix.env }} go build -ldflags="-X main.version=${{ github.event.release.tag_name }}" -tags="${{ matrix.tags }}" -o dkn-compute-launcher${{ matrix.extension }} .
 
       - name: Prepare Launch Release Files
         env:
