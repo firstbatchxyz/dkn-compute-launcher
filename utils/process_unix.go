@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"syscall"
+	"time"
 )
 
 // IsProcessRunning checks if a process with the given PID is running on Unix-based systems.
@@ -33,6 +34,9 @@ func StopProcess(pid int) error {
 	if err != nil {
 		return fmt.Errorf("could not terminate process: %w", err)
 	}
+
+	// termination might take some time and it will effect the next steps during update, sleep 30 seconds just in case
+	time.Sleep(30 * time.Second)
 
 	return nil
 }
