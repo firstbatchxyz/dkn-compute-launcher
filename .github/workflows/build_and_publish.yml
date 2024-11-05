@@ -1,8 +1,9 @@
 name: Build and Publish Launch Releases
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - version-check-loop
 
 jobs:
   build:
@@ -32,7 +33,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          ${{ matrix.env }} go build -tags="${{ matrix.tags }}" -o dkn-compute-launcher${{ matrix.extension }} .
+          ${{ matrix.env }} go build -ldflags="-X main.version=v0.0.14" -tags="${{ matrix.tags }}" -o dkn-compute-launcher${{ matrix.extension }} .
 
       - name: Prepare Launch Release Files
         env:
@@ -75,7 +76,8 @@ jobs:
         id: get_latest_tag
         run: |
           # latest release tag
-          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "untagged")
+          # LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "untagged")
+          LATEST_TAG="v0.0.14"
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
 
           # latest release name
@@ -95,4 +97,4 @@ jobs:
           artifacts: "artifacts/*"
           artifactContentType: application/zip
           allowUpdates: true
-          # draft: true
+          draft: true
