@@ -301,7 +301,7 @@ func main() {
 				time.Sleep(60 * time.Minute)
 				logger.Printf("Checking the new version...")
 				// Check if a new version is available
-				newVersionAvailable, newVersion := utils.IsNewVersionAvaliable(envvars["DKN_COMPUTE_VERSION"]) // Implement this function
+				newVersionAvailable, newVersion := utils.IsNewVersionAvaliable(envvars["DKN_COMPUTE_VERSION"])
 				if newVersionAvailable {
 					logger.Printf("A new compute-node version detected, downloading the new version...")
 					newBinaryTempName := fmt.Sprintf("temp-%s", dkn_compute_binary)
