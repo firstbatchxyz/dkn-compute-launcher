@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -304,36 +303,6 @@ func (models *ModelList) String() string {
 func (models *ModelList) Set(value string) error {
 	*models = append(*models, value)
 	return nil
-}
-
-// isProcessRunning checks if a process with the given PID is running.
-func IsProcessRunning(pid int) bool {
-	// Try to find the process
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		// If there's an error finding the process, it's not running
-		return false
-	}
-
-	// Try to send signal 0 to the process (this does not kill it)
-	err = process.Signal(syscall.Signal(0))
-	return err == nil
-}
-
-// stopProcess stops a process by its PID.
-func StopProcess(pid int) error {
-	// Find the process by PID
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		return fmt.Errorf("could not find process: %w", err)
-	}
-
-	// Send the SIGTERM signal to the process to terminate it gracefully
-	if err := process.Signal(syscall.SIGTERM); err != nil {
-		return fmt.Errorf("could not terminate process: %w", err)
-	}
-
-	return fmt.Errorf("")
 }
 
 // renameFile renames a file in the given working directory.
