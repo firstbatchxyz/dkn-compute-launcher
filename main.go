@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"dkn-compute-launcher/utils"
 	"flag"
 	"fmt"
@@ -285,9 +286,13 @@ func main() {
 		// 1. Starts the compute node binary.
 		// 2. Periodically checks for a new version:
 		//    a. If a new version is detected, downloads it with a temporary name, stops the running process, renames the new file, and restarts.
-		//    b. If no new version is found, continues running the current version.
-		// 3. If the compute node ends or crashes, exits the loop and terminates.
+		//    b. If no new version is found, sleeps for an hour
+		// 3. Manages a single monitoring goroutine to check the compute node's status:
+		//    a. Starts a new goroutine to monitor if the compute node is running, exiting the launcher if it ends or crashes.
+		//    b. Cancels the previous monitoring goroutine if there is an update triggered
+		var monitoringCancel context.CancelFunc
 		for {
+			// Start the compute node
 			pid, err := utils.RunCommand(working_dir, "stdout", false, 0, utils.MapToList(envvars), exec_command)
 			if err != nil {
 				fmt.Printf("ERROR during running exe, %s\n", err)
@@ -295,17 +300,27 @@ func main() {
 			}
 			logger.Printf("Compute node started with pid: %d", pid)
 
-			// start a goroutine to monitor the node's running status, if it ends or crashes exit the launcher
-			go func() {
+			// Create a new context for the current monitoring goroutine
+			var ctx context.Context
+			ctx, monitoringCancel = context.WithCancel(context.Background())
+
+			// Start a goroutine to monitor the node's running status; if it ends or crashes, exit the launcher
+			go func(ctx context.Context) {
 				for {
-					// check if the compute node is running
-					if !utils.IsProcessRunning(pid) {
-						os.Exit(0)
-					}
-					// wait for a bit before checking again
+					// sleep before checking the status
 					time.Sleep(5 * time.Second)
+					select {
+					case <-ctx.Done():
+						// if cancel is triggered (it means there is an ongoing update) close the monitoring goroutine
+						return
+					default:
+						// check if the compute node is running
+						if !utils.IsProcessRunning(pid) {
+							os.Exit(0)
+						}
+					}
 				}
-			}()
+			}(ctx)
 
 			// new version check loop
 			for {
@@ -320,7 +335,13 @@ func main() {
 						logger.Printf("Error during downloading the latest dkn-compute binary %s\nWill continue to run current one and check again in an hour", err)
 					} else {
 						// successfully downloaded the new binary, now terminating the running one
-						logger.Printf("Succesfully downloaded the new version, now terminating the running node...")
+						logger.Printf("Successfully downloaded the new version, now terminating the old node...")
+
+						// Cancel the previous monitoring goroutine if it exists
+						if monitoringCancel != nil {
+							monitoringCancel()
+						}
+
 						if err := utils.StopProcess(pid); err != nil {
 							logger.Printf("Error stopping the already running node; %s\n", err)
 							utils.ExitWithDelay(1)
