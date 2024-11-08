@@ -321,7 +321,7 @@ func main() {
 					default:
 						// check if the compute node is running
 						if !utils.IsProcessRunning(pid) {
-							os.Exit(0)
+							utils.ExitWithDelay(0)
 						}
 					}
 				}
