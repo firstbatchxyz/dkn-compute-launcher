@@ -366,6 +366,9 @@ func main() {
 						}
 						// new binaries are ready, now break this loop to restart with the new binaries
 						envvars["DKN_COMPUTE_VERSION"] = newVersion
+						if err := utils.DumpEnvVarsToFile(&envvars, filepath.Join(working_dir, ".env")); err != nil {
+							fmt.Printf("Failed to dump the .env file, continuing to running the node though. error message: %s\n", err)
+						}
 						logger.Printf("All good, now restarting the node with new version...")
 						break
 					}
