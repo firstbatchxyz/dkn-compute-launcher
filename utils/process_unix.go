@@ -40,3 +40,14 @@ func StopProcess(pid int) error {
 
 	return nil
 }
+
+func SetFileDescriptorLimit(limit uint64) error {
+	var rLimit syscall.Rlimit
+	rLimit.Max = limit
+	rLimit.Cur = limit
+	if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit); err != nil {
+		return err
+	}
+
+	return nil
+}

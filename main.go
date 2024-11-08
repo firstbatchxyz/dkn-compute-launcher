@@ -242,6 +242,11 @@ func main() {
 		envvars["DKN_COMPUTE_VERSION"] = computeVersion
 	}
 
+	// run ulimit -n 10000
+	if err := utils.SetFileDescriptorLimit(10000); err != nil {
+		fmt.Printf("Error during ulimit: %s\n", err)
+	}
+
 	// dump the final env
 	utils.RemoveEmptyEnvVars(&envvars)
 	if err := utils.DumpEnvVarsToFile(&envvars, filepath.Join(working_dir, ".env")); err != nil {

@@ -38,3 +38,8 @@ func StopProcess(pid int) error {
 
 	return nil
 }
+
+func SetFileDescriptorLimit(limit uint64) error {
+	// No-op on Windows, as there is no direct equivalent
+	return nil
+}
