@@ -139,7 +139,7 @@ func RunCommand(working_dir string, outputDest string, wait bool, timeout time.D
 //
 // Returns:
 //   - string: A comma-separated string of selected model names.
-func PickModels(openai_models, gemini_models, ollama_models []string) string {
+func PickModels(openai_models, gemini_models, or_models, ollama_models []string) string {
 
 	// column widths
 	idWidth := 4
@@ -166,8 +166,14 @@ func PickModels(openai_models, gemini_models, ollama_models []string) string {
 		provider := "Gemini"
 		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
 	}
-	for id, model := range ollama_models {
+	for id, model := range or_models {
 		modelId := len(openai_models) + len(gemini_models) + id + 1
+		provider := "OpenRouter"
+		display_name := strings.Split(model, "/")[1]
+		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, display_name)
+	}
+	for id, model := range ollama_models {
+		modelId := len(openai_models) + len(gemini_models) + len(or_models) + id + 1
 		provider := "Ollama"
 		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
 	}
@@ -208,12 +214,19 @@ func PickModels(openai_models, gemini_models, ollama_models []string) string {
 				picked_models_map[id] = true
 				picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, gemini_models[id-len(openai_models)-1])
 			}
-		} else if id > len(openai_models)+len(gemini_models) && id <= len(ollama_models)+len(gemini_models)+len(openai_models) {
+		} else if id > len(openai_models)+len(gemini_models) && id <= len(or_models)+len(gemini_models)+len(openai_models) {
+			// openrouter model picked
+			if !picked_models_map[id] {
+				// if not already picked, add it to bin
+				picked_models_map[id] = true
+				picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, or_models[id-len(openai_models)-len(gemini_models)-1])
+			}
+		} else if id > len(openai_models)+len(gemini_models)+len(or_models) && id <= len(or_models)+len(ollama_models)+len(gemini_models)+len(openai_models) {
 			// ollama model picked
 			if !picked_models_map[id] {
 				// if not already picked, add it to bin
 				picked_models_map[id] = true
-				picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, ollama_models[id-len(gemini_models)-len(openai_models)-1])
+				picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, ollama_models[id-len(or_models)-len(gemini_models)-len(openai_models)-1])
 			}
 		} else {
 			// out of index, invalid

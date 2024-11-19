@@ -73,6 +73,24 @@ var (
 		"gemma-2-27b-it",
 	}
 
+	OPENROUTER_MODELS = []string{
+		"meta-llama/llama-3.1-8b-instruct",
+		"meta-llama/llama-3.1-70b-instruct",
+		"meta-llama/llama-3.1-405b-instruct",
+		"meta-llama/llama-3.1-70b-instruct:free",
+
+		"anthropic/claude-3.5-sonnet:beta",
+		"anthropic/claude-3-5-haiku-20241022:beta",
+
+		"qwen/qwen-2.5-72b-instruct",
+		"qwen/qwen-2.5-7b-instruct",
+		"qwen/qwen-2.5-coder-32b-instruct",
+
+		"eva-unit-01/eva-qwen-2.5-32b",
+		"deepseek/deepseek-chat",
+		"nousresearch/hermes-3-llama-3.1-405b",
+	}
+
 	// Default admin public key, it will be used unless --dkn-admin-public-key is given
 	DKN_ADMIN_PUBLIC_KEY = "0208ef5e65a9c656a6f92fb2c770d5d5e2ecffe02a6aade19207f75110be6ae658"
 )
@@ -154,7 +172,7 @@ func main() {
 
 	// if DKN_MODELS are still empty, pick model interactively
 	if envvars["DKN_MODELS"] == "" || *pick_model {
-		pickedModels := utils.PickModels(OPENAI_MODELS, GEMINI_MODELS, OLLAMA_MODELS)
+		pickedModels := utils.PickModels(OPENAI_MODELS, GEMINI_MODELS, OPENROUTER_MODELS, OLLAMA_MODELS)
 		if pickedModels == "" {
 			fmt.Println("No valid model picked")
 			utils.ExitWithDelay(1)
@@ -180,6 +198,15 @@ func main() {
 			utils.ExitWithDelay(1)
 		}
 		envvars["GEMINI_API_KEY"] = apikey
+	}
+
+	if utils.IsOpenRouterRequired(envvars["DKN_MODELS"], &OPENROUTER_MODELS) && envvars["OPENROUTER_API_KEY"] == "" {
+		apikey := utils.GetUserInput("Enter your OpenRoute API Key", true)
+		if apikey == "" {
+			fmt.Println("Invalid input, please place your OPENROUTER_API_KEY to .env file")
+			utils.ExitWithDelay(1)
+		}
+		envvars["OPENROUTER_API_KEY"] = apikey
 	}
 
 	// check ollama environment
