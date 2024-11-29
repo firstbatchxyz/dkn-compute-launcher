@@ -357,7 +357,7 @@ func main() {
 			// new version check loop
 			for {
 				time.Sleep(60 * time.Minute)
-				logger.Printf("Checking the new version...")
+
 				// Check if a new version is available
 				newVersionAvailable, newVersion := utils.IsNewVersionAvaliable(envvars["DKN_COMPUTE_VERSION"])
 				if newVersionAvailable {
@@ -399,8 +399,9 @@ func main() {
 						logger.Printf("All good, now restarting the node with new version...")
 						break
 					}
-				} else {
+				} else if *dev {
 					// no new version detected, will check it again after a bit
+					// only log this for dev (debug) mode
 					logger.Printf("No new compute-node version detected, will check again in an hour.")
 				}
 			}
