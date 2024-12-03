@@ -46,6 +46,7 @@ var (
 		"qwen2.5-coder:7b-instruct",
 		"qwen2.5-coder:7b-instruct-q8_0",
 		"qwen2.5-coder:7b-instruct-fp16",
+		"qwq",
 
 		"deepseek-coder:6.7b",
 
@@ -85,10 +86,11 @@ var (
 		"qwen/qwen-2.5-72b-instruct",
 		"qwen/qwen-2.5-7b-instruct",
 		"qwen/qwen-2.5-coder-32b-instruct",
+		"qwen/qwq-32b-preview",
 
-		"eva-unit-01/eva-qwen-2.5-32b",
 		"deepseek/deepseek-chat",
 		"nousresearch/hermes-3-llama-3.1-405b",
+		"nvidia/llama-3.1-nemotron-70b-instruct",
 	}
 
 	// Default admin public key, it will be used unless --dkn-admin-public-key is given
