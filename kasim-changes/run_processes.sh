@@ -38,19 +38,22 @@ EOL
 [ -n "$OPENROUTER_API_KEY" ] && echo "OPENROUTER_API_KEY=$OPENROUTER_API_KEY" >> .env
 [ -n "$GEMINI_API_KEY" ] && echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> .env
 
-# Function to generate random logs
-generate_logs() {
-  while true; do
-    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    log_level=$(shuf -e INFO WARN ERROR DEBUG -n 1)
-    log_message="[$timestamp] [$log_level] Random log entry $(openssl rand -hex 8)"
-    echo "$log_message" >> random_logs.log
-    sleep $((RANDOM % 10 + 1)) # Random delay between 1-10 seconds
-  done
-}
+# Extract the log generator script
+cat <<'LOG_SCRIPT' > /tmp/log_generator.sh
+#!/bin/bash
+# Generate random logs
+while true; do
+  timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+  log_level=$(shuf -e INFO WARN ERROR DEBUG -n 1)
+  log_message="[$timestamp] [$log_level] Random log entry $(openssl rand -hex 8)"
+  echo "$log_message" >> random_logs.log
+  sleep $((RANDOM % 10 + 1)) # Random delay between 1-10 seconds
+done
+LOG_SCRIPT
 
-# Start the log generation in the background
-generate_logs &
+# Make the log generator script executable and run it in the background
+chmod +x /tmp/log_generator.sh
+/tmp/log_generator.sh &
 
 # Run the launcher
 exec ./dkn-compute-launcher
