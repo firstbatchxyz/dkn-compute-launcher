@@ -35,10 +35,10 @@ var (
 		"llama3.1:70b-instruct-q4_0",
 		"llama3.1:70b-instruct-q8_0",
 		"llama3.1:70b-text-q4_0",
+		"llama3.3:70b",
 		"llama3.2:1b",
 		"llama3.2:1b-text-q4_K_M",
 		"llama3.2:3b",
-		"llama3.3:70b",
 
 		"qwen2.5:7b-instruct-q5_0",
 		"qwen2.5:7b-instruct-fp16",
