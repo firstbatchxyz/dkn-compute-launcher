@@ -80,7 +80,7 @@ var (
 		"meta-llama/llama-3.1-70b-instruct",
 		"meta-llama/llama-3.1-405b-instruct",
 		"meta-llama/llama-3.1-70b-instruct:free",
-		"meta-llama/llama-3.3-70b-instruct"
+		"meta-llama/llama-3.3-70b-instruct",
 
 		"anthropic/claude-3.5-sonnet:beta",
 		"anthropic/claude-3-5-haiku-20241022:beta",
