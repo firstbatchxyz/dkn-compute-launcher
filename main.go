@@ -38,6 +38,7 @@ var (
 		"llama3.2:1b",
 		"llama3.2:1b-text-q4_K_M",
 		"llama3.2:3b",
+		"llama3.3:70b",
 
 		"qwen2.5:7b-instruct-q5_0",
 		"qwen2.5:7b-instruct-fp16",
@@ -79,6 +80,7 @@ var (
 		"meta-llama/llama-3.1-70b-instruct",
 		"meta-llama/llama-3.1-405b-instruct",
 		"meta-llama/llama-3.1-70b-instruct:free",
+		"meta-llama/llama-3.3-70b-instruct"
 
 		"anthropic/claude-3.5-sonnet:beta",
 		"anthropic/claude-3-5-haiku-20241022:beta",
