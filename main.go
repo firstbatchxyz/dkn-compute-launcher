@@ -69,6 +69,7 @@ var (
 		"gemini-1.5-pro",
 		"gemini-1.5-pro-exp-0827",
 		"gemini-1.5-flash",
+		"gemini-2.0-flash-exp",
 
 		"gemma-2-2b-it",
 		"gemma-2-9b-it",
