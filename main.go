@@ -233,14 +233,16 @@ func main() {
 		envvars["SERPER_API_KEY"] = utils.GetUserInput("Enter your Serper API key (optional, just press enter for skipping it)", true)
 	}
 
-	// log level
-	if *dev {
-		envvars["RUST_LOG"] = "none,dkn_compute=debug,dkn_p2p=debug,dkn_workflows=debug,ollama_workflows=info"
-	} else if *trace {
-		envvars["RUST_LOG"] = "none,dkn_compute=trace,dkn_p2p=trace,dkn_workflows=trace"
-	} else {
-		// default level info
-		envvars["RUST_LOG"] = "none,dkn_compute=info,dkn_p2p=info,dkn_workflows=info"
+	// set log level if RUST_LOG is not set
+	if _, exists := envvars["RUST_LOG"]; !exists {
+		if *dev {
+			envvars["RUST_LOG"] = "none,dkn_compute=debug,dkn_p2p=debug,dkn_workflows=debug,ollama_workflows=info"
+		} else if *trace {
+			envvars["RUST_LOG"] = "none,dkn_compute=trace,dkn_p2p=trace,dkn_workflows=trace"
+		} else {
+			// default level info
+			envvars["RUST_LOG"] = "none,dkn_compute=info,dkn_p2p=info,dkn_workflows=info"
+		}
 	}
 
 	// get latest dkn_compute binary version
