@@ -156,19 +156,28 @@ func PickModels(openai_models, gemini_models, or_models, ollama_models []string)
 	fmt.Println(separator)
 
 	// print the rows
+	const OPENAI_PROVIDER = "OpenAI"
+	const OPENAI_PROVIDER_SEL = "OAI"
+	fmt.Printf("| %-*s | %-*s | %-*s |\n", idWidth, OPENAI_PROVIDER_SEL, providerWidth, OPENAI_PROVIDER, nameWidth, "~ All OpenAI models ~")
 	for id, model := range openai_models {
 		modelId := id + 1
-		provider := "OpenAI"
+		provider := OPENAI_PROVIDER
 		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
 	}
+	const GEMINI_PROVIDER = "Gemini"
+	const GEMINI_PROVIDER_SEL = "G"
+	fmt.Printf("| %-*s | %-*s | %-*s |\n", idWidth, GEMINI_PROVIDER_SEL, providerWidth, GEMINI_PROVIDER, nameWidth, "~ All Gemini models ~")
 	for id, model := range gemini_models {
 		modelId := len(openai_models) + id + 1
-		provider := "Gemini"
+		provider := GEMINI_PROVIDER
 		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, model)
 	}
+	const OPENROUTER_PROVIDER = "OpenRouter"
+	const OPENROUTER_PROVIDER_SEL = "OR"
+	fmt.Printf("| %-*s | %-*s | %-*s |\n", idWidth, OPENROUTER_PROVIDER_SEL, providerWidth, OPENROUTER_PROVIDER, nameWidth, "~ All OpenRouter models ~")
 	for id, model := range or_models {
 		modelId := len(openai_models) + len(gemini_models) + id + 1
-		provider := "OpenRouter"
+		provider := OPENROUTER_PROVIDER
 		display_name := strings.Split(model, "/")[1]
 		fmt.Printf("| %-*d | %-*s | %-*s |\n", idWidth, modelId, providerWidth, provider, nameWidth, display_name)
 	}
@@ -191,6 +200,34 @@ func PickModels(openai_models, gemini_models, or_models, ollama_models []string)
 	for _, i := range models_list {
 		// if selection is already in invalids list, continue
 		if invalid_selections[i] || i == "" {
+			continue
+		}
+
+		// Check for provider selection
+		switch i {
+		case OPENAI_PROVIDER_SEL:
+			for id, model := range openai_models {
+				if !picked_models_map[id+1] {
+					picked_models_map[id+1] = true
+					picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, model)
+				}
+			}
+			continue
+		case GEMINI_PROVIDER_SEL:
+			for id, model := range gemini_models {
+				if !picked_models_map[len(openai_models)+id+1] {
+					picked_models_map[len(openai_models)+id+1] = true
+					picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, model)
+				}
+			}
+			continue
+		case OPENROUTER_PROVIDER_SEL:
+			for id, model := range or_models {
+				if !picked_models_map[len(openai_models)+len(gemini_models)+id+1] {
+					picked_models_map[len(openai_models)+len(gemini_models)+id+1] = true
+					picked_models_str = fmt.Sprintf("%s,%s", picked_models_str, model)
+				}
+			}
 			continue
 		}
 
