@@ -50,6 +50,12 @@ var (
 		"qwq",
 
 		"deepseek-coder:6.7b",
+		"deepseek-r1:1.5b",
+		"deepseek-r1:7b",
+		"deepseek-r1:8b",
+		"deepseek-r1:14b",
+		"deepseek-r1:32b",
+		"deepseek-r1:70b",
 
 		"mixtral:8x7b",
 	}
