@@ -2,38 +2,6 @@ use inquire::Select;
 
 use crate::DriaEnv;
 
-#[derive(Debug, Clone, enum_iterator::Sequence)]
-pub enum DriaApiKeyKind {
-    OpenAI,
-    Gemini,
-    OpenRouter,
-    Serper,
-    Jina,
-}
-
-impl DriaApiKeyKind {
-    #[inline]
-    pub fn all() -> Vec<DriaApiKeyKind> {
-        enum_iterator::all::<DriaApiKeyKind>().collect()
-    }
-
-    pub fn name(&self) -> &'static str {
-        match self {
-            Self::OpenAI => "OPENAI_API_KEY",
-            Self::Gemini => "GEMINI_API_KEY",
-            Self::OpenRouter => "OPENROUTER_API_KEY",
-            Self::Serper => "SERPER_API_KEY",
-            Self::Jina => "JINA_API_KEY",
-        }
-    }
-}
-
-impl std::fmt::Display for DriaApiKeyKind {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name())
-    }
-}
-
 pub fn edit_api_keys(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     loop {
         // choose an API key name
@@ -59,4 +27,37 @@ pub fn edit_api_keys(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     }
 
     Ok(())
+}
+
+#[derive(Debug, Clone, enum_iterator::Sequence)]
+pub enum DriaApiKeyKind {
+    OpenAI,
+    Gemini,
+    OpenRouter,
+    Serper,
+    Jina,
+}
+
+impl DriaApiKeyKind {
+    #[inline]
+    pub fn all() -> Vec<DriaApiKeyKind> {
+        enum_iterator::all::<DriaApiKeyKind>().collect()
+    }
+
+    /// Returns the name of the environment variable that stores the API key.
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::OpenAI => "OPENAI_API_KEY",
+            Self::Gemini => "GEMINI_API_KEY",
+            Self::OpenRouter => "OPENROUTER_API_KEY",
+            Self::Serper => "SERPER_API_KEY",
+            Self::Jina => "JINA_API_KEY",
+        }
+    }
+}
+
+impl std::fmt::Display for DriaApiKeyKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name())
+    }
 }

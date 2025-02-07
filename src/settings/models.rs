@@ -4,8 +4,9 @@ use inquire::{MultiSelect, Select};
 
 use crate::DriaEnv;
 
+const MODELS_KEY: &str = "DKN_MODELS";
+
 pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
-    const MODELS_KEY: &str = "DKN_MODELS";
     let mut is_changed = false;
 
     // TODO: can remove models_config perhaps?

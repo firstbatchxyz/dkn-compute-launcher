@@ -4,20 +4,24 @@ use std::process::Stdio;
 use tokio::process::{Child, Command};
 use which::which;
 
+use crate::DriaEnv;
+
 // TODO: check if the Ollama process is running already at a given host & port
 
 /// Spawns a local Ollama server process at the given host and port.
 ///
 /// ## Arguments
-/// - `host`: The host to bind the server to, usually `http://127.0.0.1`
-/// - `port`: The port to bind the server to, usually `11434`
+/// - `dria_env`: The environment variables to use for the Ollama process.
 ///
 /// ## Returns
 /// A `Child` process handle to the spawned Ollama process.
 ///
 /// ## Errors
 /// - If the Ollama executable is not found in the system.
-pub async fn spawn_ollama(host: &str, port: u16) -> Result<Child> {
+pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
+    let host = dria_env.get("OLLAMA_HOST").unwrap_or("http://127.0.0.1");
+    let port = dria_env.get("OLLAMA_PORT").unwrap_or("11434");
+
     // find the path to binary
     let exe_path = which("ollama").wrap_err("could not find Ollama executable")?;
 
@@ -51,8 +55,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_run() {
-        let (host, port) = ("http://127.0.0.1", 11434);
-        let mut child = spawn_ollama(host, port).await.unwrap();
+        let mut dria_env = DriaEnv::new();
+        dria_env.set("OLLAMA_HOST", "http://127.0.0.1");
+        dria_env.set("OLLAMA_PORT", "11438"); // not default!
+        let mut child = spawn_ollama(&dria_env).await.unwrap();
 
         // wait for 10 seconds
         println!("Waiting for 10 seconds...");

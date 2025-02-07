@@ -1,5 +1,3 @@
-mod update;
-
 mod releases;
 pub use releases::*;
 

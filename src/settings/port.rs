@@ -2,9 +2,9 @@ use inquire::{validator::Validation, Text};
 
 use crate::DriaEnv;
 
-pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
-    const LISTEN_ADDR_KEY: &str = "DKN_P2P_LISTEN_ADDR";
+const LISTEN_ADDR_KEY: &str = "DKN_P2P_LISTEN_ADDR";
 
+pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     // get existing address
     let addr = &dria_env
         .get(LISTEN_ADDR_KEY)

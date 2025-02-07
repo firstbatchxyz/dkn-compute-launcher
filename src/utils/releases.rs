@@ -1,4 +1,7 @@
 use std::env::consts::{ARCH, OS};
+use std::fs;
+use std::os::unix::fs::PermissionsExt;
+use std::path::PathBuf;
 
 use eyre::{eyre, Context, Result};
 use self_update::backends::github;
@@ -8,11 +11,6 @@ use self_update::update::{Release, ReleaseAsset};
 pub struct DriaRelease(Release);
 
 impl DriaRelease {
-    #[inline]
-    pub fn new(release: Release) -> Self {
-        Self(release)
-    }
-
     #[inline]
     pub fn name(&self) -> &str {
         &self.0.name
@@ -39,17 +37,51 @@ impl DriaRelease {
 
                 let arch = match ARCH {
                     "x86_64" => "amd64",
-                    "arm" => "arm64",
-                    "aarch64" => "arm64",
-                    // TODO: !!!
+                    "arm" | "aarch64" => "arm64",
                     _ => return false,
                 };
-
-                println!("OS: {}\tARCH: {}", os, arch);
                 let name_lowercase = asset.name.to_lowercase();
                 name_lowercase.contains(os) && name_lowercase.contains(arch)
             })
             .ok_or(eyre!("asset not found for OS: {} & ARCH: {}", OS, ARCH))
+    }
+
+    pub async fn download_release(&self) -> Result<PathBuf> {
+        let asset = self.asset()?;
+        let path = PathBuf::from(&asset.name);
+        let dest_file = fs::File::create(&path)?;
+
+        let download_url = asset.download_url.clone();
+        println!("Downloading {}", download_url);
+        tokio::task::spawn_blocking(move || {
+            self_update::Download::from_url(&download_url)
+                .set_header(
+                    reqwest::header::ACCEPT,
+                    // this is unlikely to panic
+                    "application/octet-stream".parse().unwrap(),
+                )
+                .show_progress(true)
+                .download_to(dest_file)
+                .expect("could not download asset")
+        })
+        .await
+        .wrap_err("could not download asset")?;
+
+        // set to read, write, execute
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o777))?;
+
+        // let bin_name = std::path::PathBuf::from(asset.name.clone());
+        // self_update::Extract::from_source(&tmp_file)
+        // .archive(self_update::ArchiveKind::Tar(Some(
+        //     self_update::Compression::Gz,
+        // )))
+        // .extract_file(&tmp_dir.path(), &bin_name)?;
+
+        // let new_exe = tmp_dir.path().join(bin_name);
+        // println!("Downloaded at: {}", new_exe.display());
+        // self_replace::self_replace(new_exe)?;
+
+        Ok(path)
     }
 }
 
@@ -92,30 +124,7 @@ async fn get_releases(repo_name: &'static str) -> Result<Vec<DriaRelease>> {
     .map_err(Into::into)
 }
 
-async fn download_release_asset(asset: &ReleaseAsset) -> Result<(), Box<dyn std::error::Error>> {
-    let tmp_dir = tempfile::Builder::new()
-        .prefix(&format!("tmp_{}", asset.name))
-        .tempdir_in(::std::env::current_dir()?)?;
-    let tmp_tarball_path = tmp_dir.path().join(&asset.name);
-    let tmp_tarball = ::std::fs::File::open(&tmp_tarball_path)?;
-
-    self_update::Download::from_url(&asset.download_url)
-        .set_header(reqwest::header::ACCEPT, "application/octet-stream".parse()?)
-        .download_to(&tmp_tarball)?;
-
-    let bin_name = std::path::PathBuf::from("self_update_bin");
-    self_update::Extract::from_source(&tmp_tarball_path)
-        // .archive(self_update::ArchiveKind::Tar(Some(
-        //     self_update::Compression::Gz,
-        // )))
-        .extract_file(&tmp_dir.path(), &bin_name)?;
-
-    let new_exe = tmp_dir.path().join(bin_name);
-    println!("Downloaded at: {}", new_exe.display());
-    // self_replace::self_replace(new_exe)?;
-
-    Ok(())
-}
+/// Downloads an asset to the given file.
 
 #[cfg(test)]
 mod tests {
@@ -135,10 +144,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_download_last_release() {
-        let last_release = &super::get_compute_releases().await.unwrap()[0];
-        let asset = last_release.asset().unwrap();
+        let final_release = &super::get_compute_releases().await.unwrap()[0];
 
-        println!("Downloading: {}", asset.name);
-        super::download_release_asset(asset).await.unwrap();
+        let path = final_release.download_release().await.unwrap();
+        assert!(path.exists());
     }
 }

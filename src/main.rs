@@ -54,7 +54,7 @@ async fn main() -> eyre::Result<()> {
     // log about env usage after env logger init is executed
     match dotenv_result {
         Ok(_) => eprintln!("Loaded .env file at: {}", cli.env.display()),
-        Err(e) => { /* do nothing */ }
+        Err(_) => { /* do nothing */ }
     }
 
     // let env_file = dotenvy::from_path_iter(&cli.env)?;

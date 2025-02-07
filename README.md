@@ -37,35 +37,46 @@ It is packed with some nice features:
 
 <!-- TODO: ollama checks? -->
 
-
-
 ## Installation
+
+You can download the latest executable for your operating system from:
+
+- [dria.co/join](https://dria.co/join)
+- [GitHub releases](https://github.com/firstbatchxyz/dkn-compute-launcher/releases)
+
+<!-- ### From Source
+
+You can also install the launcher if you have [Rust](https://www.rust-lang.org/) installed:
+
+```sh
+cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher
+```
+
+The binary will be available globally as:
+
+```sh
+dkn-compute-launcher
+``` -->
 
 ## Usage
 
-1. **Download the executable**: Simply download the latest executable for your operating system from the [releases page](https://github.com/firstbatchxyz/dkn-compute-launcher/releases/tag/v0.0.1).
+Double-click the executable or run it via the command line. The `help` to see available options:
 
-2. **Run the Launcher**: Double-click the executable or run it via the command line. Use `-h` or `--help` to see all available options.
+```sh
+# macos or linux
+./dkn-compute-launcher help
 
-   ```sh
-   # macos or linux
-   ./dkn-compute-launcher --help
+# windows
+.\dkn-compute-launcher.exe help
+```
 
-   # windows
-   .\dkn-compute-launcher.exe --help
-   ```
-
-> [!TIP]
+> [!CAUTION]
 >
 > > Some Apple devices need you to bypass macOS's security warning. If you see "macOS cannot verify that this app is free from malware" when using the launcher use the following command:
 >
 > ```sh
 > xattr -d com.apple.quarantine dkn-compute-launcher
 > ```
-
-3. **Select Models**: Choose the models to be used in your node setup. You can pass multiple `-m` or `--model` flags or use `--pick-models` flag for interactive model picker.
-
-4. **Start the Node**: Follow the prompts to complete the setup and start your node.
 
 ## More Information
 

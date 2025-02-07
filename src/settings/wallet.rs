@@ -2,9 +2,9 @@ use inquire::{validator::Validation, Password, PasswordDisplayMode};
 
 use crate::DriaEnv;
 
-pub fn edit_wallet(dria_env: &mut DriaEnv) -> eyre::Result<()> {
-    const WALLET_KEY: &str = "DKN_WALLET_SECRET_KEY";
+const WALLET_KEY: &str = "DKN_WALLET_SECRET_KEY";
 
+pub fn edit_wallet(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     // masks a string "abcdefgh" to something like "ab****gh"
     let mask = |s: &str| {
         const LEFT: usize = 2;

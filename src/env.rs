@@ -65,8 +65,8 @@ impl DriaEnv {
 
     /// Set the value of a key, and mark the environment as changed.
     #[inline]
-    pub fn set(&mut self, key: &'static str, value: String) {
-        self.kv.insert(key, value);
+    pub fn set(&mut self, key: &'static str, value: impl ToString) {
+        self.kv.insert(key, value.to_string());
 
         // we dont really set this to `false` anywhere because the program will
         // exit when this whole thing is saved
