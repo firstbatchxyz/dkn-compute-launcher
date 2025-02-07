@@ -13,6 +13,9 @@ pub use port::edit_port;
 mod ollama;
 pub use ollama::edit_ollama;
 
+mod loglevel;
+pub use loglevel::edit_log_level;
+
 /// Compute node setting commands.
 #[derive(Debug, Clone, enum_iterator::Sequence)]
 pub enum Settings {
@@ -26,6 +29,8 @@ pub enum Settings {
     Ollama,
     /// Configure your API Keys.
     ApiKeys,
+    /// Configure log-levels.
+    LogLevels,
     /// Quit settings menu.
     SaveExit,
 }
@@ -45,6 +50,7 @@ impl std::fmt::Display for Settings {
             Self::Models => write!(f, "Models"),
             Self::Ollama => write!(f, "Ollama"),
             Self::ApiKeys => write!(f, "API Keys"),
+            Self::LogLevels => write!(f, "Log Levels"),
             Self::SaveExit => write!(f, "Save & Exit"),
         }
     }

@@ -48,6 +48,9 @@ pub fn change_settings(env_path: &PathBuf) -> eyre::Result<()> {
             Settings::ApiKeys => {
                 crate::settings::edit_api_keys(&mut dria_env)?;
             }
+            Settings::LogLevels => {
+                crate::settings::edit_log_level(&mut dria_env)?;
+            }
             Settings::SaveExit => {
                 if dria_env.is_changed() {
                     dria_env.save_to_file(env_path)?;

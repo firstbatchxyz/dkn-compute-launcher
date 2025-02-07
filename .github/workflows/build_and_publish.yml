@@ -5,9 +5,7 @@ on:
     types: [published]
 
 jobs:
-
   check_release:
-    if: "! contains(github.event.release.tag_name, '-dev')"  # skip if the tag ends with -dev
     runs-on: ubuntu-latest
     steps:
       - name: Echo tag
@@ -20,13 +18,13 @@ jobs:
 
     strategy:
       matrix:
+        # prettier-ignore
         include:
-          - { runner: macos-latest,  goos: darwin,  osname: macOS,   arch: amd64, tags: netcgo        }
-          - { runner: macos-latest,  goos: darwin,  osname: macOS,   arch: arm64, tags: netcgo        }
-          - { runner: ubuntu-latest, goos: linux,   osname: linux,   arch: amd64, env:  CGO_ENABLED=0 }
-          - { runner: ubuntu-latest, goos: linux,   osname: linux,   arch: arm64, env:  CGO_ENABLED=0 }
-          - { runner: ubuntu-latest, goos: windows, osname: windows, arch: amd64, env:  CGO_ENABLED=0, extension: ".exe" }
-          # - { runner: ubuntu-latest, goos: windows, osname: windows, arch: arm64, env:  CGO_ENABLED=0, extension: ".exe" }
+          - { runner: macos-latest,  goos: darwin,  osname: macos,   arch: amd64 }
+          - { runner: macos-latest,  goos: darwin,  osname: macos,   arch: arm64 }
+          - { runner: ubuntu-latest, goos: linux,   osname: linux,   arch: amd64 }
+          - { runner: ubuntu-latest, goos: linux,   osname: linux,   arch: arm64 }
+          - { runner: ubuntu-latest, goos: windows, osname: windows, arch: amd64, extension: ".exe" }
 
     steps:
       - name: Checkout code
@@ -35,7 +33,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21.5'
+          go-version: "1.21.5"
 
       - name: Build Go app
         env:
@@ -52,12 +50,11 @@ jobs:
           mkdir $FOLDER_NAME
           # copy launcher binary
           cp ./dkn-compute-launcher${{ matrix.extension }} $FOLDER_NAME/dkn-compute-launcher${{ matrix.extension }}
-          
+
           # download .env.example and save it as .env
           curl -o $FOLDER_NAME/.env https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-node/master/.env.example
 
           zip -r $ZIP_NAME.zip $FOLDER_NAME
-
 
       - name: Upload Launch Artifacts
         uses: actions/upload-artifact@v4
@@ -68,12 +65,12 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Fetch all tags and history
+          fetch-depth: 0 # Fetch all tags and history
 
       - name: Download Launch Artifacts
         uses: actions/download-artifact@v4

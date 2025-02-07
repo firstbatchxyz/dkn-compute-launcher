@@ -12,7 +12,7 @@ pub use settings::change_settings;
 mod version;
 pub use version::change_version;
 
-/// Compute node commands.
+/// Launcher commands.
 #[derive(Subcommand)]
 pub enum Commands {
     /// Change node settings: models, api keys, network settings.

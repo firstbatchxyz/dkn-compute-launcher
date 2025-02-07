@@ -1,13 +1,7 @@
 use inquire::Select;
-use self_update::{backends::github, update::Release};
+use self_update::backends::github;
 
-struct DriaRelease(Release);
-
-impl std::fmt::Display for DriaRelease {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0.name)
-    }
-}
+use crate::utils::DriaRelease;
 
 pub async fn change_version() -> eyre::Result<()> {
     // https://github.com/jaemk/self_update/issues/44
@@ -22,7 +16,7 @@ pub async fn change_version() -> eyre::Result<()> {
             .fetch()
             .unwrap() // TODO:!!!
             .into_iter()
-            .map(|r| DriaRelease(r))
+            .map(DriaRelease::new)
             .collect::<Vec<_>>()
     })
     .await?;

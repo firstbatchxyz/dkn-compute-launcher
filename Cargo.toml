@@ -20,7 +20,10 @@ which = "6.0.3"
 self_update = "0.42.0"
 
 # CLI
-clap = { version = "4.5.27", features = ["derive", "env"] }
+clap = { version = "4.5.27", features = [
+  "derive",
+  "string", # this is required for Clap to have default non-static values, e.g. .env
+] }
 inquire = { version = "0.7.5", features = ["editor"] }
 
 # utilities
@@ -34,3 +37,6 @@ log = "0.4.21"
 eyre = "0.6.12"
 
 dkn-workflows = { git = "https://github.com/firstbatchxyz/dkn-compute-node" }
+homedir = "0.3.4"
+tempfile = "3.16.0"
+reqwest = "0.12.12"

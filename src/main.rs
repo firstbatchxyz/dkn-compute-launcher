@@ -1,4 +1,5 @@
 use clap::Parser;
+use env::default_env;
 use std::path::PathBuf;
 
 mod commands;
@@ -21,7 +22,7 @@ struct Cli {
     command: Commands,
 
     /// Path to the .env file.
-    #[arg(short, long, default_value = "./.env")]
+    #[arg(short, long, default_value = default_env())]
     pub env: PathBuf,
 
     /// Enable debug-level logs
@@ -52,8 +53,8 @@ async fn main() -> eyre::Result<()> {
 
     // log about env usage after env logger init is executed
     match dotenv_result {
-        Ok(_) => log::info!("Loaded .env file at: {}", cli.env.display()),
-        Err(e) => log::warn!("Could not load .env file: {}", e),
+        Ok(_) => eprintln!("Loaded .env file at: {}", cli.env.display()),
+        Err(e) => { /* do nothing */ }
     }
 
     // let env_file = dotenvy::from_path_iter(&cli.env)?;
@@ -63,7 +64,7 @@ async fn main() -> eyre::Result<()> {
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
         Commands::Version => commands::change_version().await?,
         Commands::Compute => {
-            commands::run_compute().await?;
+            // commands::run_compute().await?;
         }
     };
 

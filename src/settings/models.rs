@@ -1,3 +1,4 @@
+use dkn_workflows::DriaWorkflowsConfig;
 use dkn_workflows::{Model, ModelProvider};
 use inquire::{MultiSelect, Select};
 
@@ -5,13 +6,11 @@ use crate::DriaEnv;
 
 pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     const MODELS_KEY: &str = "DKN_MODELS";
+    let mut is_changed = false;
 
-    // TODO: add "is_changed" here so that we can notify the user if there were no changes made
-    // and no print "Chosen models" string below
     // TODO: can remove models_config perhaps?
-    let models_config = dkn_workflows::DriaWorkflowsConfig::new_from_csv(
-        dria_env.get(MODELS_KEY).unwrap_or_default(),
-    );
+    let models_config =
+        DriaWorkflowsConfig::new_from_csv(dria_env.get(MODELS_KEY).unwrap_or_default());
 
     let mut chosen_models = models_config
         .models
@@ -61,6 +60,8 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
             continue;
         };
 
+        is_changed = true;
+
         // update the chosen models
         // those that exist in chosen_models but not in selected_prov_models are removed (via retain)
         chosen_models.retain(|m| !selected_prov_models.contains(m));
@@ -70,17 +71,21 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         chosen_models.extend(selected_prov_models);
     }
 
-    // save models
-    let mut new_models = chosen_models
-        .iter()
-        .map(|m| m.to_string())
-        .collect::<Vec<String>>();
+    if is_changed {
+        // save models
+        let mut new_models = chosen_models
+            .iter()
+            .map(|m| m.to_string())
+            .collect::<Vec<String>>();
 
-    new_models.sort();
+        // sort by model name so that they are easier to choose
+        new_models.sort();
 
-    // TODO: see `is_changed` above
-    println!("Chosen models:\n - {}", new_models.join("\n - "));
-    dria_env.set(MODELS_KEY, new_models.join(","));
+        println!("Chosen models:\n - {}", new_models.join("\n - "));
+        dria_env.set(MODELS_KEY, new_models.join(","));
+    } else {
+        println!("No changes made.");
+    }
 
     Ok(())
 }
