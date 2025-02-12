@@ -1,8 +1,10 @@
+use std::path::PathBuf;
+
 use inquire::Select;
 
 use crate::utils::get_compute_releases;
 
-pub async fn change_version() -> eyre::Result<()> {
+pub async fn change_version(exe_dir: &PathBuf) -> eyre::Result<()> {
     let releases = get_compute_releases().await?;
 
     let Some(chosen_release) = Select::new("Select a version:", releases)
@@ -12,9 +14,9 @@ pub async fn change_version() -> eyre::Result<()> {
         return Ok(());
     };
 
-    println!("Chosen version: {}", chosen_release);
+    println!("Downloading version: {}", chosen_release);
 
-    chosen_release.download_release().await?;
+    chosen_release.download_release(exe_dir).await?;
 
     Ok(())
 }

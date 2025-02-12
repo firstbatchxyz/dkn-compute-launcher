@@ -1,29 +1,5 @@
 use std::{collections::HashMap, io, path::PathBuf};
 
-/// Returns the default targeted environment file.
-///
-/// - On Unix systems, this is `~/.dria/compute/.env`.
-/// - On Windows systems, this is `%USERPROFILE%\.dria\compute\.env`.
-///
-/// If there is an error, it will return just `.env`.
-#[inline]
-pub fn default_env<'a>() -> String {
-    ".env".to_string()
-
-    // TODO: do the thing below for profile management
-    // let fallback_path = ".env.default".to_string();
-    // match homedir::my_home() {
-    //     Ok(Some(home)) => home
-    //         .join(".dria")
-    //         .join("compute")
-    //         .join(".env.default")
-    //         .into_os_string()
-    //         .into_string()
-    //         .unwrap_or(fallback_path),
-    //     Ok(None) | Err(_) => fallback_path,
-    // }
-}
-
 #[derive(Debug, Clone)]
 pub struct DriaEnv {
     kv: HashMap<&'static str, String>,
@@ -136,6 +112,15 @@ impl DriaEnv {
         std::fs::write(env_path, new_content)?;
         println!("Changes saved successfully.");
         Ok(())
+    }
+
+    /// Returns the `host` and `port` values for the Ollama server w.r.t Dria environment.
+    #[inline]
+    pub fn ollama_values(&self) -> (&str, &str) {
+        let host = self.get("OLLAMA_HOST").unwrap_or("http://127.0.0.1");
+        let port = self.get("OLLAMA_PORT").unwrap_or("11434");
+
+        (host, port)
     }
 }
 

@@ -6,8 +6,6 @@ use which::which;
 
 use crate::DriaEnv;
 
-// TODO: check if the Ollama process is running already at a given host & port
-
 /// Spawns a local Ollama server process at the given host and port.
 ///
 /// ## Arguments
@@ -19,8 +17,7 @@ use crate::DriaEnv;
 /// ## Errors
 /// - If the Ollama executable is not found in the system.
 pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
-    let host = dria_env.get("OLLAMA_HOST").unwrap_or("http://127.0.0.1");
-    let port = dria_env.get("OLLAMA_PORT").unwrap_or("11434");
+    let (host, port) = dria_env.ollama_values();
 
     // find the path to binary
     let exe_path = which("ollama").wrap_err("could not find Ollama executable")?;
@@ -46,6 +43,18 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
     // TODO: wait for server to start
 
     Ok(command)
+}
+
+/// Checks if ollama is running at the configured host & port, returns `true` if it is.
+///
+/// Ollama responds to a GET request at its root with "Ollama is running".
+pub async fn check_ollama(dria_env: &DriaEnv) -> bool {
+    let (host, port) = dria_env.ollama_values();
+
+    match reqwest::get(&format!("{}:{}", host, port)).await {
+        Ok(response) => response.status().is_success(),
+        Err(_) => false,
+    }
 }
 
 #[cfg(test)]
