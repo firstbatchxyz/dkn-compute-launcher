@@ -56,12 +56,17 @@ async fn main() -> eyre::Result<()> {
         Err(_) => { /* do nothing */ }
     }
 
-    // let env_file = dotenvy::from_path_iter(&cli.env)?;
-
+    // TODO: check internet connection?
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
-        Commands::Version { dir } => commands::change_version(dir).await?,
+        Commands::Version { dir, run } => {
+            let exe = commands::change_version(dir).await?;
+            // run the downloaded executable optionally
+            if let (Some(exe), true) = (exe, *run) {
+                commands::run_compute(&exe).await?;
+            }
+        }
         Commands::Compute { exe } => {
             commands::run_compute(exe).await?;
         }

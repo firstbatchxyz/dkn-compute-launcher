@@ -31,6 +31,9 @@ pub enum Commands {
         /// Directory where the executables are stored.
         #[arg(long, default_value = default_exedir())]
         dir: PathBuf,
+        /// Run the chosen executable immediately.
+        #[arg(short, long, default_value_t = false)]
+        run: bool,
     },
 }
 
