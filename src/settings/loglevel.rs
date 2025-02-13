@@ -56,7 +56,7 @@ pub fn edit_log_level(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         let new_log_levels = log_levels.join(",");
         dria_env.set(LOG_LEVELS_KEY, new_log_levels);
     } else {
-        println!("No changes made.");
+        eprintln!("No changes made.");
     }
 
     Ok(())
@@ -149,8 +149,8 @@ mod test {
     fn test_log_level_editor() {
         let mut env = DriaEnv::new();
         env.set(LOG_LEVELS_KEY, "dkn_compute=info,dkn_launcher=info");
-        println!("Old log levels: {:?}", env.get(LOG_LEVELS_KEY).unwrap());
+        eprintln!("Old log levels: {:?}", env.get(LOG_LEVELS_KEY).unwrap());
         edit_log_level(&mut env).unwrap();
-        println!("New log levels: {:?}", env.get(LOG_LEVELS_KEY).unwrap());
+        eprintln!("New log levels: {:?}", env.get(LOG_LEVELS_KEY).unwrap());
     }
 }

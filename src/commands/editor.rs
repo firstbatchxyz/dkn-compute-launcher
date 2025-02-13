@@ -1,27 +1,36 @@
 use inquire::Editor;
 use std::fs;
-use std::{io::Write, path::PathBuf};
+use std::path::PathBuf;
+
+use crate::utils::DriaEnv;
 
 /// Edit the environment file at the given path.
 pub fn edit_environment_file(env_path: &PathBuf) -> eyre::Result<()> {
-    let old_env_content = fs::read_to_string(env_path)?;
+    let existing_env_content = if env_path.exists() {
+        fs::read_to_string(env_path)?
+    } else {
+        eprintln!(
+            "Environment file not found at: {}, will create a new one on save!",
+            env_path.display()
+        );
+
+        DriaEnv::EXAMPLE_ENV.to_string()
+    };
 
     let prompt = format!("Edit {} file:", env_path.display());
     let Some(new_env_content) = Editor::new(&prompt)
-        .with_predefined_text(&old_env_content)
+        .with_predefined_text(&existing_env_content)
         .with_help_message("ESC to go back")
         .prompt_skippable()?
     else {
         return Ok(());
     };
 
-    if old_env_content != new_env_content {
-        let mut file = fs::File::create(env_path)?;
-        file.write_all(new_env_content.as_bytes())?;
-
-        println!("Environment file updated successfully.");
+    if existing_env_content != new_env_content {
+        fs::write(env_path, new_env_content)?;
+        eprintln!("Environment file updated successfully.");
     } else {
-        println!("No changes made to the file.");
+        eprintln!("No changes made to the file.");
     }
 
     Ok(())

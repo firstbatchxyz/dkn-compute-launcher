@@ -15,7 +15,7 @@ pub async fn change_version(exe_dir: &PathBuf) -> eyre::Result<Option<PathBuf>> 
         return Ok(None);
     };
 
-    println!("Downloading version: {}", chosen_release);
+    eprintln!("Downloading version: {}", chosen_release);
 
     let path = chosen_release
         .download_release(exe_dir, chosen_release.to_filename()?)
@@ -35,7 +35,7 @@ pub async fn select_version(exe_dir: &PathBuf, tag: &str) -> eyre::Result<PathBu
         .find(|release| release.version() == tag)
         .ok_or_else(|| eyre::eyre!("No release found for tag: {}", tag))?;
 
-    println!("Downloading version: {}", chosen_release);
+    eprintln!("Downloading version: {}", chosen_release);
 
     let path = chosen_release
         .download_release(exe_dir, chosen_release.to_filename()?)

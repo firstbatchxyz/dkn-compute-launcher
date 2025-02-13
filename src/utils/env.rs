@@ -9,6 +9,8 @@ pub struct DriaEnv {
 }
 
 impl DriaEnv {
+    pub const EXAMPLE_ENV: &str = include_str!("../../.env.example");
+
     /// All environment keys that we are interested in.
     pub const KEY_NAMES: [&str; 13] = [
         // log level
@@ -106,13 +108,13 @@ impl DriaEnv {
 
     /// Saves the environment to a file by adding the changes.
     pub fn save_to_file(&self, env_path: &PathBuf) -> io::Result<()> {
-        println!("Saving changes to {}", env_path.display());
+        eprintln!("Saving changes to {}", env_path.display());
 
         let content = std::fs::read_to_string(env_path)?;
         let new_content = self.save_to_content(&content);
 
         std::fs::write(env_path, new_content)?;
-        println!("Changes saved successfully.");
+        eprintln!("Changes saved successfully.");
         Ok(())
     }
 
@@ -150,6 +152,6 @@ mod tests {
     fn test_select_providers() {
         dotenvy::dotenv().unwrap();
         let e = DriaEnv::new();
-        println!("{}", e);
+        eprintln!("{}", e);
     }
 }

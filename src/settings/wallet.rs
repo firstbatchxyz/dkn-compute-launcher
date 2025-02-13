@@ -46,7 +46,7 @@ pub fn edit_wallet(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         return Ok(());
     };
 
-    println!("New key: {:?}", mask(&new_key));
+    eprintln!("New key: {:?}", mask(&new_key));
     dria_env.set(WALLET_KEY, new_key);
 
     Ok(())

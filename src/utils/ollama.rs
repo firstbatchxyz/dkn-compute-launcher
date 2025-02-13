@@ -6,6 +6,9 @@ use which::which;
 
 use crate::DriaEnv;
 
+const OLLAMA_RETRY_COUNT: usize = 10;
+const OLLAMA_RETRY_INTERVAL_MILLIS: u64 = 500;
+
 /// Spawns a local Ollama server process at the given host and port.
 ///
 /// ## Arguments
@@ -29,7 +32,8 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
     env::set_var("OLLAMA_HOST", format!("{}:{}", host, port));
     let command = Command::new(exe_path)
         .arg("serve")
-        .stdout(Stdio::null()) // ignore the output for simplicity
+        .stdout(Stdio::null()) // ignored
+        .stderr(Stdio::null()) // ignored
         .spawn()
         .wrap_err("could not spawn Ollama")?;
 
@@ -40,10 +44,23 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
         env::remove_var("OLLAMA_HOST");
     }
 
-    // TODO: wait for server to start in a better way?
-    // sleep for a while
-    eprintln!("Waiting for a bit for Ollama to start...");
-    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    // check ollama to see if its running
+    eprintln!("Waiting for Ollama to start");
+    for _ in 0..OLLAMA_RETRY_COUNT {
+        if check_ollama(dria_env).await {
+            break;
+        }
+        tokio::time::sleep(tokio::time::Duration::from_millis(
+            OLLAMA_RETRY_INTERVAL_MILLIS,
+        ))
+        .await;
+    }
+    if !check_ollama(dria_env).await {
+        return Err(eyre::eyre!(
+            "Ollama failed to start after {} retries",
+            OLLAMA_RETRY_COUNT
+        ));
+    }
 
     Ok(command)
 }
@@ -63,7 +80,6 @@ pub async fn check_ollama(dria_env: &DriaEnv) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tokio::time::{sleep, Duration};
 
     #[tokio::test]
     #[ignore = "require Ollama"]
@@ -72,10 +88,6 @@ mod tests {
         dria_env.set("OLLAMA_HOST", "http://127.0.0.1");
         dria_env.set("OLLAMA_PORT", "11438"); // not default!
         let mut child = spawn_ollama(&dria_env).await.unwrap();
-
-        // wait for 10 seconds
-        println!("Waiting for 10 seconds...");
-        sleep(Duration::from_secs(5)).await;
 
         // check for healthiness
         assert!(check_ollama(&dria_env).await, "ollama is not healthy");

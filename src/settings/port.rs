@@ -36,7 +36,7 @@ pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
 
     parts[4] = &new_port;
     let new_listen_addr = parts.join("/");
-    println!("New listen address: {:?}", new_listen_addr);
+    eprintln!("New listen address: {:?}", new_listen_addr);
     dria_env.set(LISTEN_ADDR_KEY, new_listen_addr);
 
     Ok(())

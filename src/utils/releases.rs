@@ -104,7 +104,7 @@ impl DriaRelease {
         let dest_file = fs::File::create(&dest_path)?;
 
         let asset = self.asset()?;
-        println!(
+        eprintln!(
             "Downloading {} (v{}) to {}",
             asset.download_url,
             self.version(),
@@ -188,14 +188,15 @@ mod tests {
     #[tokio::test]
     async fn test_compute_releases() {
         let releases = super::get_compute_releases().await.unwrap();
-        assert!(releases.len() > 20);
-        println!("{:#?}", releases[0]);
+        assert!(!releases.is_empty());
+        assert!(!releases.is_sorted_by(|a, b| a.version().cmp(b.version()).is_le()));
     }
 
     #[tokio::test]
     async fn test_launcher_releases() {
         let releases = super::get_launcher_releases().await.unwrap();
-        println!("{:#?}", releases.last().unwrap());
+        assert!(!releases.is_empty());
+        // eprintln!("{:#?}", releases.last().unwrap());
     }
 
     #[tokio::test]

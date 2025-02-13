@@ -6,11 +6,12 @@ use commands::Commands;
 
 mod settings;
 
-mod env;
-use env::DriaEnv;
-
 mod utils;
 use utils::*;
+
+/// Crate version of the compute node.
+/// This value is attached within the published messages.
+const DRIA_LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Parser)]
 #[command(name = "dkn", version)]
@@ -43,7 +44,6 @@ async fn main() -> eyre::Result<()> {
     env_logger::builder()
         .format_timestamp(Some(env_logger::TimestampPrecision::Millis))
         .filter(None, log::LevelFilter::Off)
-        .filter_module("dkn_compute", log_level)
         .filter_module("dkn_launcher", log_level)
         .parse_default_env()
         .init();
@@ -55,6 +55,7 @@ async fn main() -> eyre::Result<()> {
     }
 
     // TODO: check internet connection?
+
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
@@ -68,11 +69,11 @@ async fn main() -> eyre::Result<()> {
 
             // run the downloaded executable optionally
             if let (Some(exe), true) = (exe, *run) {
-                commands::run_compute(&exe).await?;
+                commands::run_compute(&exe).await?.monitor_process().await;
             }
         }
         Commands::Start { dir } => {
-            commands::run_compute(dir).await?;
+            commands::run_compute(dir).await?.monitor_process().await;
         }
     };
 

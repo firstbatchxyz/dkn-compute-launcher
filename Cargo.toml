@@ -37,6 +37,6 @@ log = "0.4.21"
 eyre = "0.6.12"
 
 dkn-workflows = { git = "https://github.com/firstbatchxyz/dkn-compute-node" }
-homedir = "0.3.4"
-tempfile = "3.16.0"
+homedir = "0.3.4"                                                             # TODO: used?
+tempfile = "3.16.0"                                                           # TODO: used?
 reqwest = "0.12.12"

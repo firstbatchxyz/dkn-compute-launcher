@@ -22,7 +22,7 @@ pub fn edit_api_keys(dria_env: &mut DriaEnv) -> eyre::Result<()> {
             continue;
         };
 
-        println!("Setting {} to {}", chosen_api_key, new_value);
+        eprintln!("Setting {} to {}", chosen_api_key, new_value);
         dria_env.set(chosen_api_key.name(), new_value);
     }
 
