@@ -7,12 +7,10 @@ use commands::Commands;
 mod settings;
 
 mod env;
-pub use env::DriaEnv;
-
-mod signal;
-pub use signal::wait_for_termination;
+use env::DriaEnv;
 
 mod utils;
+use utils::*;
 
 #[derive(Parser)]
 #[command(name = "dkn", version)]
@@ -60,15 +58,21 @@ async fn main() -> eyre::Result<()> {
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
-        Commands::Version { dir, run } => {
-            let exe = commands::change_version(dir).await?;
+        Commands::Version { dir, run, tag } => {
+            // get the executable path
+            let exe = if let Some(tag) = tag {
+                Some(commands::select_version(dir, &tag).await?)
+            } else {
+                commands::change_version(dir).await?
+            };
+
             // run the downloaded executable optionally
             if let (Some(exe), true) = (exe, *run) {
                 commands::run_compute(&exe).await?;
             }
         }
-        Commands::Compute { exe } => {
-            commands::run_compute(exe).await?;
+        Commands::Start { dir } => {
+            commands::run_compute(dir).await?;
         }
     };
 

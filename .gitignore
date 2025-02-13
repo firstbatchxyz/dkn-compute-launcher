@@ -6,5 +6,6 @@
 .env*
 !.env.example
 
-
-flamegraph.svg
+# binaries and stuff
+dkn-compute-node*
+.dkn.version

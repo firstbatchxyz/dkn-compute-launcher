@@ -1,9 +1,11 @@
+//! Utilities for releases & version management.
+
 use std::env::consts::{ARCH, FAMILY, OS};
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-use eyre::{eyre, Context, Result};
+use eyre::{eyre, Context, OptionExt, Result};
 use self_update::backends::github;
 use self_update::update::{Release, ReleaseAsset};
 
@@ -19,6 +21,16 @@ impl DriaRelease {
     #[inline]
     pub fn version(&self) -> &str {
         &self.0.version
+    }
+
+    /// Returns the filename for the current machine for this release.
+    #[inline]
+    pub fn to_filename(&self) -> Result<String> {
+        if let Some((_, _, ext)) = Self::get_labels() {
+            Ok(format!("dkn-compute-node_v{}{}", self.version(), ext))
+        } else {
+            Err(eyre!("unsupported OS {} ARCH {}", OS, ARCH))
+        }
     }
 
     /// Returns the os, arch and family extension name for the current machine.
@@ -55,7 +67,7 @@ impl DriaRelease {
     /// - `"dkn-compute-binary-macOS-arm64`
     /// - `"dkn-compute-binary-windows-amd64.exe"`
     #[inline]
-    pub fn asset(&self) -> Result<&ReleaseAsset> {
+    pub fn asset(&self) -> Result<ReleaseAsset> {
         self.0
             .assets
             .iter()
@@ -72,12 +84,15 @@ impl DriaRelease {
                 ARCH,
                 FAMILY
             ))
+            .cloned()
     }
 
-    /// Downloads this release under the given directory.
-    ///
-    /// The name of the downloaded file is `dkn-compute-node_v{version}`.
-    pub async fn download_release(&self, dest_dir: &PathBuf) -> Result<PathBuf> {
+    /// Downloads this release under the given directory at the given `dest_name`.
+    pub async fn download_release(
+        &self,
+        dest_dir: &PathBuf,
+        dest_name: impl AsRef<Path>,
+    ) -> Result<PathBuf> {
         if !dest_dir.is_dir() {
             return Err(eyre!(
                 "destination directory {} does not exist / not a directory",
@@ -85,22 +100,18 @@ impl DriaRelease {
             ));
         }
 
-        // get asset
-        let asset = self.asset()?;
-
-        // add version info to the file name as well
-        let Some((_, _, ext)) = Self::get_labels() else {
-            return Err(eyre!("unsupported OS {} ARCH {}", OS, ARCH));
-        };
-        let file_name = format!("dkn-compute-node_v{}{}", self.version(), ext);
-        // TODO: check if file_name exists already here
-        let dest_path = dest_dir.join(PathBuf::from(&file_name));
+        let dest_path = dest_dir.join(dest_name);
         let dest_file = fs::File::create(&dest_path)?;
 
-        let download_url = asset.download_url.clone();
-        println!("Downloading {} to {}", download_url, dest_path.display());
+        let asset = self.asset()?;
+        println!(
+            "Downloading {} (v{}) to {}",
+            asset.download_url,
+            self.version(),
+            dest_path.display()
+        );
         tokio::task::spawn_blocking(move || {
-            self_update::Download::from_url(&download_url)
+            self_update::Download::from_url(&asset.download_url)
                 .set_header(
                     reqwest::header::ACCEPT,
                     // this is unlikely to panic
@@ -116,18 +127,17 @@ impl DriaRelease {
         // set to read, write, execute
         fs::set_permissions(&dest_path, fs::Permissions::from_mode(0o777))?;
 
-        // let bin_name = std::path::PathBuf::from(asset.name.clone());
-        // self_update::Extract::from_source(&tmp_file)
-        // .archive(self_update::ArchiveKind::Tar(Some(
-        //     self_update::Compression::Gz,
-        // )))
-        // .extract_file(&tmp_dir.path(), &bin_name)?;
-
-        // let new_exe = tmp_dir.path().join(bin_name);
-        // println!("Downloaded at: {}", new_exe.display());
-        // self_replace::self_replace(new_exe)?;
-
         Ok(dest_path)
+    }
+
+    /// Returns the latest release.
+    #[inline]
+    pub async fn get_latest_release() -> Result<DriaRelease> {
+        get_compute_releases()
+            .await?
+            .first()
+            .cloned()
+            .ok_or_eyre("no releases found")
     }
 }
 
@@ -143,6 +153,7 @@ pub async fn get_compute_releases() -> Result<Vec<DriaRelease>> {
 }
 
 #[inline]
+#[allow(unused)] // TODO: !!!
 pub async fn get_launcher_releases() -> Result<Vec<DriaRelease>> {
     get_releases("dkn-compute-launcher").await
 }
@@ -163,14 +174,12 @@ async fn get_releases(repo_name: &'static str) -> Result<Vec<DriaRelease>> {
             .fetch()
             .expect("could not fetch releases")
             .into_iter()
-            .map(|r| DriaRelease(r))
+            .map(DriaRelease)
             .collect::<Vec<_>>()
     })
     .await
     .map_err(Into::into)
 }
-
-/// Downloads an asset to the given file.
 
 #[cfg(test)]
 mod tests {
@@ -194,7 +203,10 @@ mod tests {
         let final_release = &super::get_compute_releases().await.unwrap()[0];
 
         let path = final_release
-            .download_release(&PathBuf::from_str(".").unwrap())
+            .download_release(
+                &PathBuf::from_str(".").unwrap(),
+                &final_release.to_filename().unwrap(),
+            )
             .await
             .unwrap();
         assert!(path.exists());

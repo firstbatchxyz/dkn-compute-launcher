@@ -1,8 +1,8 @@
 use clap::Subcommand;
 use std::path::PathBuf;
 
-mod compute;
-pub use compute::run_compute;
+mod start;
+pub use start::run_compute;
 
 mod editor;
 pub use editor::edit_environment_file;
@@ -11,7 +11,7 @@ mod settings;
 pub use settings::change_settings;
 
 mod version;
-pub use version::change_version;
+pub use version::{change_version, select_version};
 
 /// Launcher commands.
 #[derive(Subcommand)]
@@ -20,13 +20,13 @@ pub enum Commands {
     Settings,
     /// Open a command-line text editor for your environment file (advanced).
     EnvEditor,
-    /// Launch the compute node.
-    Compute {
+    /// Start the latest compute node release!
+    Start {
         /// Directory where the executables are stored.
-        #[arg(long, default_value = default_exe())]
-        exe: PathBuf,
+        #[arg(long, default_value = default_exedir())]
+        dir: PathBuf,
     },
-    /// Change active compute node version.
+    /// Run a specific compute node version.
     Version {
         /// Directory where the executables are stored.
         #[arg(long, default_value = default_exedir())]
@@ -34,6 +34,9 @@ pub enum Commands {
         /// Run the chosen executable immediately.
         #[arg(short, long, default_value_t = false)]
         run: bool,
+        /// Tag of the version to download, bypasses the prompt if provided.
+        #[arg(short, long)]
+        tag: Option<String>,
     },
 }
 
@@ -65,10 +68,4 @@ pub fn default_env() -> String {
 #[inline]
 pub fn default_exedir() -> &'static str {
     "."
-}
-
-/// Returns the default executable path.
-#[inline]
-pub fn default_exe() -> &'static str {
-    "./dkn-compute-node_latest"
 }

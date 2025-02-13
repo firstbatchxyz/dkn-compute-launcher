@@ -1,5 +1,7 @@
 use std::{collections::HashMap, io, path::PathBuf};
 
+use dkn_workflows::DriaWorkflowsConfig;
+
 #[derive(Debug, Clone)]
 pub struct DriaEnv {
     kv: HashMap<&'static str, String>,
@@ -116,11 +118,18 @@ impl DriaEnv {
 
     /// Returns the `host` and `port` values for the Ollama server w.r.t Dria environment.
     #[inline]
-    pub fn ollama_values(&self) -> (&str, &str) {
+    pub fn get_ollama_values(&self) -> (&str, &str) {
         let host = self.get("OLLAMA_HOST").unwrap_or("http://127.0.0.1");
         let port = self.get("OLLAMA_PORT").unwrap_or("11434");
 
         (host, port)
+    }
+
+    /// Returns the model config with the chosen models.
+    #[inline]
+    pub fn get_model_config(&self) -> DriaWorkflowsConfig {
+        // TODO: can remove models_config perhaps?
+        DriaWorkflowsConfig::new_from_csv(self.get("DKN_MODELS").unwrap_or_default())
     }
 }
 

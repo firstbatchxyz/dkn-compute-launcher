@@ -17,7 +17,7 @@ use crate::DriaEnv;
 /// ## Errors
 /// - If the Ollama executable is not found in the system.
 pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
-    let (host, port) = dria_env.ollama_values();
+    let (host, port) = dria_env.get_ollama_values();
 
     // find the path to binary
     let exe_path = which("ollama").wrap_err("could not find Ollama executable")?;
@@ -40,7 +40,10 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
         env::remove_var("OLLAMA_HOST");
     }
 
-    // TODO: wait for server to start
+    // TODO: wait for server to start in a better way?
+    // sleep for a while
+    eprintln!("Waiting for a bit for Ollama to start...");
+    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
     Ok(command)
 }
@@ -49,7 +52,7 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
 ///
 /// Ollama responds to a GET request at its root with "Ollama is running".
 pub async fn check_ollama(dria_env: &DriaEnv) -> bool {
-    let (host, port) = dria_env.ollama_values();
+    let (host, port) = dria_env.get_ollama_values();
 
     match reqwest::get(&format!("{}:{}", host, port)).await {
         Ok(response) => response.status().is_success(),
@@ -63,7 +66,8 @@ mod tests {
     use tokio::time::{sleep, Duration};
 
     #[tokio::test]
-    async fn test_run() {
+    #[ignore = "require Ollama"]
+    async fn test_ollama_spawn_and_check() {
         let mut dria_env = DriaEnv::new();
         dria_env.set("OLLAMA_HOST", "http://127.0.0.1");
         dria_env.set("OLLAMA_PORT", "11438"); // not default!
@@ -71,7 +75,10 @@ mod tests {
 
         // wait for 10 seconds
         println!("Waiting for 10 seconds...");
-        sleep(Duration::from_secs(10)).await;
+        sleep(Duration::from_secs(5)).await;
+
+        // check for healthiness
+        assert!(check_ollama(&dria_env).await, "ollama is not healthy");
 
         // kill the process
         if let Err(e) = child.kill().await {

@@ -1,4 +1,3 @@
-use dkn_workflows::DriaWorkflowsConfig;
 use dkn_workflows::{Model, ModelProvider};
 use inquire::{MultiSelect, Select};
 
@@ -10,8 +9,7 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     let mut is_changed = false;
 
     // TODO: can remove models_config perhaps?
-    let models_config =
-        DriaWorkflowsConfig::new_from_csv(dria_env.get(MODELS_KEY).unwrap_or_default());
+    let models_config = dria_env.get_model_config();
 
     let mut chosen_models = models_config
         .models
