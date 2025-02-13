@@ -57,6 +57,10 @@ var (
 		"deepseek-r1:32b",
 		"deepseek-r1:70b",
 
+		"driaforall/tiny-agent-a:0.5b",
+		"driaforall/tiny-agent-a:1.5b",
+		"driaforall/tiny-agent-a:3b",
+
 		"mixtral:8x7b",
 	}
 	// https://github.com/andthattoo/ollama-workflows/edit/main/src/program/models.rs#L76
@@ -75,7 +79,8 @@ var (
 		"gemini-1.5-pro",
 		"gemini-1.5-pro-exp-0827",
 		"gemini-1.5-flash",
-		"gemini-2.0-flash-exp",
+		"gemini-2.0-flash",
+		"gemini-2.0-pro-exp-02-05",
 
 		"gemma-2-2b-it",
 		"gemma-2-9b-it",
