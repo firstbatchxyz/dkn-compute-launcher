@@ -30,8 +30,8 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         // then choose a model of that provider
         let my_prov_models = chosen_models
             .iter()
+            .filter(|m| ModelProvider::from(*m) == provider)
             .cloned()
-            .filter(|m| ModelProvider::from(m) == provider)
             .collect::<Vec<_>>();
         let all_prov_models = Model::all_with_provider(provider).collect::<Vec<_>>();
         let default_selected_idxs = all_prov_models

@@ -17,7 +17,7 @@ const DKN_LATEST_VERSION_FILENAME: &str = "dkn-compute-node_latest";
 /// The given directory is checked for the latest version of the compute node.
 pub async fn run_compute(exe_dir: &PathBuf) -> Result<ComputeInstance> {
     // get the latest release version from repo
-    let latest_release = DriaRelease::get_latest_release().await?;
+    let latest_release = DriaRelease::get_latest_compute_release().await?;
     let latest_version = latest_release.version();
 
     // read the local latest version from the tracker file
@@ -67,7 +67,8 @@ pub async fn run_compute(exe_dir: &PathBuf) -> Result<ComputeInstance> {
     let compute_process = Command::new(&compute_path).spawn()?;
 
     Ok(ComputeInstance {
-        compute_path,
+        compute_dir: exe_dir.into(),
+        compute_name: DKN_LATEST_VERSION_FILENAME.into(),
         compute_version: latest_version.into(),
         compute_process,
         workflow_config,

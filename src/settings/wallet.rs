@@ -36,7 +36,7 @@ pub fn edit_wallet(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     let Some(new_key) = Password::new("Enter wallet secret key:")
         .with_help_message(&format!(
             "ESC to go back and keep using {}",
-            mask(&dria_env.get(WALLET_KEY).unwrap_or_default())
+            mask(dria_env.get(WALLET_KEY).unwrap_or_default())
         ))
         .with_validator(validator)
         .with_display_mode(PasswordDisplayMode::Masked)

@@ -1,11 +1,11 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use inquire::Select;
 
 use crate::utils::get_compute_releases;
 
 /// Prompts the user to select a version to download, which is downloaded to `exe_dir` directory.
-pub async fn change_version(exe_dir: &PathBuf) -> eyre::Result<Option<PathBuf>> {
+pub async fn change_version(exe_dir: &Path) -> eyre::Result<Option<PathBuf>> {
     let releases = get_compute_releases().await?;
 
     let Some(chosen_release) = Select::new("Select a version:", releases)
@@ -27,7 +27,7 @@ pub async fn change_version(exe_dir: &PathBuf) -> eyre::Result<Option<PathBuf>> 
 /// Selects the specific version.
 ///
 /// Version must be in `major.minor.patch` format.
-pub async fn select_version(exe_dir: &PathBuf, tag: &str) -> eyre::Result<PathBuf> {
+pub async fn select_version(exe_dir: &Path, tag: &str) -> eyre::Result<PathBuf> {
     let releases = get_compute_releases().await?;
 
     let chosen_release = releases

@@ -19,7 +19,7 @@ pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     }
     let port = parts[4].parse::<u16>().unwrap();
 
-    let validator = |port_str: &str| match u16::from_str_radix(port_str, 10) {
+    let validator = |port_str: &str| match port_str.parse::<u16>() {
         Ok(_) => Ok(Validation::Valid),
         Err(_) => Ok(Validation::Invalid(
             "Port must be a valid 16-bit unsigned integer.".into(),

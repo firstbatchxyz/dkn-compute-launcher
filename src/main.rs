@@ -9,12 +9,9 @@ mod settings;
 mod utils;
 use utils::*;
 
-/// Crate version of the compute node.
-/// This value is attached within the published messages.
-const DRIA_LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
-
+/// Dria Compute Node Launcher
 #[derive(Parser)]
-#[command(name = "dkn", version)]
+#[command(name = "dkn-lancher", version(env!("CARGO_PKG_VERSION")))]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -62,7 +59,7 @@ async fn main() -> eyre::Result<()> {
         Commands::Version { dir, run, tag } => {
             // get the executable path
             let exe = if let Some(tag) = tag {
-                Some(commands::select_version(dir, &tag).await?)
+                Some(commands::select_version(dir, tag).await?)
             } else {
                 commands::change_version(dir).await?
             };

@@ -1,11 +1,16 @@
 use dkn_workflows::DriaWorkflowsConfig;
+use eyre::Result;
 use std::{path::PathBuf, time::Duration};
 use tokio::process::Child;
 
+use super::DriaRelease;
+
 /// A launched compute node.
 pub struct ComputeInstance {
-    /// Executed compute node's path.
-    pub compute_path: PathBuf,
+    /// Executed compute node's directory.
+    pub compute_dir: PathBuf,
+    /// Executed compute node's file name.
+    pub compute_name: PathBuf,
     /// Executed compute node's version.
     pub compute_version: String,
     /// Workflow configurations, e.g. models.
@@ -55,7 +60,11 @@ impl ComputeInstance {
                   }
                   break;
               },
-               _ = compute_node_update_interval.tick() => self.handle_compute_update().await,
+               _ = compute_node_update_interval.tick() => {
+                  if let Err(e) = self.handle_compute_update().await {
+                    eprintln!("Failed to update compute node: {}", e);
+                  }
+              },
                _ = launcher_update_interval.tick() => self.handle_launcher_update().await,
             }
         }
@@ -63,7 +72,27 @@ impl ComputeInstance {
         eprintln!("Quitting launcher!");
     }
 
-    pub async fn handle_compute_update(&mut self) {}
+    pub async fn handle_compute_update(&mut self) -> Result<()> {
+        let latest_release = DriaRelease::get_latest_compute_release().await?;
+        let latest_version = latest_release.version();
+
+        // check if we need to update
+        if self.compute_version == latest_version {
+            return Ok(());
+        }
+
+        // download the latest release to the same path
+        latest_release
+            .download_release(&self.compute_dir, &self.compute_name)
+            .await?;
+
+        // update version field
+        self.compute_version = latest_version.into();
+
+        // its safe to do this here even though `monitor_process` waits for a kill
+        // signal, because that thread is used within this function at this moment
+        todo!("TODO: kill one process and then run the other");
+    }
 
     pub async fn handle_launcher_update(&mut self) {}
 }

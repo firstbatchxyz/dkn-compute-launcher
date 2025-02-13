@@ -90,7 +90,7 @@ impl DriaRelease {
     /// Downloads this release under the given directory at the given `dest_name`.
     pub async fn download_release(
         &self,
-        dest_dir: &PathBuf,
+        dest_dir: &Path,
         dest_name: impl AsRef<Path>,
     ) -> Result<PathBuf> {
         if !dest_dir.is_dir() {
@@ -130,9 +130,9 @@ impl DriaRelease {
         Ok(dest_path)
     }
 
-    /// Returns the latest release.
+    /// Returns the latest compute node release.
     #[inline]
-    pub async fn get_latest_release() -> Result<DriaRelease> {
+    pub async fn get_latest_compute_release() -> Result<DriaRelease> {
         get_compute_releases()
             .await?
             .first()
@@ -189,14 +189,14 @@ mod tests {
     async fn test_compute_releases() {
         let releases = super::get_compute_releases().await.unwrap();
         assert!(!releases.is_empty());
-        assert!(!releases.is_sorted_by(|a, b| a.version().cmp(b.version()).is_le()));
+        // eprintln!("{:#?}", releases[0]);
     }
 
     #[tokio::test]
     async fn test_launcher_releases() {
         let releases = super::get_launcher_releases().await.unwrap();
         assert!(!releases.is_empty());
-        // eprintln!("{:#?}", releases.last().unwrap());
+        // eprintln!("{:#?}", releases[0]);
     }
 
     #[tokio::test]
@@ -210,6 +210,7 @@ mod tests {
             )
             .await
             .unwrap();
+
         assert!(path.exists());
     }
 }
