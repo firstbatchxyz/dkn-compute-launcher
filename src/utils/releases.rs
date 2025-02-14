@@ -9,8 +9,14 @@ use eyre::{eyre, Context, OptionExt, Result};
 use self_update::backends::github;
 use self_update::update::{Release, ReleaseAsset};
 
+#[derive(Debug, Clone, Copy)]
+pub enum DriaRepo {
+    ComputeNode,
+    Launcher,
+}
+
 #[derive(Debug, Clone)]
-pub struct DriaRelease(Release);
+pub struct DriaRelease(Release, DriaRepo);
 
 impl DriaRelease {
     #[inline]
@@ -27,7 +33,12 @@ impl DriaRelease {
     #[inline]
     pub fn to_filename(&self) -> Result<String> {
         if let Some((_, _, ext)) = Self::get_labels() {
-            Ok(format!("dkn-compute-node_v{}{}", self.version(), ext))
+            match self.1 {
+                DriaRepo::ComputeNode => Ok(format!("dkn-compute-node_v{}{}", self.version(), ext)),
+                DriaRepo::Launcher => {
+                    Ok(format!("dkn-compute-launcher_v{}{}", self.version(), ext))
+                }
+            }
         } else {
             Err(eyre!("unsupported OS {} ARCH {}", OS, ARCH))
         }
@@ -59,6 +70,7 @@ impl DriaRelease {
     }
 
     /// Returns the release asset for this machine.
+    ///
     /// Selects the asset w.r.t current OS and ARCH and returns one of:
     ///
     /// - `"dkn-compute-binary-linux-amd64`
@@ -76,7 +88,15 @@ impl DriaRelease {
                     return false;
                 };
 
-                asset.name == format!("dkn-compute-binary-{}-{}{}", os, arch, ext)
+                let target_name = match self.1 {
+                    DriaRepo::ComputeNode => {
+                        format!("dkn-compute-binary-{}-{}{}", os, arch, ext)
+                    }
+                    DriaRepo::Launcher => {
+                        format!("dkn-compute-launcher-{}-{}{}", os, arch, ext)
+                    }
+                };
+                asset.name == target_name
             })
             .ok_or(eyre!(
                 "asset not found for OS {} ARCH {} FAMILY {}",
@@ -132,12 +152,14 @@ impl DriaRelease {
 
     /// Returns the latest compute node release.
     #[inline]
-    pub async fn get_latest_compute_release() -> Result<DriaRelease> {
-        get_compute_releases()
-            .await?
-            .first()
-            .cloned()
-            .ok_or_eyre("no releases found")
+    pub async fn from_latest_release(repo: DriaRepo) -> Result<DriaRelease> {
+        match repo {
+            DriaRepo::ComputeNode => get_compute_releases().await?,
+            DriaRepo::Launcher => get_launcher_releases().await?,
+        }
+        .first()
+        .cloned()
+        .ok_or_eyre("no releases found")
     }
 }
 
@@ -149,20 +171,19 @@ impl std::fmt::Display for DriaRelease {
 
 #[inline]
 pub async fn get_compute_releases() -> Result<Vec<DriaRelease>> {
-    get_releases("dkn-compute-node").await
+    get_releases("dkn-compute-node", DriaRepo::ComputeNode).await
 }
 
 #[inline]
-#[allow(unused)] // TODO: !!!
 pub async fn get_launcher_releases() -> Result<Vec<DriaRelease>> {
-    get_releases("dkn-compute-launcher").await
+    get_releases("dkn-compute-launcher", DriaRepo::Launcher).await
 }
 
 /// Returns the entire list of releases for the given repository, owned by `firstbatchxyz`.
 ///
 /// Due to an [issue](// https://github.com/jaemk/self_update/issues/44) of `self_update` not
 /// working within async contexts, we do a blocking task spawn here.
-async fn get_releases(repo_name: &'static str) -> Result<Vec<DriaRelease>> {
+async fn get_releases(repo_name: &'static str, repo: DriaRepo) -> Result<Vec<DriaRelease>> {
     tokio::task::spawn_blocking(move || {
         let mut rel_builder = github::ReleaseList::configure();
 
@@ -174,7 +195,7 @@ async fn get_releases(repo_name: &'static str) -> Result<Vec<DriaRelease>> {
             .fetch()
             .expect("could not fetch releases")
             .into_iter()
-            .map(DriaRelease)
+            .map(|r| DriaRelease(r, repo))
             .collect::<Vec<_>>()
     })
     .await

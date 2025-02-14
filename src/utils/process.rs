@@ -1,9 +1,9 @@
-use dkn_workflows::DriaWorkflowsConfig;
 use eyre::Result;
-use std::{path::PathBuf, time::Duration};
-use tokio::process::Child;
+use std::path::PathBuf;
+use tokio::process::{Child, Command};
+use tokio::time;
 
-use super::DriaRelease;
+use super::{DriaRelease, DriaRepo};
 
 /// A launched compute node.
 pub struct ComputeInstance {
@@ -13,10 +13,10 @@ pub struct ComputeInstance {
     pub compute_name: PathBuf,
     /// Executed compute node's version.
     pub compute_version: String,
-    /// Workflow configurations, e.g. models.
-    pub workflow_config: DriaWorkflowsConfig,
     /// The compute process handle.
     pub compute_process: Child,
+    /// Executed launcher version.
+    pub launcher_version: String,
     /// Optionally launched Ollama process.
     ///
     /// This is only used when the compute node is started with Ollama models
@@ -38,42 +38,52 @@ impl ComputeInstance {
         /// Number of seconds between refreshing for launcher updates.
         const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 25 * 60;
 
-        let mut compute_node_update_interval =
-            tokio::time::interval(Duration::from_secs(COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS));
+        let mut compute_node_update_interval = time::interval(time::Duration::from_secs(
+            COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS,
+        ));
         compute_node_update_interval.tick().await; // move one tick
 
-        let mut launcher_update_interval =
-            tokio::time::interval(Duration::from_secs(LAUNCHER_UPDATE_CHECK_INTERVAL_SECS));
+        let mut launcher_update_interval = time::interval(time::Duration::from_secs(
+            LAUNCHER_UPDATE_CHECK_INTERVAL_SECS,
+        ));
         launcher_update_interval.tick().await; // move one tick
 
         loop {
             tokio::select! {
               // wait for compute node to exit; the node will handle signals on its own so we dont
               // have to check for signal and call kill() explicitly here
-              // FIXME: what happens when we kill() due to compute update?
               _ = self.compute_process.wait() => {
                   // now that compute is closed, we should kill Ollama if it was launched by us
                   if let Some(ollama_process) = &mut self.ollama_process {
                       if let Err(e) = ollama_process.kill().await {
-                          eprintln!("Failed to kill Ollama process: {}", e);
+                          log::warn!("Failed to kill Ollama process: {}", e);
                       }
                   }
                   break;
               },
+              // compute node update checks
                _ = compute_node_update_interval.tick() => {
                   if let Err(e) = self.handle_compute_update().await {
-                    eprintln!("Failed to update compute node: {}", e);
+                    log::error!("Failed to update compute node: {}", e);
                   }
               },
-               _ = launcher_update_interval.tick() => self.handle_launcher_update().await,
+              // launcher self-update checks
+               _ = launcher_update_interval.tick() => {
+                  if let Err(e) = self.handle_launcher_update().await {
+                    log::error!("Failed to update launcher: {}", e);
+                  }
+              },
             }
         }
 
-        eprintln!("Quitting launcher!");
+        log::warn!("Quitting launcher!");
     }
 
+    /// Checks for the latest compute node release and updates if needed.
+    ///
+    /// This replaces the existing process on-the-run.
     pub async fn handle_compute_update(&mut self) -> Result<()> {
-        let latest_release = DriaRelease::get_latest_compute_release().await?;
+        let latest_release = DriaRelease::from_latest_release(DriaRepo::ComputeNode).await?;
         let latest_version = latest_release.version();
 
         // check if we need to update
@@ -91,8 +101,32 @@ impl ComputeInstance {
 
         // its safe to do this here even though `monitor_process` waits for a kill
         // signal, because that thread is used within this function at this moment
-        todo!("TODO: kill one process and then run the other");
+        self.compute_process.kill().await?;
+
+        // restart the compute node
+        self.compute_process = Command::new(self.compute_dir.join(&self.compute_name)).spawn()?;
+
+        Ok(())
     }
 
-    pub async fn handle_launcher_update(&mut self) {}
+    pub async fn handle_launcher_update(&mut self) -> Result<()> {
+        let latest_release = DriaRelease::from_latest_release(DriaRepo::Launcher).await?;
+        let latest_version = latest_release.version();
+
+        // check if we need to update
+        if self.launcher_version == latest_version {
+            return Ok(());
+        }
+
+        // download the latest release to a temporary path
+        latest_release
+            .download_release(&self.compute_dir, "launcher-tmp")
+            .await?;
+
+        // TODO: !!! download to tempfile
+
+        // TODO: self-replace
+
+        Ok(())
+    }
 }

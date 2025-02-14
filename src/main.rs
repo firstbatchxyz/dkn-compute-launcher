@@ -11,7 +11,7 @@ use utils::*;
 
 /// Dria Compute Node Launcher
 #[derive(Parser)]
-#[command(name = "dkn-lancher", version(env!("CARGO_PKG_VERSION")))]
+#[command(name = "dkn-lancher", version)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,

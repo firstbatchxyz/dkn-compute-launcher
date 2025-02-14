@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use tokio::process::Command;
 
 use crate::{
-    utils::{check_ollama, spawn_ollama, ComputeInstance, DriaRelease},
+    utils::{check_ollama, spawn_ollama, ComputeInstance, DriaRelease, DriaRepo},
     DriaEnv,
 };
 
@@ -17,7 +17,7 @@ const DKN_LATEST_VERSION_FILENAME: &str = "dkn-compute-node_latest";
 /// The given directory is checked for the latest version of the compute node.
 pub async fn run_compute(exe_dir: &PathBuf) -> Result<ComputeInstance> {
     // get the latest release version from repo
-    let latest_release = DriaRelease::get_latest_compute_release().await?;
+    let latest_release = DriaRelease::from_latest_release(DriaRepo::ComputeNode).await?;
     let latest_version = latest_release.version();
 
     // read the local latest version from the tracker file
@@ -70,8 +70,8 @@ pub async fn run_compute(exe_dir: &PathBuf) -> Result<ComputeInstance> {
         compute_dir: exe_dir.into(),
         compute_name: DKN_LATEST_VERSION_FILENAME.into(),
         compute_version: latest_version.into(),
+        launcher_version: env!("CARGO_PKG_VERSION").into(),
         compute_process,
-        workflow_config,
         ollama_process,
     })
 }
