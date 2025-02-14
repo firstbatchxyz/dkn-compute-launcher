@@ -1,5 +1,5 @@
 [package]
-name = "dkn-compute-launcher"
+name = "dkn-launcher"
 edition = "2021"
 version = "0.1.0"
 license = "Apache-2.0"
@@ -17,7 +17,9 @@ tokio = { version = "1", features = [
   "time",
 ] }
 which = "6.0.3"
-self_update = "0.42.0"
+self_update = { version = "0.42.0", features = [
+  "rustls",
+], default-features = false }
 
 # CLI
 clap = { version = "4.5.27", features = [
@@ -38,5 +40,4 @@ eyre = "0.6.12"
 
 dkn-workflows = { git = "https://github.com/firstbatchxyz/dkn-compute-node" }
 homedir = "0.3.4"                                                             # TODO: used?
-tempfile = "3.16.0"                                                           # TODO: used?
-reqwest = "0.12.12"
+reqwest = { version = "0.12.12", features = ["rustls-tls"] }

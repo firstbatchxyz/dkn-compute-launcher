@@ -596,7 +596,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dkn-compute-launcher"
+name = "dkn-launcher"
 version = "0.1.0"
 dependencies = [
  "clap",
@@ -611,7 +611,6 @@ dependencies = [
  "log",
  "reqwest 0.12.12",
  "self_update",
- "tempfile",
  "tokio 1.43.0",
  "tokio-util 0.7.13",
  "which",

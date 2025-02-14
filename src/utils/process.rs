@@ -1,4 +1,5 @@
-use eyre::Result;
+use eyre::{Context, Result};
+use self_update::self_replace;
 use std::path::PathBuf;
 use tokio::process::{Child, Command};
 use tokio::time;
@@ -34,9 +35,9 @@ impl ComputeInstance {
     /// - EVery now and then checks for the latest launcher release, and replaces the binary "in-place" if there is an update.
     pub async fn monitor_process(&mut self) {
         /// Number of seconds between refreshing for compute node updates.
-        const COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS: u64 = 25 * 60;
+        const COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS: u64 = 1 * 60;
         /// Number of seconds between refreshing for launcher updates.
-        const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 25 * 60;
+        const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 1 * 60;
 
         let mut compute_node_update_interval = time::interval(time::Duration::from_secs(
             COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS,
@@ -109,7 +110,12 @@ impl ComputeInstance {
         Ok(())
     }
 
+    /// Checks for the latest launcher release and updates if needed.
+    ///
+    /// This replaces the existing launcher binary.
     pub async fn handle_launcher_update(&mut self) -> Result<()> {
+        const TMP_FILE_NAME: &str = ".tmp.launcher";
+
         let latest_release = DriaRelease::from_latest_release(DriaRepo::Launcher).await?;
         let latest_version = latest_release.version();
 
@@ -119,13 +125,14 @@ impl ComputeInstance {
         }
 
         // download the latest release to a temporary path
-        latest_release
-            .download_release(&self.compute_dir, "launcher-tmp")
+        let latest_path = latest_release
+            .download_release(&self.compute_dir, TMP_FILE_NAME)
             .await?;
 
-        // TODO: !!! download to tempfile
+        self_replace::self_replace(&latest_path).wrap_err("could not update launcher")?;
 
-        // TODO: self-replace
+        // remove the temporary file
+        std::fs::remove_file(&latest_path).wrap_err("could not remove temporary launcher file")?;
 
         Ok(())
     }

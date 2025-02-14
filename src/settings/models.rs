@@ -80,10 +80,10 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         // sort by model name so that they are easier to choose
         new_models.sort();
 
-        eprintln!("Chosen models:\n - {}", new_models.join("\n - "));
+        log::info!("Chosen models:\n - {}", new_models.join("\n - "));
         dria_env.set(MODELS_KEY, new_models.join(","));
     } else {
-        eprintln!("No changes made.");
+        log::info!("No changes made.");
     }
 
     Ok(())

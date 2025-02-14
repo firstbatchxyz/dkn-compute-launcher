@@ -121,15 +121,16 @@ impl DriaRelease {
         }
 
         let dest_path = dest_dir.join(dest_name);
-        let dest_file = fs::File::create(&dest_path)?;
 
         let asset = self.asset()?;
-        eprintln!(
+        log::info!(
             "Downloading {} (v{}) to {}",
             asset.download_url,
             self.version(),
             dest_path.display()
         );
+
+        let dest_file = fs::File::create(&dest_path)?;
         tokio::task::spawn_blocking(move || {
             self_update::Download::from_url(&asset.download_url)
                 .set_header(
@@ -176,7 +177,13 @@ pub async fn get_compute_releases() -> Result<Vec<DriaRelease>> {
 
 #[inline]
 pub async fn get_launcher_releases() -> Result<Vec<DriaRelease>> {
-    get_releases("dkn-compute-launcher", DriaRepo::Launcher).await
+    let releases = get_releases("dkn-compute-launcher", DriaRepo::Launcher).await?;
+
+    // filter version `0.0.x` here because they belong to the old launcher
+    Ok(releases
+        .into_iter()
+        .filter(|r| !r.version().starts_with("0.0"))
+        .collect())
 }
 
 /// Returns the entire list of releases for the given repository, owned by `firstbatchxyz`.
@@ -207,21 +214,22 @@ mod tests {
     use std::{path::PathBuf, str::FromStr};
 
     #[tokio::test]
-    async fn test_compute_releases() {
-        let releases = super::get_compute_releases().await.unwrap();
-        assert!(!releases.is_empty());
-        // eprintln!("{:#?}", releases[0]);
+    async fn test_download_last_compute_release() {
+        let final_release = &super::get_compute_releases().await.unwrap()[0];
+
+        let path = final_release
+            .download_release(
+                &PathBuf::from_str(".").unwrap(),
+                &final_release.to_filename().unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert!(path.exists());
     }
 
     #[tokio::test]
-    async fn test_launcher_releases() {
-        let releases = super::get_launcher_releases().await.unwrap();
-        assert!(!releases.is_empty());
-        // eprintln!("{:#?}", releases[0]);
-    }
-
-    #[tokio::test]
-    async fn test_download_last_release() {
+    async fn test_download_last_launcher_release() {
         let final_release = &super::get_compute_releases().await.unwrap()[0];
 
         let path = final_release

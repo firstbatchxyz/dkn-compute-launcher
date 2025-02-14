@@ -39,7 +39,7 @@ async fn main() -> eyre::Result<()> {
         false => log::LevelFilter::Info,
     };
     env_logger::builder()
-        .format_timestamp(Some(env_logger::TimestampPrecision::Millis))
+        .format_timestamp(Some(env_logger::TimestampPrecision::Seconds))
         .filter(None, log::LevelFilter::Off)
         .filter_module("dkn_launcher", log_level)
         .parse_default_env()
@@ -47,7 +47,7 @@ async fn main() -> eyre::Result<()> {
 
     // log about env usage after env logger init is executed
     match dotenv_result {
-        Ok(_) => eprintln!("Loaded env file at: {}", cli.env.display()),
+        Ok(_) => log::info!("Loaded env file at: {}", cli.env.display()),
         Err(_) => { /* do nothing */ }
     }
 
@@ -71,6 +71,10 @@ async fn main() -> eyre::Result<()> {
         }
         Commands::Start { dir } => {
             commands::run_compute(dir).await?.monitor_process().await;
+        }
+        Commands::Update { dir } => {
+            todo!("TODO: !!!")
+            // commands::update_launcher(dir).await?;
         }
     };
 

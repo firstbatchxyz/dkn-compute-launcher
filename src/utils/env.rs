@@ -108,13 +108,13 @@ impl DriaEnv {
 
     /// Saves the environment to a file by adding the changes.
     pub fn save_to_file(&self, env_path: &PathBuf) -> io::Result<()> {
-        eprintln!("Saving changes to {}", env_path.display());
+        log::info!("Saving changes to {}", env_path.display());
 
         let content = std::fs::read_to_string(env_path)?;
         let new_content = self.save_to_content(&content);
 
         std::fs::write(env_path, new_content)?;
-        eprintln!("Changes saved successfully.");
+        log::info!("Changes saved successfully.");
         Ok(())
     }
 
@@ -141,17 +141,5 @@ impl std::fmt::Display for DriaEnv {
             writeln!(f, "{}={}", k, v)?;
         }
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_select_providers() {
-        dotenvy::dotenv().unwrap();
-        let e = DriaEnv::new();
-        eprintln!("{}", e);
     }
 }

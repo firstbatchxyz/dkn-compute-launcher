@@ -29,12 +29,13 @@ pub async fn run_compute(exe_dir: &PathBuf) -> Result<ComputeInstance> {
     let compute_path = exe_dir.join(DKN_LATEST_VERSION_FILENAME);
     if latest_version != local_latest_version || !compute_path.exists() {
         if local_latest_version.is_empty() {
-            eprintln!(
+            log::info!(
                 "Upgrading from {} to latest version {}!",
-                local_latest_version, latest_version
+                local_latest_version,
+                latest_version
             );
         } else {
-            eprintln!("Downloading latest version {}!", latest_version);
+            log::info!("Downloading latest version {}!", latest_version);
         }
         latest_release
             .download_release(exe_dir, DKN_LATEST_VERSION_FILENAME)

@@ -26,6 +26,12 @@ pub enum Commands {
         #[arg(long, default_value = default_exedir())]
         dir: PathBuf,
     },
+    /// Manually update the launcher.
+    Update {
+        /// Directory where the executables are stored.
+        #[arg(long, default_value = default_exedir())]
+        dir: PathBuf,
+    },
     /// Run a specific compute node version.
     Version {
         /// Directory where the executables are stored.

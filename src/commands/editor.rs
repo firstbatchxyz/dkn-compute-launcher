@@ -9,7 +9,7 @@ pub fn edit_environment_file(env_path: &PathBuf) -> eyre::Result<()> {
     let existing_env_content = if env_path.exists() {
         fs::read_to_string(env_path)?
     } else {
-        eprintln!(
+        log::warn!(
             "Environment file not found at: {}, will create a new one on save!",
             env_path.display()
         );
@@ -28,9 +28,9 @@ pub fn edit_environment_file(env_path: &PathBuf) -> eyre::Result<()> {
 
     if existing_env_content != new_env_content {
         fs::write(env_path, new_env_content)?;
-        eprintln!("Environment file updated successfully.");
+        log::info!("Environment file updated successfully.");
     } else {
-        eprintln!("No changes made to the file.");
+        log::info!("No changes made to the file.");
     }
 
     Ok(())

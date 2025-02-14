@@ -56,7 +56,7 @@ pub fn edit_log_level(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         let new_log_levels = log_levels.join(",");
         dria_env.set(LOG_LEVELS_KEY, new_log_levels);
     } else {
-        eprintln!("No changes made.");
+        log::info!("No changes made.");
     }
 
     Ok(())

@@ -45,7 +45,7 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
     }
 
     // check ollama to see if its running
-    eprintln!("Waiting for Ollama to start");
+    log::info!("Waiting for Ollama to start");
     for _ in 0..OLLAMA_RETRY_COUNT {
         if check_ollama(dria_env).await {
             break;

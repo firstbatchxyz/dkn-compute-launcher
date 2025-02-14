@@ -28,7 +28,7 @@ pub fn change_settings(env_path: &PathBuf) -> eyre::Result<()> {
                 }
             }
 
-            eprintln!("Exiting...");
+            log::info!("Exiting...");
             break;
         };
 
@@ -55,7 +55,7 @@ pub fn change_settings(env_path: &PathBuf) -> eyre::Result<()> {
                 if dria_env.is_changed() {
                     dria_env.save_to_file(env_path)?;
                 } else {
-                    eprintln!("No changes made.");
+                    log::warn!("No changes made.");
                 }
                 break;
             }
