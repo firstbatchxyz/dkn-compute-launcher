@@ -6,7 +6,7 @@ use crate::{settings::*, DriaEnv};
 /// Starts the interactive settings editor for the given environment.
 pub fn change_settings(env_path: &PathBuf) -> eyre::Result<()> {
     // an environment object is created from the existing environment variables
-    let mut dria_env = DriaEnv::new();
+    let mut dria_env = DriaEnv::new_from_env();
 
     loop {
         // prompt the user for which setting to change
@@ -24,11 +24,13 @@ pub fn change_settings(env_path: &PathBuf) -> eyre::Result<()> {
                         .with_help_message("You will lose all unsaved changes!")
                         .prompt_skippable()?
                 {
+                    log::info!("Exiting, changes are reverted.");
                     continue;
                 }
+            } else {
+                log::info!("Exiting without changes.");
             }
 
-            log::info!("Exiting...");
             break;
         };
 
@@ -55,7 +57,7 @@ pub fn change_settings(env_path: &PathBuf) -> eyre::Result<()> {
                 if dria_env.is_changed() {
                     dria_env.save_to_file(env_path)?;
                 } else {
-                    log::warn!("No changes made.");
+                    log::info!("No changes made.");
                 }
                 break;
             }

@@ -104,6 +104,7 @@ impl std::fmt::Display for LogModules {
 
 #[derive(Debug, Clone, enum_iterator::Sequence)]
 enum LogLevels {
+    // TODO: add `none` option here, because we cant disable it otherwise
     Error = 1,
     Warn,
     Info,
@@ -147,7 +148,7 @@ mod test {
     #[test]
     #[ignore = "run manually"]
     fn test_log_level_editor() {
-        let mut env = DriaEnv::new();
+        let mut env = DriaEnv::new_from_env();
         env.set(LOG_LEVELS_KEY, "dkn_compute=info,dkn_launcher=info");
         eprintln!("Old log levels: {:?}", env.get(LOG_LEVELS_KEY).unwrap());
         edit_log_level(&mut env).unwrap();

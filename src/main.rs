@@ -9,9 +9,10 @@ mod settings;
 mod utils;
 use utils::*;
 
-/// Dria Compute Node Launcher
+pub const CRATE_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 #[derive(Parser)]
-#[command(name = "dkn-lancher", version)]
+#[command(name = "dkn-lancher", version, about)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -66,15 +67,20 @@ async fn main() -> eyre::Result<()> {
 
             // run the downloaded executable optionally
             if let (Some(exe), true) = (exe, *run) {
-                commands::run_compute(&exe).await?.monitor_process().await;
+                commands::run_compute(&exe, false)
+                    .await?
+                    .monitor_process()
+                    .await;
             }
         }
         Commands::Start { dir } => {
-            commands::run_compute(dir).await?.monitor_process().await;
+            commands::run_compute(dir, true)
+                .await?
+                .monitor_process()
+                .await;
         }
         Commands::Update { dir } => {
-            todo!("TODO: !!!")
-            // commands::update_launcher(dir).await?;
+            commands::update(dir).await?;
         }
     };
 

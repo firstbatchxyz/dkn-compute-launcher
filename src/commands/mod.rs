@@ -13,6 +13,9 @@ pub use settings::change_settings;
 mod version;
 pub use version::{change_version, select_version};
 
+mod update;
+pub use update::update;
+
 /// Launcher commands.
 #[derive(Subcommand)]
 pub enum Commands {
@@ -20,13 +23,13 @@ pub enum Commands {
     Settings,
     /// Open a command-line text editor for your environment file (advanced).
     EnvEditor,
-    /// Start the latest compute node release!
+    /// Start the latest compute node
     Start {
         /// Directory where the executables are stored.
         #[arg(long, default_value = default_exedir())]
         dir: PathBuf,
     },
-    /// Manually update the launcher.
+    /// Manually update the compute node & launcher.
     Update {
         /// Directory where the executables are stored.
         #[arg(long, default_value = default_exedir())]

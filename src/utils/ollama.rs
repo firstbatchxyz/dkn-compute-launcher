@@ -84,7 +84,7 @@ mod tests {
     #[tokio::test]
     #[ignore = "require Ollama"]
     async fn test_ollama_spawn_and_check() {
-        let mut dria_env = DriaEnv::new();
+        let mut dria_env = DriaEnv::new_from_env();
         dria_env.set("OLLAMA_HOST", "http://127.0.0.1");
         dria_env.set("OLLAMA_PORT", "11438"); // not default!
         let mut child = spawn_ollama(&dria_env).await.unwrap();

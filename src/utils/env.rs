@@ -9,6 +9,7 @@ pub struct DriaEnv {
 }
 
 impl DriaEnv {
+    /// Example env file content, used for creating a new env file.
     pub const EXAMPLE_ENV: &str = include_str!("../../.env.example");
 
     /// All environment keys that we are interested in.
@@ -57,7 +58,7 @@ impl DriaEnv {
     ///
     /// - Non-existent variables are ignored.
     /// - Empty variables are ignored.
-    pub fn new() -> Self {
+    pub fn new_from_env() -> Self {
         Self {
             kv: HashMap::from_iter(
                 Self::KEY_NAMES

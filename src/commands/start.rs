@@ -3,49 +3,44 @@ use std::path::PathBuf;
 use tokio::process::Command;
 
 use crate::{
-    utils::{check_ollama, spawn_ollama, ComputeInstance, DriaRelease, DriaRepo},
-    DriaEnv,
+    utils::{
+        check_ollama, spawn_ollama, ComputeInstance, DriaRelease, DriaRepository,
+        DKN_LATEST_COMPUTE_FILENAME,
+    },
+    DriaEnv, CRATE_VERSION,
 };
-
-/// The filename for the version tracker file, simply stores the string for the version.
-const DKN_VERSION_TRACKER_FILENAME: &str = ".dkn.version";
-/// The filename for the latest compute node binary.
-const DKN_LATEST_VERSION_FILENAME: &str = "dkn-compute-node_latest";
 
 /// Starts the latest compute node version.
 ///
 /// The given directory is checked for the latest version of the compute node.
-pub async fn run_compute(exe_dir: &PathBuf) -> Result<ComputeInstance> {
+pub async fn run_compute(exe_dir: &PathBuf, enable_updates: bool) -> Result<ComputeInstance> {
     // get the latest release version from repo
-    let latest_release = DriaRelease::from_latest_release(DriaRepo::ComputeNode).await?;
+    let latest_release = DriaRelease::from_latest_release(DriaRepository::ComputeNode).await?;
     let latest_version = latest_release.version();
 
     // read the local latest version from the tracker file
-    let local_version_tracker_path = exe_dir.join(DKN_VERSION_TRACKER_FILENAME);
-    let local_latest_version =
-        std::fs::read_to_string(&local_version_tracker_path).unwrap_or_default();
+    let local_latest_version = DriaRelease::get_compute_version(exe_dir);
 
     // download missing latest release if needed, which is when versions differ or file does not exist
-    let compute_path = exe_dir.join(DKN_LATEST_VERSION_FILENAME);
-    if latest_version != local_latest_version || !compute_path.exists() {
-        if local_latest_version.is_empty() {
-            log::info!(
-                "Upgrading from {} to latest version {}!",
-                local_latest_version,
-                latest_version
-            );
-        } else {
-            log::info!("Downloading latest version {}!", latest_version);
-        }
+    let compute_path = exe_dir.join(DKN_LATEST_COMPUTE_FILENAME);
+    if !local_latest_version
+        .as_ref()
+        .is_some_and(|v| v == latest_version)
+        || !compute_path.exists()
+    {
+        match local_latest_version {
+            Some(v) => log::info!("Updating from {} to latest version {}!", v, latest_version),
+            None => log::info!("Downloading latest version {}!", latest_version),
+        };
         latest_release
-            .download_release(exe_dir, DKN_LATEST_VERSION_FILENAME)
+            .download_release(exe_dir, DKN_LATEST_COMPUTE_FILENAME)
             .await?;
 
         // store the version in the tracker file
-        std::fs::write(&local_version_tracker_path, latest_version)?;
+        DriaRelease::set_compute_version(exe_dir, latest_version)?;
     }
 
-    let dria_env = DriaEnv::new();
+    let dria_env = DriaEnv::new_from_env();
     let workflow_config = dria_env.get_model_config();
 
     // handle ollama checks
@@ -69,10 +64,11 @@ pub async fn run_compute(exe_dir: &PathBuf) -> Result<ComputeInstance> {
 
     Ok(ComputeInstance {
         compute_dir: exe_dir.into(),
-        compute_name: DKN_LATEST_VERSION_FILENAME.into(),
         compute_version: latest_version.into(),
-        launcher_version: env!("CARGO_PKG_VERSION").into(),
+        // launcher version is the version of the binary that started the compute node
+        launcher_version: CRATE_VERSION.into(),
         compute_process,
         ollama_process,
+        check_updates: enable_updates,
     })
 }
