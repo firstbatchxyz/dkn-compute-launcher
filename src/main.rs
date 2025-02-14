@@ -42,17 +42,19 @@ async fn main() -> eyre::Result<()> {
     env_logger::builder()
         .format_timestamp(Some(env_logger::TimestampPrecision::Seconds))
         .filter(None, log::LevelFilter::Off)
-        .filter_module("dkn_launcher", log_level)
+        .filter_module("dkn_compute_launcher", log_level)
         .parse_default_env()
         .init();
 
     // log about env usage after env logger init is executed
     match dotenv_result {
         Ok(_) => log::info!("Loaded env file at: {}", cli.env.display()),
-        Err(_) => { /* do nothing */ }
+        Err(_) => {
+            log::warn!("No env file found at {}", cli.env.display());
+            std::fs::write(&cli.env, DriaEnv::EXAMPLE_ENV)?;
+            log::info!("Created a default profile at {}.", cli.env.display());
+        }
     }
-
-    // TODO: check internet connection?
 
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,

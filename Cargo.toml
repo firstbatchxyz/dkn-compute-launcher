@@ -1,5 +1,5 @@
 [package]
-name = "dkn-launcher"
+name = "dkn-compute-launcher"
 edition = "2021"
 version = "0.1.0"
 license = "Apache-2.0"

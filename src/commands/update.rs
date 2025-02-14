@@ -12,8 +12,8 @@ pub async fn update(exe_dir: &PathBuf) -> Result<()> {
     log::info!("Updating compute node...");
     update_compute(exe_dir).await?;
 
-    // log::info!("Updating launcher");
-    // update_launcher(exe_dir).await?;
+    log::info!("Updating launcher");
+    update_launcher(exe_dir).await?;
 
     Ok(())
 }

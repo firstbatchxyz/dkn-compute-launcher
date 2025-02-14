@@ -65,8 +65,9 @@ pub fn edit_log_level(dria_env: &mut DriaEnv) -> eyre::Result<()> {
 /// An enum to represent modules that we care about logging as a w
 #[derive(Debug, Clone, enum_iterator::Sequence)]
 enum LogModules {
-    DknCompute,
-    Dknp2p,
+    DknComputeLauncher,
+    DknComputeNode,
+    DknP2P,
     DknWorkflows,
     Libp2p,
     OllamaWorkflows,
@@ -80,8 +81,9 @@ impl LogModules {
 
     pub fn as_rust_log(&self) -> &'static str {
         match self {
-            Self::DknCompute => "dkn_compute",
-            Self::Dknp2p => "dkn_p2p",
+            Self::DknComputeLauncher => "dkn_compute_launcher",
+            Self::DknComputeNode => "dkn_compute",
+            Self::DknP2P => "dkn_p2p",
             Self::DknWorkflows => "dkn_workflows",
             Self::Libp2p => "libp2p",
             Self::OllamaWorkflows => "ollama_workflows",
@@ -93,8 +95,9 @@ impl LogModules {
 impl std::fmt::Display for LogModules {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::DknCompute => write!(f, "Dria Compute Node: Core"),
-            Self::Dknp2p => write!(f, "Dria Compute Node: P2P"),
+            Self::DknComputeLauncher => write!(f, "Dria Compute Launcher"),
+            Self::DknComputeNode => write!(f, "Dria Compute Node: Core"),
+            Self::DknP2P => write!(f, "Dria Compute Node: P2P"),
             Self::DknWorkflows => write!(f, "Dria Compute Node: Workflows"),
             Self::Libp2p => write!(f, "Low-level Lib2p Modules"),
             Self::OllamaWorkflows => write!(f, "Ollama Workflows"),
@@ -104,7 +107,7 @@ impl std::fmt::Display for LogModules {
 
 #[derive(Debug, Clone, enum_iterator::Sequence)]
 enum LogLevels {
-    // TODO: add `none` option here, because we cant disable it otherwise
+    Off,
     Error = 1,
     Warn,
     Info,
@@ -120,6 +123,7 @@ impl LogLevels {
 
     pub fn as_rust_log(&self) -> &'static str {
         match self {
+            Self::Off => "off",
             Self::Error => "error",
             Self::Warn => "warn",
             Self::Info => "info",
@@ -132,6 +136,7 @@ impl LogLevels {
 impl std::fmt::Display for LogLevels {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Off => write!(f, "off: no logging"),
             Self::Error => write!(f, "error: very serious errors"),
             Self::Warn => write!(f, "warn: hazardous situations"),
             Self::Info => write!(f, "info: useful information"),
@@ -149,7 +154,7 @@ mod test {
     #[ignore = "run manually"]
     fn test_log_level_editor() {
         let mut env = DriaEnv::new_from_env();
-        env.set(LOG_LEVELS_KEY, "dkn_compute=info,dkn_launcher=info");
+        env.set(LOG_LEVELS_KEY, "dkn_compute=info,dkn_compute_launcher=info");
         eprintln!("Old log levels: {:?}", env.get(LOG_LEVELS_KEY).unwrap());
         edit_log_level(&mut env).unwrap();
         eprintln!("New log levels: {:?}", env.get(LOG_LEVELS_KEY).unwrap());

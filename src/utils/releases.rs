@@ -255,8 +255,9 @@ pub async fn get_compute_releases() -> Result<Vec<DriaRelease>> {
 #[inline]
 pub async fn get_launcher_releases() -> Result<Vec<DriaRelease>> {
     let releases = get_releases(DriaRepository::Launcher).await?;
-    println!("releases: {:?}", releases);
-    // filter version `0.0.x` here because they belong to the old launcher
+
+    // filter version `0.0.x` here because they belong to the old launcher,
+    // and the old launcher has zip outputs only
     Ok(releases
         .into_iter()
         .filter(|r| !r.version().starts_with("0.0"))

@@ -23,46 +23,32 @@
     </a>
 </p>
 
-## About
-
 The **Dria Compute Launcher** is a simple and efficient way to set up and run the [Dria Compute Node](https://github.com/firstbatchxyz/dkn-compute-node). The launcher automatically handles environment setup, model selection, and binary management, making it easy to start the node with minimal configuration.
 
-It is packed with some nice features:
+It is packed with many features:
 
-- **Environment Editor**: You can change various settings such as your wallet, ports and API keys, all without leaving the launcher. You can also open a raw text-editor in terminal.
-
-- **Model Selection**: You can choose your models with a nice multi-select menu.
-
-- **Auto-Version Control**: Launcher will automatically update a running compute node when there is an update & restart it; furthermore, it will update & replace its own binary when there is a new launcher!
-
-<!-- TODO: ollama checks? -->
+- [x] **Environment Editor**: You can change various settings such as your wallet, ports and API keys, all without leaving the launcher. You can also open a raw text-editor in terminal.
+- [x] **Model Selection**: You can choose your models with a nice multi-select menu.
+- [x] **Automatic Updates**: Launcher will automatically update a running compute node when there is an update & restart it; furthermore, it will update & replace its own binary when there is a new launcher!
+- [x] **Version Control**: You can select & run a specific compute node release.
+- [x] **Auto-detect Ollama**: Launcher will check Ollama if you are using it's model, and start its server if required.
 
 ## Installation
 
 You can download the latest executable for your operating system from:
 
-- [dria.co/join](https://dria.co/join)
-- [GitHub releases](https://github.com/firstbatchxyz/dkn-compute-launcher/releases)
-
-<!-- ### From Source
-
-You can also install the launcher if you have [Rust](https://www.rust-lang.org/) installed:
-
-```sh
-cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher
-```
-
-The binary will be available globally as:
-
-```sh
-dkn-compute-launcher
-``` -->
+- from [dria.co/join](https://dria.co/join)
+- from [github](https://github.com/firstbatchxyz/dkn-compute-launcher/releases)
+- via [cargo](https://www.rust-lang.org/) with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher`
 
 ## Usage
 
 Double-click the executable or run it via the command line. The `help` to see available options:
 
 ```sh
+# with cargo
+dkn-compute-launcher help
+
 # macos or linux
 ./dkn-compute-launcher help
 
@@ -77,10 +63,6 @@ Double-click the executable or run it via the command line. The `help` to see av
 > ```sh
 > xattr -d com.apple.quarantine dkn-compute-launcher
 > ```
-
-## More Information
-
-For a detailed guide on running the Dria Compute Node and its full capabilities, please refer to the [DKN Compute Node repository](https://github.com/firstbatchxyz/dkn-compute-node/blob/master/docs/NODE_GUIDE.md).
 
 ## License
 
