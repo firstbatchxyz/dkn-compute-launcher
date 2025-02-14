@@ -39,7 +39,8 @@ You can download the latest executable for your operating system from:
 
 - from [dria.co/join](https://dria.co/join)
 - from [github](https://github.com/firstbatchxyz/dkn-compute-launcher/releases)
-- via [cargo](https://www.rust-lang.org/) with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher`
+- via [cargo](https://www.rust-lang.org/) globally with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher`
+- via [cargo]() locally with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher --root .`
 
 ## Usage
 
