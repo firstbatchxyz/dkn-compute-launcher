@@ -6,7 +6,7 @@ license = "Apache-2.0"
 readme = "README.md"
 description = "Dria Compute Node Launcher"
 authors = ["Erhan Tezcan <erhan@firstbatch.xyz>"]
-rust-version = "1.78.0" # MSRV
+rust-version = "1.78.0"                           # MSRV
 
 [dependencies]
 # runtime & process
@@ -46,3 +46,8 @@ ollama-rs = { version = "0.2.5", features = ["rustls", "stream"] }
 futures = "0.3.31"
 indicatif = "0.17.11"
 which = "7.0.2"
+
+# vendor OpenSSL so that its easier to build cross-platform packages
+[dependencies.openssl]
+version = "*"
+features = ["vendored"]
