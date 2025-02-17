@@ -1,4 +1,4 @@
-use eyre::Result;
+use eyre::{Context, Result};
 use std::path::PathBuf;
 use tokio::process::Command;
 
@@ -61,7 +61,25 @@ pub async fn run_compute(exe_dir: &PathBuf, enable_updates: bool) -> Result<Comp
     };
 
     // spawn compute node
-    let compute_process = Command::new(&compute_path).spawn()?;
+    #[cfg(unix)]
+    {
+        // set file-descriptor limits in Unix, not needed in Windows
+        use rlimit::{setrlimit, Resource};
+
+        const DEFAULT_SOFT_LIMIT: u64 = 4 * 1024 * 1024;
+        const DEFAULT_HARD_LIMIT: u64 = 40 * 1024 * 1024;
+
+        log::warn!("Resource limits before: {:?}", Resource::NOFILE.get());
+
+        setrlimit(Resource::NOFILE, DEFAULT_SOFT_LIMIT, DEFAULT_HARD_LIMIT)
+            .wrap_err("failed to set file descriptor limits")?;
+
+        log::warn!("Resource limits after: {:?}", Resource::NOFILE.get());
+    }
+
+    let compute_process = Command::new(compute_path)
+        .spawn()
+        .wrap_err("failed to spawn compute node")?;
 
     Ok(ComputeInstance {
         compute_dir: exe_dir.into(),

@@ -97,6 +97,8 @@ impl ComputeInstance {
             self.compute_process.kill().await?;
 
             // restart the compute node
+            // we dont set file-descriptors here again, because the process already
+            // has that setting on the first launch
             self.compute_process = Command::new(latest_path).spawn()?;
         }
 

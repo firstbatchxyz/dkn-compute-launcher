@@ -321,6 +321,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "enable when launcher is released"]
     async fn test_download_last_launcher_release() {
         let final_release = &super::get_launcher_releases().await.unwrap()[0];
         println!("final_release: {:?}", final_release);
