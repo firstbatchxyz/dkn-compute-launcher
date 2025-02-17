@@ -69,12 +69,12 @@ pub async fn run_compute(exe_dir: &PathBuf, enable_updates: bool) -> Result<Comp
         const DEFAULT_SOFT_LIMIT: u64 = 4 * 1024 * 1024;
         const DEFAULT_HARD_LIMIT: u64 = 40 * 1024 * 1024;
 
-        log::warn!("Resource limits before: {:?}", Resource::NOFILE.get());
+        log::debug!("Resource limits before: {:?}", Resource::NOFILE.get());
 
         setrlimit(Resource::NOFILE, DEFAULT_SOFT_LIMIT, DEFAULT_HARD_LIMIT)
             .wrap_err("failed to set file descriptor limits")?;
 
-        log::warn!("Resource limits after: {:?}", Resource::NOFILE.get());
+        log::debug!("Resource limits after: {:?}", Resource::NOFILE.get());
     }
 
     let compute_process = Command::new(compute_path)
