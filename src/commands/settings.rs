@@ -36,7 +36,7 @@ pub fn change_settings(env_path: &PathBuf) -> eyre::Result<()> {
 
         match choice {
             Settings::Wallet => {
-                crate::settings::edit_wallet(&mut dria_env)?;
+                crate::settings::edit_wallet(&mut dria_env, true)?;
             }
             Settings::Port => {
                 crate::settings::edit_port(&mut dria_env)?;

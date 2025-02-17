@@ -1,3 +1,6 @@
+use std::collections::HashSet;
+
+use dkn_workflows::ModelProvider;
 use inquire::Select;
 
 use crate::DriaEnv;
@@ -29,7 +32,7 @@ pub fn edit_api_keys(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     Ok(())
 }
 
-#[derive(Debug, Clone, enum_iterator::Sequence)]
+#[derive(Debug, Clone, enum_iterator::Sequence, Hash, Eq, PartialEq)]
 pub enum DriaApiKeyKind {
     OpenAI,
     Gemini,
@@ -53,6 +56,20 @@ impl DriaApiKeyKind {
             Self::Serper => "SERPER_API_KEY",
             Self::Jina => "JINA_API_KEY",
         }
+    }
+
+    /// Given a list of providers (can contain duplicates) returns the unique set of API key kinds.
+    pub fn from_providers(providers: &[ModelProvider]) -> Vec<DriaApiKeyKind> {
+        let set: HashSet<DriaApiKeyKind> =
+            HashSet::from_iter(providers.iter().filter_map(|provider| match provider {
+                ModelProvider::OpenAI => Some(DriaApiKeyKind::OpenAI),
+                ModelProvider::Gemini => Some(DriaApiKeyKind::Gemini),
+                ModelProvider::OpenRouter => Some(DriaApiKeyKind::OpenRouter),
+                ModelProvider::Ollama => None,
+                ModelProvider::VLLM => None,
+            }));
+
+        set.into_iter().collect()
     }
 }
 

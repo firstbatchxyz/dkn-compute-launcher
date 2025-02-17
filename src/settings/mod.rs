@@ -2,7 +2,7 @@ mod models;
 pub use models::edit_models;
 
 mod apikey;
-pub use apikey::edit_api_keys;
+pub use apikey::{edit_api_keys, DriaApiKeyKind};
 
 mod wallet;
 pub use wallet::edit_wallet;

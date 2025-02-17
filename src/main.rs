@@ -52,11 +52,8 @@ async fn main() -> eyre::Result<()> {
         Err(_) => {
             log::warn!("No env file found at {}", cli.env.display());
             std::fs::write(&cli.env, DriaEnv::EXAMPLE_ENV)?;
-            log::info!(
-                "Created a default profile at {}, please edit you settings.",
-                cli.env.display()
-            );
-            commands::change_settings(&cli.env)?;
+            log::info!("Created a default profile at {}.", cli.env.display());
+            commands::bootstrap_env(&cli.env)?;
         }
     }
 

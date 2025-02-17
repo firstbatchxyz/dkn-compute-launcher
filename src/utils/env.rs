@@ -1,4 +1,8 @@
-use std::{collections::HashMap, io, path::PathBuf};
+use std::{
+    collections::HashMap,
+    io,
+    path::{Path, PathBuf},
+};
 
 use dkn_workflows::DriaWorkflowsConfig;
 
@@ -108,7 +112,7 @@ impl DriaEnv {
     }
 
     /// Saves the environment to a file by adding the changes.
-    pub fn save_to_file(&self, env_path: &PathBuf) -> io::Result<()> {
+    pub fn save_to_file(&self, env_path: &Path) -> io::Result<()> {
         log::info!("Saving changes to {}", env_path.display());
 
         let content = std::fs::read_to_string(env_path)?;

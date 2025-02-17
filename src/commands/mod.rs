@@ -19,6 +19,9 @@ pub use update::update;
 mod bench;
 pub use bench::run_benchmarks;
 
+mod bootstrap;
+pub use bootstrap::bootstrap_env;
+
 /// Launcher commands.
 #[derive(Subcommand)]
 pub enum Commands {

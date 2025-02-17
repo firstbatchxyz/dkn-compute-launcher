@@ -8,6 +8,7 @@ use crate::{
     CRATE_VERSION,
 };
 
+#[inline]
 pub async fn update(exe_dir: &Path) -> Result<()> {
     log::info!("Updating compute node...");
     update_compute(exe_dir).await?;
