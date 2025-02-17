@@ -20,7 +20,7 @@ const OLLAMA_RETRY_INTERVAL_MILLIS: u64 = 500;
 /// ## Errors
 /// - If the Ollama executable is not found in the system.
 pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
-    let (host, port) = dria_env.get_ollama_values();
+    let (host, port) = dria_env.get_ollama_config();
 
     // find the path to binary
     let exe_path = which("ollama").wrap_err("could not find Ollama executable")?;
@@ -69,7 +69,7 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
 ///
 /// Ollama responds to a GET request at its root with "Ollama is running".
 pub async fn check_ollama(dria_env: &DriaEnv) -> bool {
-    let (host, port) = dria_env.get_ollama_values();
+    let (host, port) = dria_env.get_ollama_config();
 
     match reqwest::get(&format!("{}:{}", host, port)).await {
         Ok(response) => response.status().is_success(),

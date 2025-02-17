@@ -121,7 +121,7 @@ impl DriaEnv {
 
     /// Returns the `host` and `port` values for the Ollama server w.r.t Dria environment.
     #[inline]
-    pub fn get_ollama_values(&self) -> (&str, &str) {
+    pub fn get_ollama_config(&self) -> (&str, &str) {
         let host = self.get("OLLAMA_HOST").unwrap_or("http://127.0.0.1");
         let port = self.get("OLLAMA_PORT").unwrap_or("11434");
 

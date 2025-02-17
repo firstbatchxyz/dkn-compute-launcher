@@ -63,12 +63,13 @@ async fn main() -> eyre::Result<()> {
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
-        Commands::Version { dir, run, tag } => {
+        Commands::Bench => commands::run_benchmarks().await?,
+        Commands::Version { exedir, run, tag } => {
             // get the executable path
             let exe = if let Some(tag) = tag {
-                Some(commands::select_version(dir, tag).await?)
+                Some(commands::select_version(exedir, tag).await?)
             } else {
-                commands::change_version(dir).await?
+                commands::change_version(exedir).await?
             };
 
             // run the downloaded executable optionally
@@ -79,14 +80,14 @@ async fn main() -> eyre::Result<()> {
                     .await;
             }
         }
-        Commands::Start { dir } => {
-            commands::run_compute(dir, true)
+        Commands::Start { exedir } => {
+            commands::run_compute(exedir, true)
                 .await?
                 .monitor_process()
                 .await;
         }
-        Commands::Update { dir } => {
-            commands::update(dir).await?;
+        Commands::Update { exedir } => {
+            commands::update(exedir).await?;
         }
     };
 

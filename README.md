@@ -15,8 +15,11 @@
     <a href="https://opensource.org/license/apache-2-0" target="_blank">
         <img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache%202.0-7CB9E8.svg">
     </a>
-    <a href="./.github/workflows/test.yml" target="_blank">
-        <img alt="Workflow: Tests" src="https://github.com/firstbatchxyz/dkn-compute-node/actions/workflows/tests.yml/badge.svg?branch=master">
+    <a href="./.github/workflows/release.yml" target="_blank">
+        <img alt="Workflow: Release" src="https://github.com/firstbatchxyz/dkn-compute-launcher/actions/workflows/release.yml/badge.svg?branch=master">
+    </a>
+    <a href="./.github/workflows/tests.yml" target="_blank">
+        <img alt="Workflow: Tests" src="https://github.com/firstbatchxyz/dkn-compute-launcher/actions/workflows/tests.yml/badge.svg?branch=master">
     </a>
     <a href="https://discord.gg/dria" target="_blank">
         <img alt="Discord" src="https://dcbadge.vercel.app/api/server/dria?style=flat">
@@ -28,7 +31,8 @@ The **Dria Compute Launcher** is a simple and efficient way to set up and run th
 It is packed with many features:
 
 - [x] **Environment Editor**: You can change various settings such as your wallet, ports and API keys, all without leaving the launcher. You can also open a raw text-editor in terminal.
-- [x] **Model Selection**: You can choose your models with a nice multi-select menu.
+- [x] **Model Selection**: You can choose your models with a nice menu.
+- [x] **Model Benchmarking**: You can measure TPS for Ollama models to see if your machine can handle them.
 - [x] **Automatic Updates**: Launcher will automatically update a running compute node when there is an update & restart it; furthermore, it will update & replace its own binary when there is a new launcher!
 - [x] **Version Control**: You can select & run a specific compute node release.
 - [x] **Auto-detect Ollama**: Launcher will check Ollama if you are using it's model, and start its server if required.
@@ -41,6 +45,10 @@ You can download the latest executable for your operating system from:
 - from [github](https://github.com/firstbatchxyz/dkn-compute-launcher/releases)
 - via [cargo](https://www.rust-lang.org/) globally with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher`
 - via [cargo]() locally with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher --root .`
+
+> [!CAUTION]
+>
+> The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`.
 
 ## Usage
 

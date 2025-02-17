@@ -88,13 +88,13 @@ impl DriaRelease {
     }
 
     /// Returns the locally recorded compute node version.
-    pub fn get_compute_version(exe_dir: &PathBuf) -> Option<String> {
+    pub fn get_compute_version(exe_dir: &Path) -> Option<String> {
         let compute_path = exe_dir.join(DKN_VERSION_TRACKER_FILENAME);
         fs::read_to_string(&compute_path).ok()
     }
 
     /// Updates the locally recorded compute node version, returns the path to the version tracker file.
-    pub fn set_compute_version(exe_dir: &PathBuf, version: &str) -> Result<PathBuf> {
+    pub fn set_compute_version(exe_dir: &Path, version: &str) -> Result<PathBuf> {
         let compute_path = exe_dir.join(DKN_VERSION_TRACKER_FILENAME);
         fs::write(&compute_path, version).wrap_err("could not write version to file")?;
 
@@ -179,8 +179,12 @@ impl DriaRelease {
     }
 }
 
+/// Downloads the latest compute node release.
+///
+/// Returns a path to the downloaded release and the version of the release.
+/// If the local version was the latest, returns `None` for the path.
 pub async fn download_latest_compute_node(
-    exe_dir: &PathBuf,
+    exe_dir: &Path,
     local_version: &str,
 ) -> Result<(Option<PathBuf>, String)> {
     // get latest release & check if we need to update
@@ -198,8 +202,15 @@ pub async fn download_latest_compute_node(
     Ok((Some(latest_path), latest_version.into()))
 }
 
+/// Downloads the latest launcher release.
+///
+/// Returns a path to the downloaded release and the version of the release.
+/// If the local version was the latest, returns `None` for the path.
+///
+/// Note that launcher releases below `0.1.0` are ignored because they
+/// belong to the old Go code.
 pub async fn download_latest_launcher(
-    exe_dir: &PathBuf,
+    exe_dir: &Path,
     local_version: &str,
 ) -> Result<(Option<PathBuf>, String)> {
     const TMP_FILE_NAME: &str = ".tmp.launcher";
@@ -213,14 +224,14 @@ pub async fn download_latest_launcher(
 
     // download the latest release to a temporary path
     let latest_path = latest_release
-        .download_release(&exe_dir, TMP_FILE_NAME)
+        .download_release(exe_dir, TMP_FILE_NAME)
         .await?;
 
     Ok((Some(latest_path), latest_version.into()))
 }
 
 async fn download_asset_via_url(download_url: String, dest_path: &PathBuf) -> Result<()> {
-    let dest_file = fs::File::create(&dest_path)?;
+    let dest_file = fs::File::create(dest_path)?;
     tokio::task::spawn_blocking(move || {
         self_update::Download::from_url(download_url.as_ref())
             .set_header(
@@ -236,7 +247,7 @@ async fn download_asset_via_url(download_url: String, dest_path: &PathBuf) -> Re
     .wrap_err("could not download asset")?;
 
     // set to read, write, execute
-    fs::set_permissions(&dest_path, fs::Permissions::from_mode(0o777))?;
+    fs::set_permissions(dest_path, fs::Permissions::from_mode(0o777))?;
 
     Ok(())
 }

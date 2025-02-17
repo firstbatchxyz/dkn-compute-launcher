@@ -23,6 +23,7 @@ pub async fn run_compute(exe_dir: &PathBuf, enable_updates: bool) -> Result<Comp
 
     // download missing latest release if needed, which is when versions differ or file does not exist
     let compute_path = exe_dir.join(DKN_LATEST_COMPUTE_FILENAME);
+    #[allow(clippy::nonminimal_bool)]
     if !local_latest_version
         .as_ref()
         .is_some_and(|v| v == latest_version)

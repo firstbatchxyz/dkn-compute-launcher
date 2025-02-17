@@ -16,6 +16,9 @@ pub use version::{change_version, select_version};
 mod update;
 pub use update::update;
 
+mod bench;
+pub use bench::run_benchmarks;
+
 /// Launcher commands.
 #[derive(Subcommand)]
 pub enum Commands {
@@ -23,23 +26,25 @@ pub enum Commands {
     Settings,
     /// Open a command-line text editor for your environment file (advanced).
     EnvEditor,
+    /// Measure performance of your chosen models.
+    Bench,
     /// Start the latest compute node
     Start {
         /// Directory where the executables are stored.
         #[arg(long, default_value = default_exedir())]
-        dir: PathBuf,
+        exedir: PathBuf,
     },
     /// Manually update the compute node & launcher.
     Update {
         /// Directory where the executables are stored.
         #[arg(long, default_value = default_exedir())]
-        dir: PathBuf,
+        exedir: PathBuf,
     },
     /// Run a specific compute node version.
     Version {
         /// Directory where the executables are stored.
         #[arg(long, default_value = default_exedir())]
-        dir: PathBuf,
+        exedir: PathBuf,
         /// Run the chosen executable immediately.
         #[arg(short, long, default_value_t = false)]
         run: bool,

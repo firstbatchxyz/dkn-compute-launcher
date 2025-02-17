@@ -25,7 +25,7 @@ pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         )),
     };
 
-    let Some(new_port) = Text::new("Enter port:")
+    let Some(new_port) = Text::new("Enter port (enter 0 for random):")
         .with_help_message(&format!("ESC to go back and keep using {}", port))
         .with_validator(validator)
         .with_default(&port.to_string())

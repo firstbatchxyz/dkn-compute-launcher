@@ -35,9 +35,9 @@ impl ComputeInstance {
     /// - EVery now and then checks for the latest launcher release, and replaces the binary "in-place" if there is an update.
     pub async fn monitor_process(&mut self) {
         /// Number of seconds between refreshing for compute node updates.
-        const COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS: u64 = 1 * 60;
+        const COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS: u64 = 2 * 60;
         /// Number of seconds between refreshing for launcher updates.
-        const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 1 * 60;
+        const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 2 * 60;
 
         let mut compute_node_update_interval = time::interval(time::Duration::from_secs(
             COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS,

@@ -6,6 +6,7 @@ license = "Apache-2.0"
 readme = "README.md"
 description = "Dria Compute Node Launcher"
 authors = ["Erhan Tezcan <erhan@firstbatch.xyz>"]
+rust-version = "1.78.0" # MSRV
 
 [dependencies]
 # runtime & process
@@ -17,7 +18,6 @@ tokio = { version = "1", features = [
   "process",
   "time",
 ] }
-which = "6.0.3"
 self_update = { version = "0.42.0", features = [
   "rustls",
 ], default-features = false }
@@ -40,5 +40,9 @@ log = "0.4.21"
 eyre = "0.6.12"
 
 dkn-workflows = { git = "https://github.com/firstbatchxyz/dkn-compute-node" }
-homedir = "0.3.4"                                                             # TODO: used?
 reqwest = { version = "0.12.12", features = ["rustls-tls"] }
+prettytable = "0.10.0"
+ollama-rs = { version = "0.2.5", features = ["rustls", "stream"] }
+futures = "0.3.31"
+indicatif = "0.17.11"
+which = "7.0.2"

@@ -1,0 +1,25 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "src/**"
+      - "Cargo.lock"
+      - ".github/workflows/tests.yml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run tests
+        run: cargo test
