@@ -2,19 +2,10 @@ use inquire::Editor;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::utils::DriaEnv;
-
 /// Edit the environment file at the given path.
 pub fn edit_environment_file(env_path: &PathBuf) -> eyre::Result<()> {
-    let existing_env_content = if env_path.exists() {
-        fs::read_to_string(env_path)?
-    } else {
-        log::warn!(
-            "Environment file not found at: {}, will create a new one on save!",
-            env_path.display()
-        );
-
-        DriaEnv::EXAMPLE_ENV.to_string()
+    let Ok(existing_env_content) = fs::read_to_string(env_path) else {
+        return Err(eyre::eyre!("Could not read {}", env_path.display()));
     };
 
     let prompt = format!("Edit {} file:", env_path.display());

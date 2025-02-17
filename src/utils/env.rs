@@ -1,8 +1,4 @@
-use std::{
-    collections::HashMap,
-    io,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, io, path::Path};
 
 use dkn_workflows::DriaWorkflowsConfig;
 
@@ -13,9 +9,6 @@ pub struct DriaEnv {
 }
 
 impl DriaEnv {
-    /// Example env file content, used for creating a new env file.
-    pub const EXAMPLE_ENV: &str = include_str!("../../.env.example");
-
     /// All environment keys that we are interested in.
     pub const KEY_NAMES: [&str; 13] = [
         // log level

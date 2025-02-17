@@ -33,17 +33,24 @@ pub fn edit_wallet(dria_env: &mut DriaEnv, skippable: bool) -> eyre::Result<()> 
         }
     };
 
-    let Some(new_key) = Password::new("Enter wallet secret key:")
+    let password_builder = Password::new("Enter wallet secret key:")
         .with_validator(validator)
         .with_display_mode(PasswordDisplayMode::Masked)
-        .without_confirmation()
-        .with_help_message(&format!(
-            "ESC to go back and keep using {}",
-            mask(dria_env.get(WALLET_KEY).unwrap_or("N/A"))
-        ))
-        .prompt_skippable()?
-    else {
-        return Ok(());
+        .without_confirmation();
+
+    let new_key = if skippable {
+        let Some(new_key) = password_builder
+            .with_help_message(&format!(
+                "ESC to go back and keep using {}",
+                mask(dria_env.get(WALLET_KEY).unwrap_or("N/A"))
+            ))
+            .prompt_skippable()?
+        else {
+            return Ok(());
+        };
+        new_key
+    } else {
+        password_builder.prompt()?
     };
 
     log::info!("New secret key: {}", mask(&new_key));

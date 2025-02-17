@@ -51,14 +51,17 @@ async fn main() -> eyre::Result<()> {
         Ok(_) => log::info!("Loaded env file at: {}", cli.env.display()),
         Err(_) => {
             log::warn!("No env file found at {}", cli.env.display());
-            std::fs::write(&cli.env, DriaEnv::EXAMPLE_ENV)?;
-            log::info!("Created a default profile at {}.", cli.env.display());
-            commands::bootstrap_env(&cli.env)?;
+            log::info!(
+                "Creating a new environment to be saved at {}",
+                cli.env.display()
+            );
+            commands::setup_environment(&cli.env)?;
         }
     }
 
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,
+        Commands::Setup => commands::setup_environment(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
         Commands::Bench => commands::run_benchmarks().await?,
         Commands::Version { exedir, run, tag } => {

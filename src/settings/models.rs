@@ -8,10 +8,8 @@ const MODELS_KEY: &str = "DKN_MODELS";
 pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     let mut is_changed = false;
 
-    // TODO: can remove models_config perhaps?
-    let models_config = dria_env.get_model_config();
-
-    let mut chosen_models = models_config
+    let mut chosen_models = dria_env
+        .get_model_config()
         .models
         .iter()
         .map(|(_, m)| m.clone())
@@ -24,7 +22,12 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
                 .with_help_message("↑↓ to move, enter to select, type to filter, ESC to go back")
                 .prompt_skippable()?
         else {
-            break;
+            if chosen_models.is_empty() {
+                log::error!("You must choose at least 1 model!");
+                continue;
+            } else {
+                break;
+            }
         };
 
         // then choose a model of that provider

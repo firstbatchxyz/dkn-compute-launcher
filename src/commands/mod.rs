@@ -19,14 +19,16 @@ pub use update::update;
 mod bench;
 pub use bench::run_benchmarks;
 
-mod bootstrap;
-pub use bootstrap::bootstrap_env;
+mod setup;
+pub use setup::setup_environment;
 
 /// Launcher commands.
 #[derive(Subcommand)]
 pub enum Commands {
     /// Change node settings: models, api keys, network settings.
     Settings,
+    /// Setup the environment file from scratch (will overwrite existing values).
+    Setup,
     /// Open a command-line text editor for your environment file (advanced).
     EnvEditor,
     /// Measure performance of your chosen models.
