@@ -5,7 +5,7 @@ use self_update::self_replace;
 
 use crate::{
     utils::{download_latest_compute_node, download_latest_launcher, DriaRelease},
-    CRATE_VERSION,
+    DKN_LAUNCHER_VERSION,
 };
 
 #[inline]
@@ -20,7 +20,8 @@ pub async fn update(exe_dir: &Path) -> Result<()> {
 }
 
 async fn update_launcher(exe_dir: &Path) -> Result<()> {
-    let (latest_path, latest_version) = download_latest_launcher(exe_dir, CRATE_VERSION).await?;
+    let (latest_path, latest_version) =
+        download_latest_launcher(exe_dir, DKN_LAUNCHER_VERSION).await?;
 
     if let Some(latest_path) = latest_path {
         log::info!("Updated launcher to version: {}", latest_version);

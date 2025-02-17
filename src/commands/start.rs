@@ -7,7 +7,7 @@ use crate::{
         check_ollama, spawn_ollama, ComputeInstance, DriaRelease, DriaRepository,
         DKN_LATEST_COMPUTE_FILENAME,
     },
-    DriaEnv, CRATE_VERSION,
+    DriaEnv, DKN_LAUNCHER_VERSION,
 };
 
 /// Starts the latest compute node version.
@@ -67,7 +67,7 @@ pub async fn run_compute(exe_dir: &PathBuf, enable_updates: bool) -> Result<Comp
         compute_dir: exe_dir.into(),
         compute_version: latest_version.into(),
         // launcher version is the version of the binary that started the compute node
-        launcher_version: CRATE_VERSION.into(),
+        launcher_version: DKN_LAUNCHER_VERSION.into(),
         compute_process,
         ollama_process,
         check_updates: enable_updates,

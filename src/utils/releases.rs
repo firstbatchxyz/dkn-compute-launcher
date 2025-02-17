@@ -5,14 +5,13 @@ use self_update::backends::github;
 use self_update::update::{Release, ReleaseAsset};
 use std::env::consts::{ARCH, FAMILY, OS};
 use std::fs;
-use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 
 /// The latest compute node will always be at this file for a chosen directory.
 pub const DKN_LATEST_COMPUTE_FILENAME: &str = "dkn-compute-node_latest";
 
 /// The filename for the version tracker file, simply stores the string for the version.
-pub const DKN_VERSION_TRACKER_FILENAME: &str = ".dkn.version";
+pub const DKN_VERSION_TRACKER_FILENAME: &str = ".dkn-compute-version";
 
 /// A Dria repostiry enum, to differentiate between compute and launcher.
 /// Can maybe add oracle here as well some day!
@@ -246,8 +245,12 @@ async fn download_asset_via_url(download_url: String, dest_path: &PathBuf) -> Re
     .await
     .wrap_err("could not download asset")?;
 
-    // set to read, write, execute
-    fs::set_permissions(dest_path, fs::Permissions::from_mode(0o777))?;
+    // set to read, write, execute in Unix
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(dest_path, fs::Permissions::from_mode(0o777))?;
+    }
 
     Ok(())
 }

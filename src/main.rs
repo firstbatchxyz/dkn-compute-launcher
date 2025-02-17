@@ -9,7 +9,7 @@ mod settings;
 mod utils;
 use utils::*;
 
-pub const CRATE_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const DKN_LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Parser)]
 #[command(name = "dkn-lancher", version, about)]

@@ -6,14 +6,6 @@ on:
       - erhant/rewrite-in-rust
 
 jobs:
-  check_release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Echo tag
-        run: |
-          echo "tag name: ${{ github.event.release.tag_name }}"
-          echo "release name: ${{ github.event.release.name }}"
-
   ########################################
   # Builds the releases for all platforms
   ########################################
