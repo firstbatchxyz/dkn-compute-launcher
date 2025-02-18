@@ -73,6 +73,56 @@ dkn-compute-launcher help
 > xattr -d com.apple.quarantine dkn-compute-launcher
 > ```
 
+### Starting a Node
+
+Start your node with `start` command:
+
+```sh
+./dkn-compute-launcher start
+```
+
+> [!NOTE]
+>
+> When you are running for the first time, the launcher will prompt you to fill in
+> node information, such as your private key, chosen models and their respective provider information.
+
+### Choosing Models
+
+You can choose the models that you would like to run via `settings` command, and then the `Models` option. There, you can select models for each provider for your node.
+
+```sh
+> ./dkn-compute-launcher run settings
+Loaded env file at: .env
+? Choose settings (for .env)
+  Wallet
+  Port
+> Models
+  Ollama
+  API Keys
+  Log Levels
+  Save & Exit
+```
+
+You can also test your machine's performance on Ollama models using the `bench` command! Ollama models require you to reach a certain level of TPS.
+
+```sh
+
+```
+
+### Starting a Specific Release
+
+Using the `version` command you can choose to run a specific release:
+
+```sh
+./dkn-compute-launcher version
+```
+
+This is completely optional, and should mostly be used for debugging and testing on the live network.
+
+> [!CAUTION]
+>
+> The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore, if the latest is `0.3.x` and you decide to run a smaller version like `0.2.x` you will most likely kept out of network due to protocol mismatch.
+
 ## License
 
 This project is licensed under the [Apache License 2.0](https://opensource.org/license/Apache-2.0).

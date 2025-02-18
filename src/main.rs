@@ -56,6 +56,11 @@ async fn main() -> eyre::Result<()> {
                 cli.env.display()
             );
             commands::setup_environment(&cli.env)?;
+
+            // early-exit if the user wanted to setup anyways
+            if let Commands::Setup = cli.command {
+                return Ok(());
+            }
         }
     }
 

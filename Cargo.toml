@@ -39,13 +39,13 @@ enum-iterator = "2.1.0"
 env_logger = "0.11.3"
 log = "0.4.21"
 eyre = "0.6.12"
-prettytable = "0.10.0"
 indicatif = "0.17.11"
 
 ollama-rs = { version = "0.2.5", features = ["rustls", "stream"] }
 dkn-workflows = { git = "https://github.com/firstbatchxyz/dkn-compute-node" }
 reqwest = { version = "0.12.12", features = ["rustls-tls"] }
 rlimit = "0.10.2"
+colored = "2.2.0"
 
 # vendor OpenSSL so that its easier to build cross-platform packages
 [dependencies.openssl]

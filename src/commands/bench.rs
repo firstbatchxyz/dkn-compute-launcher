@@ -1,3 +1,4 @@
+use colored::Colorize;
 use dkn_workflows::{Model, ModelProvider};
 use eyre::eyre;
 use futures::stream::StreamExt;
@@ -8,9 +9,68 @@ use ollama_rs::{
     generation::completion::{request::GenerationRequest, GenerationResponse},
     Ollama,
 };
-use prettytable::{Cell, Row, Table};
 
 use crate::utils::{check_ollama, DriaEnv};
+
+const MINIMUM_EVAL_TPS: f64 = 15.0;
+
+struct TableRow {
+    model: String,
+    prompt_tps: f64,
+    eval_tps: f64,
+}
+
+impl TableRow {
+    fn new(model: String, prompt_tps: f64, eval_tps: f64) -> Self {
+        Self {
+            model,
+            prompt_tps,
+            eval_tps,
+        }
+    }
+}
+
+#[derive(Default)]
+struct Table {
+    rows: Vec<TableRow>,
+}
+
+impl Table {
+    fn add_row(&mut self, row: TableRow) {
+        self.rows.push(row);
+    }
+}
+
+impl std::fmt::Display for Table {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "{:<36} {:<12} {}",
+            "Model".bold(),
+            "Prompt TPS".bold(),
+            "Eval TPS".bold()
+        )?;
+
+        for row in &self.rows {
+            let eval_tps = row.eval_tps;
+            writeln!(
+                f,
+                "{:<36} {:<12.4} {}",
+                row.model,
+                row.prompt_tps,
+                if eval_tps > 1.5 * MINIMUM_EVAL_TPS {
+                    format!("{:<12.4}", eval_tps).green()
+                } else if eval_tps > MINIMUM_EVAL_TPS {
+                    format!("{:<12.4}", eval_tps).yellow()
+                } else {
+                    format!("{:<12.4}", eval_tps).red()
+                }
+            )?;
+        }
+
+        Ok(())
+    }
+}
 
 pub async fn run_benchmarks() -> eyre::Result<()> {
     let dria_env = DriaEnv::new_from_env();
@@ -65,12 +125,7 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
     };
 
     // create a table
-    let mut table = Table::new();
-    table.add_row(Row::new(vec![
-        Cell::new("Model"),
-        Cell::new("Prompt TPS"),
-        Cell::new("Eval TPS"),
-    ]));
+    let mut table = Table::default();
 
     // create ollama instance
     let (host, port) = dria_env.get_ollama_config();
@@ -84,16 +139,7 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
         .map(|m| m.name)
         .collect::<Vec<_>>();
 
-    // iterate over selected models and run a benchmark on each
-    log::info!(
-        "Measuring models: {}",
-        selected_ollama_models
-            .iter()
-            .map(|m| m.to_string())
-            .collect::<Vec<_>>()
-            .join(", ")
-    );
-
+    // iterate over selected models and run a benchmark on each one
     for model in selected_ollama_models
         .into_iter()
         .filter(|m| ModelProvider::from(m.clone()) == ModelProvider::Ollama)
@@ -149,7 +195,7 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
         }
 
         // generate a prompt
-        log::info!("Measuring TPS for model {}", model);
+        log::info!("Measuring {}", model.to_string().bold());
         match ollama
             .generate(GenerationRequest::new(
                 model.to_string(),
@@ -160,11 +206,10 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
             Ok(response) => {
                 log::debug!("Got response for model {}", model);
 
-                table.add_row(Row::new(vec![
-                    Cell::new(&model.to_string()),
-                    Cell::new(&get_response_prompt_tps(&response).to_string()),
-                    Cell::new(&get_response_eval_tps(&response).to_string()),
-                ]));
+                let prompt_tps = get_response_prompt_tps(&response);
+                let eval_tps = get_response_eval_tps(&response);
+
+                table.add_row(TableRow::new(model_name, prompt_tps, eval_tps));
             }
             Err(e) => {
                 log::warn!("Model {} failed with error {}", model, e);
@@ -175,9 +220,7 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
 
     // print the final result
     log::info!("Finished TPS measurements.");
-    if let Err(e) = table.print_tty(false) {
-        log::error!("Failed to print eval table: {}", e);
-    }
+    eprintln!("{}", table);
 
     Ok(())
 }
