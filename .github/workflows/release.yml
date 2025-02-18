@@ -8,6 +8,9 @@ permissions:
   contents: write
 
 jobs:
+  ########################################
+  # TODO: what does this do?
+  ########################################
   check_release:
     runs-on: ubuntu-latest
     steps:
@@ -62,6 +65,7 @@ jobs:
               extension: ".exe",
             }
 
+    # this will run the following steps for each of the matrix
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

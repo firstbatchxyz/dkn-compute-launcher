@@ -1,10 +1,10 @@
 use inquire::{Confirm, Select};
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::{settings::*, DriaEnv};
 
 /// Starts the interactive settings editor for the given environment.
-pub fn change_settings(env_path: &PathBuf) -> eyre::Result<()> {
+pub fn change_settings(env_path: &Path) -> eyre::Result<()> {
     // an environment object is created from the existing environment variables
     let mut dria_env = DriaEnv::new_from_env();
 

@@ -8,6 +8,9 @@ use crate::{
     DKN_LAUNCHER_VERSION,
 };
 
+/// Updates the compute node and launcher to the latest version.
+///
+/// See [`update_compute`] and [`update_launcher`] for more details.
 #[inline]
 pub async fn update(exe_dir: &Path) -> Result<()> {
     log::info!("Updating compute node...");
@@ -19,6 +22,15 @@ pub async fn update(exe_dir: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Updates the launcher node, replacing the current binary with the latest one via `self_replace`.
+///
+/// ### Arguments
+/// - `exe_dir`: directory where the binary is located
+///
+/// ### Errors
+/// - If latest release could not be downloaded
+/// - If self-replace fails
+/// - If the temporary file fails to be removed.
 async fn update_launcher(exe_dir: &Path) -> Result<()> {
     let (latest_path, latest_version) =
         download_latest_launcher(exe_dir, DKN_LAUNCHER_VERSION).await?;
@@ -36,6 +48,14 @@ async fn update_launcher(exe_dir: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Updates the compute node, replacing the `latest` binary at the given directory with the new version.
+///
+/// ### Arguments
+/// - `exe_dir`: directory where the binary is located
+///
+/// ### Errors
+/// - If latest release could not be downloaded
+/// - If local version tracker update does not complete
 async fn update_compute(exe_dir: &Path) -> Result<()> {
     let local_version = DriaRelease::get_compute_version(exe_dir).unwrap_or_default();
     let (latest_path, latest_version) =

@@ -51,3 +51,7 @@ rlimit = "0.10.2"
 [dependencies.openssl]
 version = "*"
 features = ["vendored"]
+
+# clippy overrides
+[lints.clippy]
+nonminimal_bool = "allow"

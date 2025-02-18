@@ -7,9 +7,6 @@ use std::env::consts::{ARCH, FAMILY, OS};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// The latest compute node will always be at this file for a chosen directory.
-pub const DKN_LATEST_COMPUTE_FILENAME: &str = "dkn-compute-node_latest";
-
 /// The filename for the version tracker file, simply stores the string for the version.
 pub const DKN_VERSION_TRACKER_FILENAME: &str = ".dkn-compute-version";
 
@@ -30,6 +27,10 @@ impl std::fmt::Display for DriaRepository {
     }
 }
 
+/// A Dria release, which is a release from the `firstbatchxyz` repository.
+///
+/// This struct wraps around the `self_update::update::Release` struct and adds
+/// some utility functions for the release management.
 #[derive(Debug, Clone)]
 pub struct DriaRelease(Release, DriaRepository);
 
@@ -102,7 +103,11 @@ impl DriaRelease {
 
     /// Returns the release asset for this machine.
     ///
-    /// Selects the asset w.r.t current OS and ARCH and returns one of:
+    /// Selects the asset w.r.t current OS and ARCH.
+    ///
+    /// ### Returns
+    ///
+    /// For example, the compute node binaries will returns one of the following assets:
     ///
     /// - `"dkn-compute-binary-linux-amd64`
     /// - `"dkn-compute-binary-linux-arm64`
@@ -139,6 +144,18 @@ impl DriaRelease {
     }
 
     /// Downloads this release under the given directory at the given `dest_name`.
+    ///
+    /// ### Arguments
+    /// - `dest_dir`: The directory where the release will be downloaded.
+    /// - `dest_name`: The name of the downloaded release.
+    ///
+    /// ### Returns
+    /// The path to the downloaded release.
+    ///
+    /// ### Errors
+    /// - If the destination directory does not exist or is not a directory.
+    /// - If the asset could not be found for the current OS and ARCH.
+    /// - If the asset could not be downloaded.
     pub async fn download_release(
         &self,
         dest_dir: &Path,
@@ -176,57 +193,6 @@ impl DriaRelease {
         .cloned()
         .ok_or_eyre("no releases found")
     }
-}
-
-/// Downloads the latest compute node release.
-///
-/// Returns a path to the downloaded release and the version of the release.
-/// If the local version was the latest, returns `None` for the path.
-pub async fn download_latest_compute_node(
-    exe_dir: &Path,
-    local_version: &str,
-) -> Result<(Option<PathBuf>, String)> {
-    // get latest release & check if we need to update
-    let latest_release = DriaRelease::from_latest_release(DriaRepository::ComputeNode).await?;
-    let latest_version = latest_release.version();
-    if local_version == latest_version {
-        return Ok((None, latest_version.into()));
-    }
-
-    // download the latest release to the same path
-    let latest_path = latest_release
-        .download_release(exe_dir, DKN_LATEST_COMPUTE_FILENAME)
-        .await?;
-
-    Ok((Some(latest_path), latest_version.into()))
-}
-
-/// Downloads the latest launcher release.
-///
-/// Returns a path to the downloaded release and the version of the release.
-/// If the local version was the latest, returns `None` for the path.
-///
-/// Note that launcher releases below `0.1.0` are ignored because they
-/// belong to the old Go code.
-pub async fn download_latest_launcher(
-    exe_dir: &Path,
-    local_version: &str,
-) -> Result<(Option<PathBuf>, String)> {
-    const TMP_FILE_NAME: &str = ".tmp.launcher";
-
-    // get latest release & check if we need to update
-    let latest_release = DriaRelease::from_latest_release(DriaRepository::Launcher).await?;
-    let latest_version = latest_release.version();
-    if local_version == latest_version {
-        return Ok((None, latest_version.into()));
-    }
-
-    // download the latest release to a temporary path
-    let latest_path = latest_release
-        .download_release(exe_dir, TMP_FILE_NAME)
-        .await?;
-
-    Ok((Some(latest_path), latest_version.into()))
 }
 
 async fn download_asset_via_url(download_url: String, dest_path: &PathBuf) -> Result<()> {

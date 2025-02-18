@@ -14,6 +14,7 @@ const BASE_ENV_FILE_CONTENT: &str = include_str!("../../.env.example");
 /// 1. A wallet
 /// 2. Models
 /// 3. API Keys for respective model providers
+/// 4. Optional API Keys for Jina and Serper
 ///
 /// This also runs on first launch when an env file is not found.
 pub fn setup_environment(env_path: &Path) -> Result<()> {

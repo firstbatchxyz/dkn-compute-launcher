@@ -12,7 +12,7 @@ use utils::*;
 pub const DKN_LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Parser)]
-#[command(name = "dkn-lancher", version, about)]
+#[command(name = env!("CARGO_PKG_NAME"), version, about)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,

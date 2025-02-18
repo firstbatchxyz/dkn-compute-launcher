@@ -1,5 +1,5 @@
 use eyre::{Context, Result};
-use std::path::PathBuf;
+use std::path::Path;
 use tokio::process::Command;
 
 use crate::{
@@ -13,7 +13,7 @@ use crate::{
 /// Starts the latest compute node version.
 ///
 /// The given directory is checked for the latest version of the compute node.
-pub async fn run_compute(exe_dir: &PathBuf, enable_updates: bool) -> Result<ComputeInstance> {
+pub async fn run_compute(exe_dir: &Path, enable_updates: bool) -> Result<ComputeInstance> {
     // get the latest release version from repo
     let latest_release = DriaRelease::from_latest_release(DriaRepository::ComputeNode).await?;
     let latest_version = latest_release.version();
@@ -23,7 +23,7 @@ pub async fn run_compute(exe_dir: &PathBuf, enable_updates: bool) -> Result<Comp
 
     // download missing latest release if needed, which is when versions differ or file does not exist
     let compute_path = exe_dir.join(DKN_LATEST_COMPUTE_FILENAME);
-    #[allow(clippy::nonminimal_bool)]
+
     if !local_latest_version
         .as_ref()
         .is_some_and(|v| v == latest_version)
@@ -71,10 +71,12 @@ pub async fn run_compute(exe_dir: &PathBuf, enable_updates: bool) -> Result<Comp
 
         log::debug!("Resource limits before: {:?}", Resource::NOFILE.get());
 
-        setrlimit(Resource::NOFILE, DEFAULT_SOFT_LIMIT, DEFAULT_HARD_LIMIT)
-            .wrap_err("failed to set file descriptor limits")?;
-
-        log::debug!("Resource limits after: {:?}", Resource::NOFILE.get());
+        if let Err(e) = setrlimit(Resource::NOFILE, DEFAULT_SOFT_LIMIT, DEFAULT_HARD_LIMIT) {
+            log::error!("Failed to set file-descriptor limits: {}", e);
+            log::warn!("Resource limits: {:?}", Resource::NOFILE.get());
+        } else {
+            log::debug!("Resource limits after: {:?}", Resource::NOFILE.get());
+        }
     }
 
     let compute_process = Command::new(compute_path)
