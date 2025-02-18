@@ -21,6 +21,9 @@
     <a href="./.github/workflows/tests.yml" target="_blank">
         <img alt="Workflow: Tests" src="https://github.com/firstbatchxyz/dkn-compute-launcher/actions/workflows/tests.yml/badge.svg?branch=master">
     </a>
+        <a href="./" target="_blank">
+        <img alt="Downloads" src="https://img.shields.io/github/downloads/firstbatchxyz/dkn-compute-launcher/total?logo=github&logoColor=%23F2FFEE&color=%2332C754">
+    </a>
     <a href="https://discord.gg/dria" target="_blank">
         <img alt="Discord" src="https://dcbadge.vercel.app/api/server/dria?style=flat">
     </a>
@@ -67,7 +70,7 @@ dkn-compute-launcher help
 
 > [!CAUTION]
 >
-> > Some Apple devices need you to bypass macOS's security warning. If you see "macOS cannot verify that this app is free from malware" when using the launcher use the following command:
+> Some Apple devices need you to bypass macOS's security warning. If you see "macOS cannot verify that this app is free from malware" when using the launcher use the following command:
 >
 > ```sh
 > xattr -d com.apple.quarantine dkn-compute-launcher
@@ -93,7 +96,12 @@ TODO: !!!
 You can use the `settings` command to change anything about your node:
 
 ```sh
-> ./dkn-compute-launcher settings
+./dkn-compute-launcher settings
+```
+
+You will be greeted with a menu, where you can navigate with arrow keys <kbd>↑</kbd> <kbd>↓</kbd> and select an option with enter <kbd>ENTER</kbd> :
+
+```yaml
 ? Choose settings (for .env)
 > Wallet
   Port
@@ -104,7 +112,7 @@ You can use the `settings` command to change anything about your node:
   Save & Exit
 ```
 
-With this command you are able to change:
+Using this menu, you are able to change the following settings:
 
 - **Wallet**: change your secret key
 - **Port**: edit your listen address port, defaults to `4001`
@@ -114,6 +122,10 @@ With this command you are able to change:
 - **Log Levels**: change log-levels for modules within compute node
 
 Within a menu, you can go back with the <kbd>ESC</kbd> key. At the top level, you must select **Save & Exit** to save your changes & write them to the environment file. If you ESC here without saving changes, your changes will be lost.
+
+> [!TIP]
+>
+> You can always abort any changes with <kbd>CMD + C</kbd> as well.
 
 ### Measuring Local Models
 
