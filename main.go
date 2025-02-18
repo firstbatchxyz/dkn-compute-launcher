@@ -56,6 +56,7 @@ var (
 		"deepseek-r1:14b",
 		"deepseek-r1:32b",
 		"deepseek-r1:70b",
+		"deepseek-r1",
 
 		"driaforall/tiny-agent-a:0.5b",
 		"driaforall/tiny-agent-a:1.5b",
@@ -101,6 +102,8 @@ var (
 		"qwen/qwen-2.5-7b-instruct",
 		"qwen/qwen-2.5-coder-32b-instruct",
 		"qwen/qwq-32b-preview",
+		"deepseek/deepseek-r1-distill-llama-70b",
+		"deepseek/deepseek-r1",
 
 		"deepseek/deepseek-chat",
 		"nousresearch/hermes-3-llama-3.1-405b",
