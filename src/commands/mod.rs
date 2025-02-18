@@ -10,8 +10,8 @@ pub use editor::edit_environment_file;
 mod settings;
 pub use settings::change_settings;
 
-mod version;
-pub use version::{change_version, select_version};
+mod specific;
+pub use specific::{change_version, select_version};
 
 mod update;
 pub use update::update;
@@ -46,7 +46,7 @@ pub enum Commands {
         exedir: PathBuf,
     },
     /// Run a specific compute node version.
-    Version {
+    Specific {
         /// Directory where the executables are stored.
         #[arg(long, default_value = default_exedir())]
         exedir: PathBuf,

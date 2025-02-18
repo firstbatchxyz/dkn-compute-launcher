@@ -69,7 +69,7 @@ async fn main() -> eyre::Result<()> {
         Commands::Setup => commands::setup_environment(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
         Commands::Bench => commands::run_benchmarks().await?,
-        Commands::Version { exedir, run, tag } => {
+        Commands::Specific { exedir, run, tag } => {
             // get the executable path
             let exe = if let Some(tag) = tag {
                 Some(commands::select_version(exedir, tag).await?)

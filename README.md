@@ -46,7 +46,7 @@ You can download the latest executable for your operating system from:
 - via [cargo](https://www.rust-lang.org/) globally with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher`
 - via [cargo]() locally with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher --root .`
 
-> [!CAUTION]
+> [!NOTE]
 >
 > The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`.
 
@@ -86,38 +86,77 @@ Start your node with `start` command:
 > When you are running for the first time, the launcher will prompt you to fill in
 > node information, such as your private key, chosen models and their respective provider information.
 
-### Choosing Models
+TODO: !!!
 
-You can choose the models that you would like to run via `settings` command, and then the `Models` option. There, you can select models for each provider for your node.
+### Changing Settings
+
+You can use the `settings` command to change anything about your node:
 
 ```sh
-> ./dkn-compute-launcher run settings
-Loaded env file at: .env
+> ./dkn-compute-launcher settings
 ? Choose settings (for .env)
-  Wallet
+> Wallet
   Port
-> Models
+  Models
   Ollama
   API Keys
   Log Levels
   Save & Exit
 ```
 
-You can also test your machine's performance on Ollama models using the `bench` command! Ollama models require you to reach a certain level of TPS.
+With this command you are able to change:
+
+- **Wallet**: change your secret key
+- **Port**: edit your listen address port, defaults to `4001`
+- **Models**: view all models & edit the models that you want to serve
+- **Ollama**: edit host & port of the Ollama server
+- **API Keys**: change API keys for providers
+- **Log Levels**: change log-levels for modules within compute node
+
+Within a menu, you can go back with the <kbd>ESC</kbd> key. At the top level, you must select **Save & Exit** to save your changes & write them to the environment file. If you ESC here without saving changes, your changes will be lost.
+
+### Measuring Local Models
+
+You can test your machine's performance on locally served Ollama models using the `bench` command:
 
 ```sh
-
+./dkn-compute-launcher bench
 ```
 
-### Starting a Specific Release
-
-Using the `version` command you can choose to run a specific release:
+Within Dria Knowledge Network, local models require you to reach a certain level of TPS. This command will measure your selected models, and then print a table of the results. We are interested in **Eval TPS** here, and if it's above the threshold the value will be written in green color; if it doesn't meet the requirement it will be printed in red color.
 
 ```sh
-./dkn-compute-launcher version
+Model                                Prompt TPS   Eval TPS
+phi3.5:3.8b                          13.1730      34.6144
+deepseek-r1:1.5b                     10.9718      66.5954
 ```
 
-This is completely optional, and should mostly be used for debugging and testing on the live network.
+### Update Manually
+
+Using the `update` command you can check for updates & automatically update your compute node and launcher.
+
+```sh
+./dkn-compute-launcher update
+```
+
+You can check the launcher version
+
+### Choosing a Specific Release
+
+Using the `specific` command you can choose to run a specific release:
+
+```sh
+# select & download
+./dkn-compute-launcher specific
+
+# run after downloading
+./dkn-compute-launcher specific --run
+
+# specify tag, skipping the selection menu
+./dkn-compute-launcher specific --run --tag 0.3.4
+```
+
+This is completely optional, and should mostly be used for debugging and testing on the live network. Note that when you run a specific release your node & launcher will not be automatically updated!
 
 > [!CAUTION]
 >
