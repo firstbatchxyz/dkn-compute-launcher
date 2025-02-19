@@ -13,7 +13,9 @@ use crate::{
 /// Starts the latest compute node version.
 ///
 /// The given directory is checked for the latest version of the compute node.
+/// If the version is not found or differs from the latest version, the latest version is downloaded automatically.
 pub async fn run_compute(exe_dir: &Path, enable_updates: bool) -> Result<ComputeInstance> {
+    // FIXME: !!!
     // get the latest release version from repo
     let latest_release = DriaRelease::from_latest_release(DriaRepository::ComputeNode).await?;
     let latest_version = latest_release.version();
@@ -34,7 +36,7 @@ pub async fn run_compute(exe_dir: &Path, enable_updates: bool) -> Result<Compute
             None => log::info!("Downloading latest version {}!", latest_version),
         };
         latest_release
-            .download_release(exe_dir, DKN_LATEST_COMPUTE_FILENAME)
+            .download_release(exe_dir, DKN_LATEST_COMPUTE_FILENAME, true)
             .await?;
 
         // store the version in the tracker file

@@ -622,13 +622,13 @@ dependencies = [
 
 [[package]]
 name = "dkn-utils"
-version = "0.3.6"
-source = "git+https://github.com/firstbatchxyz/dkn-compute-node#9d0d99615e101159533168c2ca749725c48232c8"
+version = "0.3.7"
+source = "git+https://github.com/firstbatchxyz/dkn-compute-node#2b72d4cf551219bd437f7b78f3d6868bf0e21f07"
 
 [[package]]
 name = "dkn-workflows"
-version = "0.3.6"
-source = "git+https://github.com/firstbatchxyz/dkn-compute-node#9d0d99615e101159533168c2ca749725c48232c8"
+version = "0.3.7"
+source = "git+https://github.com/firstbatchxyz/dkn-compute-node#2b72d4cf551219bd437f7b78f3d6868bf0e21f07"
 dependencies = [
  "dkn-utils",
  "env_logger 0.11.6",
@@ -1076,9 +1076,9 @@ dependencies = [
 
 [[package]]
 name = "h2"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccae279728d634d083c00f6099cb58f01cc99c145b84b8be2f6c74618d79922e"
+checksum = "5017294ff4bb30944501348f6f8e42e6ad28f42c8bbef7a74029aff064a4e3c2"
 dependencies = [
  "atomic-waker",
  "bytes 1.10.0",
@@ -1285,7 +1285,7 @@ dependencies = [
  "bytes 1.10.0",
  "futures-channel",
  "futures-util",
- "h2 0.4.7",
+ "h2 0.4.8",
  "http 1.2.0",
  "http-body 1.0.1",
  "httparse",
@@ -1950,7 +1950,7 @@ dependencies = [
 [[package]]
 name = "ollama-workflows"
 version = "0.1.0"
-source = "git+https://github.com/andthattoo/ollama-workflows#f32f92926cf09194580195bb27b0bf715170822e"
+source = "git+https://github.com/andthattoo/ollama-workflows#4758d10a74bdfd05f5f4b5efd6091c676bba68a1"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -2551,7 +2551,7 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-util",
- "h2 0.4.7",
+ "h2 0.4.8",
  "http 1.2.0",
  "http-body 1.0.1",
  "http-body-util",
@@ -3564,9 +3564,9 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "typenum"
-version = "1.17.0"
+version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
+checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 
 [[package]]
 name = "unicase"
@@ -3576,9 +3576,9 @@ checksum = "75b844d17643ee918803943289730bec8aac480150456169e647ed0b576ba539"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.16"
+version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a210d160f08b701c8721ba1c726c11662f877ea6b7094007e1ca9a1041945034"
+checksum = "00e2473a93778eb0bad35909dff6a10d28e63f792f16ed15e404fca9d5eeedbe"
 
 [[package]]
 name = "unicode-segmentation"

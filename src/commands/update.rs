@@ -3,9 +3,9 @@ use std::path::Path;
 use eyre::Result;
 use self_update::self_replace;
 
-use crate::{
-    utils::{download_latest_compute_node, download_latest_launcher, DriaRelease},
-    DKN_LAUNCHER_VERSION,
+use crate::utils::{
+    check_for_compute_node_update, check_for_launcher_update, DriaRelease,
+    DKN_LATEST_COMPUTE_FILENAME, DKN_LAUNCHER_VERSION,
 };
 
 /// Updates the compute node and launcher to the latest version.
@@ -13,10 +13,10 @@ use crate::{
 /// See [`update_compute`] and [`update_launcher`] for more details.
 #[inline]
 pub async fn update(exe_dir: &Path) -> Result<()> {
-    log::info!("Updating compute node...");
+    log::debug!("Checking compute node version.");
     update_compute(exe_dir).await?;
 
-    log::info!("Updating launcher");
+    log::debug!("Checking launcher version.");
     update_launcher(exe_dir).await?;
 
     Ok(())
@@ -32,17 +32,26 @@ pub async fn update(exe_dir: &Path) -> Result<()> {
 /// - If self-replace fails
 /// - If the temporary file fails to be removed.
 async fn update_launcher(exe_dir: &Path) -> Result<()> {
-    let (latest_path, latest_version) =
-        download_latest_launcher(exe_dir, DKN_LAUNCHER_VERSION).await?;
+    // the local version is read from the constant value in the binary
+    let (latest_release, requires_update) = check_for_launcher_update(DKN_LAUNCHER_VERSION).await?;
 
-    if let Some(latest_path) = latest_path {
-        log::info!("Updated launcher to version: {}", latest_version);
+    if requires_update {
+        log::info!("Updating launcher to version: {}", latest_release.version());
+
+        let latest_path = latest_release
+            .download_release(exe_dir, ".tmp_launcher", true)
+            .await?;
+
+        // replace its own binary with the latest version
         self_replace::self_replace(&latest_path)?;
 
         // remove the temporary file
         std::fs::remove_file(&latest_path)?;
     } else {
-        log::info!("Launcher already at latest version: {}", latest_version);
+        log::info!(
+            "Launcher already at latest version: {}",
+            latest_release.version()
+        );
     }
 
     Ok(())
@@ -57,17 +66,24 @@ async fn update_launcher(exe_dir: &Path) -> Result<()> {
 /// - If latest release could not be downloaded
 /// - If local version tracker update does not complete
 async fn update_compute(exe_dir: &Path) -> Result<()> {
-    let local_version = DriaRelease::get_compute_version(exe_dir).unwrap_or_default();
-    let (latest_path, latest_version) =
-        download_latest_compute_node(exe_dir, &local_version).await?;
+    let (latest_release, requires_update) = check_for_compute_node_update(exe_dir).await?;
+    if requires_update {
+        log::info!(
+            "Updating compute node to version: {}",
+            latest_release.version()
+        );
 
-    if latest_path.is_some() {
-        log::info!("Updated compute node to version: {}", latest_version);
+        latest_release
+            .download_release(exe_dir, DKN_LATEST_COMPUTE_FILENAME, true)
+            .await?;
 
         // store the version as well
-        DriaRelease::set_compute_version(exe_dir, &latest_version)?;
+        DriaRelease::set_compute_version(exe_dir, latest_release.version())?;
     } else {
-        log::info!("Compute node already at latest version: {}", latest_version);
+        log::info!(
+            "Compute node already at latest version: {}",
+            latest_release.version()
+        );
     }
 
     Ok(())

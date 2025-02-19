@@ -3,30 +3,73 @@ use dkn_workflows::{Model, ModelProvider};
 use eyre::eyre;
 use futures::stream::StreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
-use inquire::MultiSelect;
+use inquire::{list_option::ListOption, validator::Validation, MultiSelect};
 use ollama_rs::{
     error::OllamaError,
     generation::completion::{request::GenerationRequest, GenerationResponse},
     Ollama,
 };
 
-use crate::utils::{check_ollama, DriaEnv};
+use crate::utils::{check_ollama, DriaEnv, PROGRESS_BAR_CHARS, PROGRESS_BAR_TEMPLATE};
 
 const MINIMUM_EVAL_TPS: f64 = 15.0;
+const MINIMUM_DURATION_MS: u64 = 80_000;
 
 struct TableRow {
     model: String,
     prompt_tps: f64,
+    prompt_dur_ms: u64,
     eval_tps: f64,
+    eval_dur_ms: u64,
+    total_dur_ms: u64,
+}
+
+impl From<GenerationResponse> for TableRow {
+    fn from(res: GenerationResponse) -> Self {
+        let prompt_tps = (res.prompt_eval_count.unwrap_or_default() as f64)
+            / (res.prompt_eval_duration.unwrap_or(1) as f64)
+            * 1e9;
+
+        let eval_tps = (res.eval_count.unwrap_or_default() as f64)
+            / (res.eval_duration.unwrap_or(1) as f64)
+            * 1e9;
+
+        Self {
+            model: res.model,
+            prompt_tps,
+            prompt_dur_ms: res.prompt_eval_duration.unwrap_or_default() / 1e6 as u64,
+            eval_tps,
+            eval_dur_ms: res.eval_duration.unwrap_or_default() / 1e6 as u64,
+            total_dur_ms: res.total_duration.unwrap_or_default() / 1e6 as u64,
+        }
+    }
 }
 
 impl TableRow {
-    fn new(model: String, prompt_tps: f64, eval_tps: f64) -> Self {
-        Self {
-            model,
-            prompt_tps,
-            eval_tps,
-        }
+    fn print_row(&self) -> String {
+        let eval_tps = self.eval_tps;
+        let dur = self.total_dur_ms;
+        format!(
+            "{:<36} {:<12.4} {:<12} {} {:<12} {}",
+            self.model,
+            self.prompt_tps,
+            self.prompt_dur_ms,
+            if eval_tps > 1.5 * MINIMUM_EVAL_TPS {
+                format!("{:<12.4}", eval_tps).green()
+            } else if eval_tps > MINIMUM_EVAL_TPS {
+                format!("{:<12.4}", eval_tps).yellow()
+            } else {
+                format!("{:<12.4}", eval_tps).red()
+            },
+            self.eval_dur_ms,
+            if dur > MINIMUM_DURATION_MS {
+                dur.to_string().red()
+            } else if dur > MINIMUM_DURATION_MS / 2 {
+                dur.to_string().yellow()
+            } else {
+                dur.to_string().green()
+            },
+        )
     }
 }
 
@@ -34,45 +77,40 @@ impl TableRow {
 struct Table {
     rows: Vec<TableRow>,
 }
-
 impl Table {
-    fn add_row(&mut self, row: TableRow) {
+    #[inline]
+    pub fn add_row(&mut self, row: TableRow) {
         self.rows.push(row);
+    }
+
+    /// Returns a line of header string.
+    #[inline]
+    fn get_header() -> String {
+        format!(
+            "{:<36} {:<12} {:<12} {:<12} {:<12} {}",
+            "Model".bold(),
+            "Prompt TPS".bold().dimmed(),
+            "Time (ms)".bold().dimmed(),
+            "Eval TPS".bold(),
+            "Time (ms)".bold(),
+            "Total (ms)".bold(),
+        )
     }
 }
 
 impl std::fmt::Display for Table {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(
-            f,
-            "{:<36} {:<12} {}",
-            "Model".bold(),
-            "Prompt TPS".bold(),
-            "Eval TPS".bold()
-        )?;
+        writeln!(f, "{}", Self::get_header())?;
 
         for row in &self.rows {
-            let eval_tps = row.eval_tps;
-            writeln!(
-                f,
-                "{:<36} {:<12.4} {}",
-                row.model,
-                row.prompt_tps,
-                if eval_tps > 1.5 * MINIMUM_EVAL_TPS {
-                    format!("{:<12.4}", eval_tps).green()
-                } else if eval_tps > MINIMUM_EVAL_TPS {
-                    format!("{:<12.4}", eval_tps).yellow()
-                } else {
-                    format!("{:<12.4}", eval_tps).red()
-                }
-            )?;
+            writeln!(f, "{}", row.print_row(),)?;
         }
 
         Ok(())
     }
 }
 
-pub async fn run_benchmarks() -> eyre::Result<()> {
+pub async fn measure_tps() -> eyre::Result<()> {
     let dria_env = DriaEnv::new_from_env();
 
     // ensure Ollama is available
@@ -116,6 +154,15 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
         all_ollama_models,
     )
     .with_default(&default_selected_idxs)
+    .with_validator(|models: &[ListOption<&Model>]| {
+        if models.is_empty() {
+            Ok(Validation::Invalid(
+                "Please select at least one model.".into(),
+            ))
+        } else {
+            Ok(Validation::Valid)
+        }
+    })
     .with_help_message(
         "↑↓ to move, space to select one, → to all, ← to none, type to filter, ESC to go back",
     )
@@ -140,6 +187,11 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
         .collect::<Vec<_>>();
 
     // iterate over selected models and run a benchmark on each one
+    log::info!(
+        "Starting measurements (min TPS: {}, max duration: {}ms)",
+        MINIMUM_EVAL_TPS,
+        MINIMUM_DURATION_MS
+    );
     for model in selected_ollama_models
         .into_iter()
         .filter(|m| ModelProvider::from(m.clone()) == ModelProvider::Ollama)
@@ -171,11 +223,12 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
                         if let Some(total) = status.total {
                             let pb = ProgressBar::new(total);
                             pb.set_message(format!("Pulling {}", model_name));
+
                             // styles taken from `self_update` to be coherent with the rest of the app
                             pb.set_style(
                                 ProgressStyle::default_bar()
-                                    .template("[{elapsed_precise}] [{bar:40}] {bytes}/{total_bytes} ({eta}) {msg}")?
-                                    .progress_chars("=>-"),
+                                    .template(PROGRESS_BAR_TEMPLATE)?
+                                    .progress_chars(PROGRESS_BAR_CHARS),
                             );
                             pull_bar = Some(pb);
                         }
@@ -190,7 +243,7 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
                 log::error!("Failed to pull model {}: {:?}", model, err);
                 continue;
             } else if let Some(pb) = pull_bar {
-                pb.finish_with_message("Pull complete.");
+                pb.finish_with_message(format!("{} pull complete.", model_name));
             }
         }
 
@@ -205,11 +258,7 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
         {
             Ok(response) => {
                 log::debug!("Got response for model {}", model);
-
-                let prompt_tps = get_response_prompt_tps(&response);
-                let eval_tps = get_response_eval_tps(&response);
-
-                table.add_row(TableRow::new(model_name, prompt_tps, eval_tps));
+                table.add_row(response.into());
             }
             Err(e) => {
                 log::warn!("Model {} failed with error {}", model, e);
@@ -223,17 +272,4 @@ pub async fn run_benchmarks() -> eyre::Result<()> {
     eprintln!("{}", table);
 
     Ok(())
-}
-
-#[inline]
-fn get_response_eval_tps(res: &GenerationResponse) -> f64 {
-    (res.eval_count.unwrap_or_default() as f64) / (res.eval_duration.unwrap_or(1) as f64)
-        * 1_000_000_000f64
-}
-
-#[inline]
-fn get_response_prompt_tps(res: &GenerationResponse) -> f64 {
-    (res.prompt_eval_count.unwrap_or_default() as f64)
-        / (res.prompt_eval_duration.unwrap_or(1) as f64)
-        * 1_000_000_000f64
 }

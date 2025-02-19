@@ -7,8 +7,7 @@ use std::env::consts::{ARCH, FAMILY, OS};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// The filename for the version tracker file, simply stores the string for the version.
-pub const DKN_VERSION_TRACKER_FILENAME: &str = ".dkn-compute-version";
+use super::{DKN_VERSION_TRACKER_FILENAME, PROGRESS_BAR_CHARS, PROGRESS_BAR_TEMPLATE};
 
 /// A Dria repostiry enum, to differentiate between compute and launcher.
 /// Can maybe add oracle here as well some day!
@@ -34,19 +33,24 @@ impl std::fmt::Display for DriaRepository {
 #[derive(Debug, Clone)]
 pub struct DriaRelease(Release, DriaRepository);
 
+impl std::fmt::Display for DriaRelease {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name())
+    }
+}
+
 impl DriaRelease {
-    #[inline]
+    #[inline(always)]
     pub fn name(&self) -> &str {
         &self.0.name
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn version(&self) -> &str {
         &self.0.version
     }
 
     /// Returns the filename for the current machine for this release.
-    #[inline]
     pub fn to_filename(&self) -> Result<String> {
         if let Some((_, _, ext)) = Self::get_labels() {
             match self.1 {
@@ -58,7 +62,7 @@ impl DriaRelease {
                 }
             }
         } else {
-            Err(eyre!("unsupported OS {} ARCH {}", OS, ARCH))
+            Err(eyre!("unsupported platform: {}-{}", ARCH, OS))
         }
     }
 
@@ -88,12 +92,16 @@ impl DriaRelease {
     }
 
     /// Returns the locally recorded compute node version.
+    ///
+    /// Returns `None` if the version tracker file does not exist or could not be read.
+    #[inline]
     pub fn get_compute_version(exe_dir: &Path) -> Option<String> {
         let compute_path = exe_dir.join(DKN_VERSION_TRACKER_FILENAME);
         fs::read_to_string(&compute_path).ok()
     }
 
     /// Updates the locally recorded compute node version, returns the path to the version tracker file.
+    #[inline]
     pub fn set_compute_version(exe_dir: &Path, version: &str) -> Result<PathBuf> {
         let compute_path = exe_dir.join(DKN_VERSION_TRACKER_FILENAME);
         fs::write(&compute_path, version).wrap_err("could not write version to file")?;
@@ -114,7 +122,6 @@ impl DriaRelease {
     /// - `"dkn-compute-binary-macOS-amd64`
     /// - `"dkn-compute-binary-macOS-arm64`
     /// - `"dkn-compute-binary-windows-amd64.exe"`
-    #[inline]
     pub fn asset(&self) -> Result<ReleaseAsset> {
         self.0
             .assets
@@ -148,6 +155,7 @@ impl DriaRelease {
     /// ### Arguments
     /// - `dest_dir`: The directory where the release will be downloaded.
     /// - `dest_name`: The name of the downloaded release.
+    /// - `show_progress`: Log download progress to stdout
     ///
     /// ### Returns
     /// The path to the downloaded release.
@@ -160,6 +168,7 @@ impl DriaRelease {
         &self,
         dest_dir: &Path,
         dest_name: impl AsRef<Path>,
+        show_progress: bool,
     ) -> Result<PathBuf> {
         if !dest_dir.is_dir() {
             return Err(eyre!(
@@ -169,7 +178,6 @@ impl DriaRelease {
         }
 
         let dest_path = dest_dir.join(dest_name);
-
         let asset = self.asset()?;
         log::info!(
             "Downloading {} (v{}) to {}",
@@ -177,39 +185,57 @@ impl DriaRelease {
             self.version(),
             dest_path.display()
         );
-        download_asset_via_url(asset.download_url, &dest_path).await?;
+        download_asset_via_url(asset.download_url, &dest_path, show_progress).await?;
 
         Ok(dest_path)
     }
 
-    /// Returns the latest compute node release.
+    /// Returns the latest release for the given repository.
     #[inline]
     pub async fn from_latest_release(repo: DriaRepository) -> Result<DriaRelease> {
         match repo {
             DriaRepository::ComputeNode => get_compute_releases().await?,
             DriaRepository::Launcher => get_launcher_releases().await?,
         }
-        .first()
-        .cloned()
+        .into_iter()
+        .next()
         .ok_or_eyre("no releases found")
     }
 }
 
-async fn download_asset_via_url(download_url: String, dest_path: &PathBuf) -> Result<()> {
-    let dest_file = fs::File::create(dest_path)?;
+/// Downloads the asset from the given URL to the given path.
+///
+/// The downloaded file will be first written to a temporary file,
+/// and when the download is finished it will be renamed to actualy destination.
+/// This prevents corrupt files when the download is interrupted.
+async fn download_asset_via_url(
+    download_url: String,
+    dest_path: &PathBuf,
+    show_progress: bool,
+) -> Result<()> {
+    // download asset to a tempfile
+    let tmp_file = dest_path.with_file_name(format!(
+        "tmp_{}",
+        dest_path.file_name().unwrap_or_default().to_string_lossy()
+    ));
+    let tmp_dest = fs::File::create(&tmp_file)?;
     tokio::task::spawn_blocking(move || {
         self_update::Download::from_url(download_url.as_ref())
+            .set_progress_style(PROGRESS_BAR_TEMPLATE.into(), PROGRESS_BAR_CHARS.into())
             .set_header(
                 reqwest::header::ACCEPT,
                 // this is unlikely to panic
                 "application/octet-stream".parse().unwrap(),
             )
-            .show_progress(true)
-            .download_to(dest_file)
+            .show_progress(show_progress)
+            .download_to(tmp_dest)
             .expect("could not download asset")
     })
     .await
     .wrap_err("could not download asset")?;
+
+    // rename from tempfile to dest_path
+    fs::rename(tmp_file, dest_path)?;
 
     // set to read, write, execute in Unix
     #[cfg(unix)]
@@ -221,18 +247,12 @@ async fn download_asset_via_url(download_url: String, dest_path: &PathBuf) -> Re
     Ok(())
 }
 
-impl std::fmt::Display for DriaRelease {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name())
-    }
-}
-
-#[inline]
+#[inline(always)]
 pub async fn get_compute_releases() -> Result<Vec<DriaRelease>> {
     get_releases(DriaRepository::ComputeNode).await
 }
 
-#[inline]
+#[inline(always)]
 pub async fn get_launcher_releases() -> Result<Vec<DriaRelease>> {
     let releases = get_releases(DriaRepository::Launcher).await?;
 
@@ -279,6 +299,7 @@ mod tests {
             .download_release(
                 &PathBuf::from_str(".").unwrap(),
                 &final_release.to_filename().unwrap(),
+                false,
             )
             .await
             .unwrap();
@@ -295,6 +316,7 @@ mod tests {
             .download_release(
                 &PathBuf::from_str(".").unwrap(),
                 &final_release.to_filename().unwrap(),
+                false,
             )
             .await
             .unwrap();

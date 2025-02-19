@@ -11,13 +11,13 @@ mod settings;
 pub use settings::change_settings;
 
 mod specific;
-pub use specific::{change_version, select_version};
+pub use specific::download_specific_release;
 
 mod update;
 pub use update::update;
 
-mod bench;
-pub use bench::run_benchmarks;
+mod measure;
+pub use measure::measure_tps;
 
 mod setup;
 pub use setup::setup_environment;
@@ -31,8 +31,8 @@ pub enum Commands {
     Setup,
     /// Open a command-line text editor for your environment file (advanced).
     EnvEditor,
-    /// Measure performance of your chosen models.
-    Bench,
+    /// Measure performance (TPS) of Ollama models on your machine.
+    Measure,
     /// Start the latest compute node
     Start {
         /// Directory where the executables are stored.

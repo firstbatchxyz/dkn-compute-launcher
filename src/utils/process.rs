@@ -4,7 +4,9 @@ use std::path::PathBuf;
 use tokio::process::{Child, Command};
 use tokio::time;
 
-use super::{download_latest_compute_node, download_latest_launcher};
+use crate::utils::{DriaRelease, DKN_LATEST_COMPUTE_FILENAME};
+
+use super::{check_for_compute_node_update, check_for_launcher_update};
 
 /// A launched compute node.
 pub struct ComputeInstance {
@@ -22,6 +24,8 @@ pub struct ComputeInstance {
     /// and an Ollama instance is NOT running at that time.
     pub ollama_process: Option<Child>,
     /// Whether to check for updates or not.
+    ///
+    /// This is `true` unless you are running a specific version for a particular reason.
     pub check_updates: bool,
 }
 
@@ -66,14 +70,14 @@ impl ComputeInstance {
                _ = compute_node_update_interval.tick() => {
                   if !self.check_updates { continue; }
                   if let Err(e) = self.handle_compute_update().await {
-                    log::error!("Failed to update compute node: {}", e);
+                    log::error!("Error updating compute node: {}", e);
                   }
               },
               // launcher self-update checks
                _ = launcher_update_interval.tick() => {
                   if !self.check_updates { continue; }
                   if let Err(e) = self.handle_launcher_update().await {
-                    log::error!("Failed to update launcher: {}", e);
+                    log::error!("Error updating launcher: {}", e);
                   }
               },
             }
@@ -86,20 +90,37 @@ impl ComputeInstance {
     ///
     /// This replaces the existing process on-the-run.
     pub async fn handle_compute_update(&mut self) -> Result<()> {
-        let (latest_path, latest_version) =
-            download_latest_compute_node(&self.compute_dir, &self.compute_version).await?;
+        // check version
+        let (latest_release, requires_update) =
+            check_for_compute_node_update(&self.compute_dir).await?;
 
-        if let Some(latest_path) = latest_path {
-            self.compute_version = latest_version;
-
+        if requires_update {
+            // kill existing compute node
+            //
             // its safe to do this here even though `monitor_process` waits for a kill
             // signal, because that thread is used within this function at this moment
             self.compute_process.kill().await?;
 
+            log::info!(
+                "Updating compute node to version from {} to {}",
+                self.compute_version,
+                latest_release.version()
+            );
+
+            let latest_path = latest_release
+                .download_release(&self.compute_dir, DKN_LATEST_COMPUTE_FILENAME, true)
+                .await?;
+
+            self.compute_version = latest_release.version().into();
+
             // restart the compute node
+            //
             // we dont set file-descriptors here again, because the process already
             // has that setting on the first launch
             self.compute_process = Command::new(latest_path).spawn()?;
+
+            // update version tracker
+            DriaRelease::set_compute_version(&self.compute_dir, latest_release.version())?;
         }
 
         Ok(())
@@ -109,13 +130,24 @@ impl ComputeInstance {
     ///
     /// This replaces the existing launcher binary.
     pub async fn handle_launcher_update(&mut self) -> Result<()> {
-        let (latest_path, latest_version) =
-            download_latest_launcher(&self.compute_dir, &self.launcher_version).await?;
+        // check version
+        let (latest_release, requires_update) =
+            check_for_launcher_update(&self.launcher_version).await?;
 
-        if let Some(latest_path) = latest_path {
-            self.launcher_version = latest_version;
+        if requires_update {
+            log::info!(
+                "Updating launcher version from {} to {}",
+                self.launcher_version,
+                latest_release.version()
+            );
 
-            self_replace::self_replace(&latest_path).wrap_err("could not update launcher")?;
+            // we don't log the progress here
+            let latest_path = latest_release
+                .download_release(&self.compute_dir, ".tmp_launcher", false)
+                .await?;
+
+            // replace its own binary with the latest version
+            self_replace::self_replace(&latest_path)?;
 
             // remove the temporary file
             std::fs::remove_file(&latest_path)

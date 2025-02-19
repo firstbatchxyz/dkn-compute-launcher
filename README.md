@@ -33,10 +33,10 @@ The **Dria Compute Launcher** is a simple and efficient way to set up and run th
 
 It is packed with many features:
 
-- [x] **Environment Editor**: You can change various settings such as your wallet, ports and API keys, all without leaving the launcher. You can also open a raw text-editor in terminal.
+- [x] **Settings Menu**: You can change various settings such as your wallet, ports and API keys, all without leaving the launcher. You can also open a raw text-editor in terminal.
 - [x] **Model Selection**: You can choose your models with a nice menu.
 - [x] **Model Benchmarking**: You can measure TPS for Ollama models to see if your machine can handle them.
-- [x] **Automatic Updates**: Launcher will automatically update a running compute node when there is an update & restart it; furthermore, it will update & replace its own binary when there is a new launcher!
+- [x] **Automatic Updates**: Launcher will automatically update a running compute node when there is an update & restart it; furthermore, it will update itself when there is a new launcher as well!
 - [x] **Version Control**: You can select & run a specific compute node release.
 - [x] **Auto-detect Ollama**: Launcher will check Ollama if you are using it's model, and start its server if required.
 
@@ -125,7 +125,15 @@ Within a menu, you can go back with the <kbd>ESC</kbd> key. At the top level, yo
 
 > [!TIP]
 >
-> You can always abort any changes with <kbd>CMD + C</kbd> as well.
+> You can always abort any changes with <kbd>CTRL+C</kbd> (on Linux/Windows) or <kbd>CMD+C</kbd> (on macOS).
+
+For more advanced users that would like to view the environment file in more detail, we provide the `env-editor` command:
+
+```sh
+./dkn-compute-launcher env-editor
+```
+
+This command will open the selected environment file using a terminal-native text editor, allowing you to edit everything. If there happens to be multiple keys for a single value in the environment, the `settings` command will edit the _last uncommented key_ on **Save**.
 
 ### Measuring Local Models
 

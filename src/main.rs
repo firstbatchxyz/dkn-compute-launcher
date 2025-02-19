@@ -9,8 +9,6 @@ mod settings;
 mod utils;
 use utils::*;
 
-pub const DKN_LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
-
 #[derive(Parser)]
 #[command(name = env!("CARGO_PKG_NAME"), version, about)]
 struct Cli {
@@ -68,17 +66,10 @@ async fn main() -> eyre::Result<()> {
         Commands::Settings => commands::change_settings(&cli.env)?,
         Commands::Setup => commands::setup_environment(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
-        Commands::Bench => commands::run_benchmarks().await?,
+        Commands::Measure => commands::measure_tps().await?,
         Commands::Specific { exedir, run, tag } => {
-            // get the executable path
-            let exe = if let Some(tag) = tag {
-                Some(commands::select_version(exedir, tag).await?)
-            } else {
-                commands::change_version(exedir).await?
-            };
-
-            // run the downloaded executable optionally
-            if let (Some(exe), true) = (exe, *run) {
+            let exe = commands::download_specific_release(exedir, tag.as_ref()).await?;
+            if *run {
                 commands::run_compute(&exe, false)
                     .await?
                     .monitor_process()
