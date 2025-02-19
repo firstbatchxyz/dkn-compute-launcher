@@ -15,7 +15,7 @@ pub async fn run_compute(exe_dir: &Path, check_updates: bool) -> Result<ComputeI
     // check the update if requested, similar to calling `update` command
     if check_updates {
         log::info!("Checking for updates.");
-        super::update(exe_dir).await?;
+        super::update(exe_dir).await;
     }
 
     let dria_env = DriaEnv::new_from_env();

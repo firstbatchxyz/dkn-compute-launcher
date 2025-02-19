@@ -1,6 +1,4 @@
-//! Utilities for releases & version management.
-
-use eyre::{eyre, Context, OptionExt, Result};
+use eyre::{eyre, Context, Result};
 use self_update::backends::github;
 use self_update::update::{Release, ReleaseAsset};
 use std::env::consts::{ARCH, FAMILY, OS};
@@ -189,18 +187,6 @@ impl DriaRelease {
 
         Ok(dest_path)
     }
-
-    /// Returns the latest release for the given repository.
-    #[inline]
-    pub async fn from_latest_release(repo: DriaRepository) -> Result<DriaRelease> {
-        match repo {
-            DriaRepository::ComputeNode => get_compute_releases().await?,
-            DriaRepository::Launcher => get_launcher_releases().await?,
-        }
-        .into_iter()
-        .next()
-        .ok_or_eyre("no releases found")
-    }
 }
 
 /// Downloads the asset from the given URL to the given path.
@@ -213,6 +199,7 @@ async fn download_asset_via_url(
     dest_path: &PathBuf,
     show_progress: bool,
 ) -> Result<()> {
+    // TODO: use tempfile here
     // download asset to a tempfile
     let tmp_file = dest_path.with_file_name(format!(
         "tmp_{}",
@@ -247,28 +234,14 @@ async fn download_asset_via_url(
     Ok(())
 }
 
-#[inline(always)]
-pub async fn get_compute_releases() -> Result<Vec<DriaRelease>> {
-    get_releases(DriaRepository::ComputeNode).await
-}
-
-#[inline(always)]
-pub async fn get_launcher_releases() -> Result<Vec<DriaRelease>> {
-    let releases = get_releases(DriaRepository::Launcher).await?;
-
-    // filter version `0.0.x` here because they belong to the old launcher,
-    // and the old launcher has zip outputs only
-    Ok(releases
-        .into_iter()
-        .filter(|r| !r.version().starts_with("0.0"))
-        .collect())
-}
-
 /// Returns the entire list of releases for the given repository, owned by `firstbatchxyz`.
 ///
-/// Due to an [issue](// https://github.com/jaemk/self_update/issues/44) of `self_update` not
+/// Due to an [issue](https://github.com/jaemk/self_update/issues/44) of `self_update` not
 /// working within async contexts, we do a blocking task spawn here.
-async fn get_releases(repo: DriaRepository) -> Result<Vec<DriaRelease>> {
+///
+/// While the returned list is sorted, the latest may not be the first element.
+/// Use [`get_latest_release`] to get the latest release instead.
+pub(crate) async fn get_releases(repo: DriaRepository) -> Result<Vec<DriaRelease>> {
     tokio::task::spawn_blocking(move || {
         let mut rel_builder = github::ReleaseList::configure();
 
@@ -276,7 +249,7 @@ async fn get_releases(repo: DriaRepository) -> Result<Vec<DriaRelease>> {
             .repo_owner("firstbatchxyz")
             .repo_name(&repo.to_string())
             .build()
-            .expect("could not build release list")
+            .expect("could not build ReleaseList")
             .fetch()
             .expect("could not fetch releases")
             .into_iter()
@@ -287,13 +260,40 @@ async fn get_releases(repo: DriaRepository) -> Result<Vec<DriaRelease>> {
     .map_err(Into::into)
 }
 
+/// Returns the latest release for the given repository.
+///
+/// Due to an [issue](https://github.com/jaemk/self_update/issues/44) of `self_update` not
+/// working within async contexts, we do a blocking task spawn here.
+///
+/// This respects the `latest` tag, so even if the version tag is lower than the actual latest,
+/// it will return the tagged-as-latest release.
+pub(crate) async fn get_latest_release(repo: DriaRepository) -> Result<DriaRelease> {
+    tokio::task::spawn_blocking(move || {
+        github::Update::configure()
+            .repo_owner("firstbatchxyz")
+            .repo_name(&repo.to_string())
+            .current_version(Default::default()) // this is ignored within `get_latest_release`
+            .build()
+            .expect("could not build ReleaseUpdate")
+            .get_latest_release()
+            .map(|r| DriaRelease(r, repo))
+            .expect("could not get latest release")
+    })
+    .await
+    .map_err(Into::into)
+}
+
 #[cfg(test)]
 mod tests {
     use std::{path::PathBuf, str::FromStr};
 
+    use super::DriaRepository;
+
     #[tokio::test]
     async fn test_download_last_compute_release() {
-        let final_release = &super::get_compute_releases().await.unwrap()[0];
+        let final_release = super::get_latest_release(DriaRepository::ComputeNode)
+            .await
+            .unwrap();
 
         let path = final_release
             .download_release(
@@ -310,8 +310,10 @@ mod tests {
     #[tokio::test]
     #[ignore = "enable when launcher is released"]
     async fn test_download_last_launcher_release() {
-        let final_release = &super::get_launcher_releases().await.unwrap()[0];
-        println!("final_release: {:?}", final_release);
+        let final_release = super::get_latest_release(DriaRepository::Launcher)
+            .await
+            .unwrap();
+
         let path = final_release
             .download_release(
                 &PathBuf::from_str(".").unwrap(),

@@ -83,7 +83,7 @@ async fn main() -> eyre::Result<()> {
                 .await;
         }
         Commands::Update { exedir } => {
-            commands::update(exedir).await?;
+            commands::update(exedir).await;
         }
     };
 

@@ -39,7 +39,7 @@ impl ComputeInstance {
         /// Number of seconds between refreshing for compute node updates.
         const COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS: u64 = 15; // 2 * 60;
         /// Number of seconds between refreshing for launcher updates.
-        const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 2 * 60;
+        const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 60 * 60; // every hour
 
         let mut compute_node_update_interval = time::interval(time::Duration::from_secs(
             COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS,

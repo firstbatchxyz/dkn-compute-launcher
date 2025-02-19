@@ -2,7 +2,7 @@ use std::path::Path;
 
 use eyre::Result;
 
-use super::{DriaRelease, DriaRepository, DKN_LATEST_COMPUTE_FILE};
+use super::{get_latest_release, DriaRelease, DriaRepository, DKN_LATEST_COMPUTE_FILE};
 
 /// Check if there is an update required for the compute node.
 ///
@@ -13,7 +13,7 @@ pub async fn check_for_compute_node_update(exe_dir: &Path) -> Result<(DriaReleas
     let current_version = DriaRelease::get_compute_version(exe_dir);
 
     // get the latest release version from repo
-    let latest_release = DriaRelease::from_latest_release(DriaRepository::ComputeNode).await?;
+    let latest_release = get_latest_release(DriaRepository::ComputeNode).await?;
     let latest_version = latest_release.version();
 
     // checks if compute path exists
@@ -33,7 +33,7 @@ pub async fn check_for_compute_node_update(exe_dir: &Path) -> Result<(DriaReleas
 /// Returns the latest release, along with a boolean indicating whether update is required.
 pub async fn check_for_launcher_update(current_version: &str) -> Result<(DriaRelease, bool)> {
     // get the latest release version from repo
-    let latest_release = DriaRelease::from_latest_release(DriaRepository::Launcher).await?;
+    let latest_release = get_latest_release(DriaRepository::Launcher).await?;
     let latest_version = latest_release.version();
 
     // update is required only if the local version is not the latest

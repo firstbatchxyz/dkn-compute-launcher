@@ -11,14 +11,17 @@ use crate::utils::{
 ///
 /// See [`update_compute`] and [`update_launcher`] for more details.
 #[inline]
-pub async fn update(exe_dir: &Path) -> Result<()> {
+pub async fn update(exe_dir: &Path) {
     log::debug!("Checking compute node version.");
-    update_compute(exe_dir).await?;
+    if let Err(e) = update_compute(exe_dir).await {
+        log::error!("Error updating compute node: {}", e);
+    }
 
+    // FIXME: enable after first release
     log::debug!("Checking launcher version.");
-    update_launcher(exe_dir).await?;
-
-    Ok(())
+    if let Err(e) = update_launcher(exe_dir).await {
+        log::error!("Error updating launcher: {}", e);
+    }
 }
 
 /// Updates the launcher node, replacing the current binary with the latest one via `self_replace`.
