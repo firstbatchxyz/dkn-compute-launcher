@@ -9,3 +9,5 @@
 # binaries and stuff
 dkn-compute-node*
 .dkn-compute-version
+
+tmp_*

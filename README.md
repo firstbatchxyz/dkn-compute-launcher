@@ -137,18 +137,19 @@ This command will open the selected environment file using a terminal-native tex
 
 ### Measuring Local Models
 
-You can test your machine's performance on locally served Ollama models using the `bench` command:
+You can test your machine's performance on locally served Ollama models using the `measure` command:
 
 ```sh
-./dkn-compute-launcher bench
+./dkn-compute-launcher measure
 ```
 
-Within Dria Knowledge Network, local models require you to reach a certain level of TPS. This command will measure your selected models, and then print a table of the results. We are interested in **Eval TPS** here, and if it's above the threshold the value will be written in green color; if it doesn't meet the requirement it will be printed in red color.
+Within Dria Knowledge Network, local models require you to reach a certain level of TPS. This command will measure your selected models, and then print a table of the results. We are particularly interested in **Eval TPS** and **Total (ms)** for our model performance.
 
 ```sh
-Model                                Prompt TPS   Eval TPS
-phi3.5:3.8b                          13.1730      34.6144
-deepseek-r1:1.5b                     10.9718      66.5954
+Model                                Prompt TPS   Time (ms)    Eval TPS     Time (ms)    Total (ms)
+qwen2.5-coder:1.5b                   40.7747      981          67.9260      2488         3496
+deepseek-r1:1.5b                     21.4724      652          63.3591      16588        17255
+driaforall/tiny-agent-a:1.5b         22.5653      842          47.1771      2586         3443
 ```
 
 ### Update Manually

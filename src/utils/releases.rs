@@ -7,7 +7,7 @@ use std::env::consts::{ARCH, FAMILY, OS};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use super::{DKN_VERSION_TRACKER_FILENAME, PROGRESS_BAR_CHARS, PROGRESS_BAR_TEMPLATE};
+use super::{DKN_VERSION_TRACKER_FILE, PROGRESS_BAR_CHARS, PROGRESS_BAR_TEMPLATE};
 
 /// A Dria repostiry enum, to differentiate between compute and launcher.
 /// Can maybe add oracle here as well some day!
@@ -96,14 +96,14 @@ impl DriaRelease {
     /// Returns `None` if the version tracker file does not exist or could not be read.
     #[inline]
     pub fn get_compute_version(exe_dir: &Path) -> Option<String> {
-        let compute_path = exe_dir.join(DKN_VERSION_TRACKER_FILENAME);
+        let compute_path = exe_dir.join(DKN_VERSION_TRACKER_FILE);
         fs::read_to_string(&compute_path).ok()
     }
 
     /// Updates the locally recorded compute node version, returns the path to the version tracker file.
     #[inline]
     pub fn set_compute_version(exe_dir: &Path, version: &str) -> Result<PathBuf> {
-        let compute_path = exe_dir.join(DKN_VERSION_TRACKER_FILENAME);
+        let compute_path = exe_dir.join(DKN_VERSION_TRACKER_FILE);
         fs::write(&compute_path, version).wrap_err("could not write version to file")?;
 
         Ok(compute_path)

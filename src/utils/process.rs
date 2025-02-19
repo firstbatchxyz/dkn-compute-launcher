@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use tokio::process::{Child, Command};
 use tokio::time;
 
-use crate::utils::{DriaRelease, DKN_LATEST_COMPUTE_FILENAME};
+use crate::utils::{DriaRelease, DKN_LATEST_COMPUTE_FILE};
 
 use super::{check_for_compute_node_update, check_for_launcher_update};
 
@@ -12,8 +12,6 @@ use super::{check_for_compute_node_update, check_for_launcher_update};
 pub struct ComputeInstance {
     /// Executed compute node's directory.
     pub compute_dir: PathBuf,
-    /// Executed compute node's version.
-    pub compute_version: String,
     /// The compute process handle.
     pub compute_process: Child,
     /// Executed launcher version.
@@ -102,16 +100,13 @@ impl ComputeInstance {
             self.compute_process.kill().await?;
 
             log::info!(
-                "Updating compute node to version from {} to {}",
-                self.compute_version,
+                "Updating compute node to version from to {}",
                 latest_release.version()
             );
 
             let latest_path = latest_release
-                .download_release(&self.compute_dir, DKN_LATEST_COMPUTE_FILENAME, true)
+                .download_release(&self.compute_dir, DKN_LATEST_COMPUTE_FILE, true)
                 .await?;
-
-            self.compute_version = latest_release.version().into();
 
             // restart the compute node
             //

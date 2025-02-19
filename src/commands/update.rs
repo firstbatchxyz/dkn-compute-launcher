@@ -1,11 +1,10 @@
-use std::path::Path;
-
 use eyre::Result;
 use self_update::self_replace;
+use std::path::Path;
 
 use crate::utils::{
-    check_for_compute_node_update, check_for_launcher_update, DriaRelease,
-    DKN_LATEST_COMPUTE_FILENAME, DKN_LAUNCHER_VERSION,
+    check_for_compute_node_update, check_for_launcher_update, DriaRelease, DKN_LATEST_COMPUTE_FILE,
+    DKN_LAUNCHER_VERSION,
 };
 
 /// Updates the compute node and launcher to the latest version.
@@ -74,7 +73,7 @@ async fn update_compute(exe_dir: &Path) -> Result<()> {
         );
 
         latest_release
-            .download_release(exe_dir, DKN_LATEST_COMPUTE_FILENAME, true)
+            .download_release(exe_dir, DKN_LATEST_COMPUTE_FILE, true)
             .await?;
 
         // store the version as well

@@ -17,10 +17,13 @@ pub use updates::*;
 pub const DKN_LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// The latest compute node will always be at this file for a chosen directory.
-pub const DKN_LATEST_COMPUTE_FILENAME: &str = "dkn-compute-node_latest";
+#[cfg(unix)]
+pub const DKN_LATEST_COMPUTE_FILE: &str = "dkn-compute-node_latest";
+#[cfg(windows)]
+pub const DKN_LATEST_COMPUTE_FILE: &str = "dkn-compute-node_latest.exe";
 
 /// The filename for the version tracker file, simply stores the string for the version.
-pub const DKN_VERSION_TRACKER_FILENAME: &str = ".dkn-compute-version";
+pub const DKN_VERSION_TRACKER_FILE: &str = ".dkn-compute-version";
 
 /// Progress bar (indicatif) template for download progress.
 pub const PROGRESS_BAR_TEMPLATE: &str =
