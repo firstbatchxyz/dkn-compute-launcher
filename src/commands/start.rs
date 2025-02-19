@@ -11,8 +11,9 @@ use crate::{
 ///
 /// The given directory is checked for the latest version of the compute node.
 /// If the version is not found or differs from the latest version, the latest version is downloaded automatically.
-pub async fn run_compute(exe_dir: &Path, check_updates: bool) -> Result<ComputeInstance> {
+pub async fn run_compute(exe_dir: &Path, specific: Option<&Path>) -> Result<ComputeInstance> {
     // check the update if requested, similar to calling `update` command
+    let check_updates = specific.is_none();
     if check_updates {
         log::info!("Checking for updates.");
         super::update(exe_dir).await;
@@ -53,9 +54,12 @@ pub async fn run_compute(exe_dir: &Path, check_updates: bool) -> Result<ComputeI
     }
 
     // spawn compute node
-    let compute_process = Command::new(exe_dir.join(DKN_LATEST_COMPUTE_FILE))
-        .spawn()
-        .wrap_err("failed to spawn compute node")?;
+    let compute_process = Command::new(match specific {
+        Some(path) => path.to_path_buf(),
+        None => exe_dir.join(DKN_LATEST_COMPUTE_FILE),
+    })
+    .spawn()
+    .wrap_err("failed to spawn compute node")?;
 
     Ok(ComputeInstance {
         compute_dir: exe_dir.into(),

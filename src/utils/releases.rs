@@ -121,14 +121,14 @@ impl DriaRelease {
     /// - `"dkn-compute-binary-macOS-arm64`
     /// - `"dkn-compute-binary-windows-amd64.exe"`
     pub fn asset(&self) -> Result<ReleaseAsset> {
+        let Some((os, arch, ext)) = Self::get_labels() else {
+            return Err(eyre!("unsupported platform: {}-{}", ARCH, OS));
+        };
+
         self.0
             .assets
             .iter()
             .find(|asset| {
-                let Some((os, arch, ext)) = Self::get_labels() else {
-                    return false;
-                };
-
                 let target_name = match self.1 {
                     DriaRepository::ComputeNode => {
                         format!("dkn-compute-binary-{}-{}{}", os, arch, ext)
@@ -139,12 +139,7 @@ impl DriaRelease {
                 };
                 asset.name == target_name
             })
-            .ok_or(eyre!(
-                "asset not found for OS {} ARCH {} FAMILY {}",
-                OS,
-                ARCH,
-                FAMILY
-            ))
+            .ok_or(eyre!("asset not found for {}-{}", os, arch,))
             .cloned()
     }
 
@@ -242,7 +237,7 @@ async fn download_asset_via_url(
 /// While the returned list is sorted, the latest may not be the first element.
 /// Use [`get_latest_release`] to get the latest release instead.
 pub(crate) async fn get_releases(repo: DriaRepository) -> Result<Vec<DriaRelease>> {
-    tokio::task::spawn_blocking(move || {
+    let releases = tokio::task::spawn_blocking(move || {
         let mut rel_builder = github::ReleaseList::configure();
 
         rel_builder
@@ -257,7 +252,17 @@ pub(crate) async fn get_releases(repo: DriaRepository) -> Result<Vec<DriaRelease
             .collect::<Vec<_>>()
     })
     .await
-    .map_err(Into::into)
+    .wrap_err("could not get releases")?;
+
+    // filter out the launcher releases that are not at least 0.1.0
+    if let DriaRepository::Launcher = repo {
+        return Ok(releases
+            .into_iter()
+            .filter(|r| !r.version().starts_with("0.0."))
+            .collect());
+    }
+
+    Ok(releases)
 }
 
 /// Returns the latest release for the given repository.
@@ -268,19 +273,29 @@ pub(crate) async fn get_releases(repo: DriaRepository) -> Result<Vec<DriaRelease
 /// This respects the `latest` tag, so even if the version tag is lower than the actual latest,
 /// it will return the tagged-as-latest release.
 pub(crate) async fn get_latest_release(repo: DriaRepository) -> Result<DriaRelease> {
-    tokio::task::spawn_blocking(move || {
+    let result = tokio::task::spawn_blocking(move || {
         github::Update::configure()
             .repo_owner("firstbatchxyz")
             .repo_name(&repo.to_string())
-            .current_version(Default::default()) // this is ignored within `get_latest_release`
+            .bin_name(Default::default()) // ignored within `get_latest_release`
+            .current_version(Default::default()) // ignored within `get_latest_release`
             .build()
             .expect("could not build ReleaseUpdate")
             .get_latest_release()
             .map(|r| DriaRelease(r, repo))
-            .expect("could not get latest release")
+            .unwrap()
     })
     .await
-    .map_err(Into::into)
+    .wrap_err("could not get latest release")?;
+
+    // check if the launcher version is at least 0.1.0
+    if let DriaRepository::Launcher = repo {
+        if result.version().starts_with("0.0.") {
+            return Err(eyre!("latest launcher must be at least 0.1.0"));
+        }
+    }
+
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -308,7 +323,6 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "enable when launcher is released"]
     async fn test_download_last_launcher_release() {
         let final_release = super::get_latest_release(DriaRepository::Launcher)
             .await
