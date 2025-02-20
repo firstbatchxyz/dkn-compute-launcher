@@ -11,13 +11,13 @@ const OLLAMA_RETRY_INTERVAL_MILLIS: u64 = 500;
 
 /// Spawns a local Ollama server process at the given host and port.
 ///
-/// ## Arguments
+/// ### Arguments
 /// - `dria_env`: The environment variables to use for the Ollama process.
 ///
-/// ## Returns
+/// ### Returns
 /// A `Child` process handle to the spawned Ollama process.
 ///
-/// ## Errors
+/// ### Errors
 /// - If the Ollama executable is not found in the system.
 pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
     let (host, port) = dria_env.get_ollama_config();

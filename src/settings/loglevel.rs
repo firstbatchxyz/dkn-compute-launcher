@@ -27,9 +27,23 @@ pub fn edit_log_level(dria_env: &mut DriaEnv) -> eyre::Result<()> {
             break;
         };
 
+        // find existing log level for this module
+        let existing_log_level = log_levels
+            .iter()
+            .find(|level| level.starts_with(&format!("{}=", module.as_rust_log())))
+            .and_then(|level| level.split('=').nth(1)) // get rhs
+            .unwrap_or(LogLevels::Off.as_rust_log());
+
+        // find starting cursor based on existing level
+        let starting_cursor = LogLevels::all()
+            .iter()
+            .position(|level| level.as_rust_log() == existing_log_level)
+            .unwrap_or(0);
+
         // choose a log level
         let Some(choice) = Select::new("Choose log level:", LogLevels::all())
             .with_help_message("↑↓ to move, enter to select, type to filter, ESC to go back")
+            .with_starting_cursor(starting_cursor)
             .prompt_skippable()?
         else {
             continue;
@@ -107,8 +121,8 @@ impl std::fmt::Display for LogModules {
 
 #[derive(Debug, Clone, enum_iterator::Sequence)]
 enum LogLevels {
-    Off,
-    Error = 1,
+    Off = 0,
+    Error,
     Warn,
     Info,
     Debug,
@@ -134,14 +148,15 @@ impl LogLevels {
 }
 
 impl std::fmt::Display for LogLevels {
+    #[rustfmt::skip]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Off => write!(f, "off: no logging"),
-            Self::Error => write!(f, "error: very serious errors"),
-            Self::Warn => write!(f, "warn: hazardous situations"),
-            Self::Info => write!(f, "info: useful information"),
-            Self::Debug => write!(f, "debug: debug-level information"),
-            Self::Trace => write!(f, "trace: low-level information"),
+            LogLevels::Off =>   write!(f, "off    no logging"),
+            LogLevels::Error => write!(f, "error  very serious errors"),
+            LogLevels::Warn =>  write!(f, "warn   hazardous situations"),
+            LogLevels::Info =>  write!(f, "info   useful information"),
+            LogLevels::Debug => write!(f, "debug  debug-level information"),
+            LogLevels::Trace => write!(f, "trace  low-level information"),
         }
     }
 }

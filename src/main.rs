@@ -9,6 +9,7 @@ mod settings;
 mod utils;
 use utils::*;
 
+/// [Clap CLI](https://docs.rs/clap/latest/clap/_derive/)
 #[derive(Parser)]
 #[command(name = env!("CARGO_PKG_NAME"), version, about)]
 struct Cli {
@@ -53,6 +54,7 @@ async fn main() -> eyre::Result<()> {
                 "Creating a new environment to be saved at {}",
                 cli.env.display()
             );
+
             commands::setup_environment(&cli.env)?;
 
             // early-exit if the user wanted to setup anyways
@@ -67,6 +69,7 @@ async fn main() -> eyre::Result<()> {
         Commands::Setup => commands::setup_environment(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
         Commands::Measure => commands::measure_tps().await?,
+        Commands::Update { exedir } => commands::update(exedir).await,
         Commands::Specific { exedir, run, tag } => {
             // downloads the specific version under the `exedir`, with the filename including the version tag
             // e.g. `./my/dir/dkn-compute-node_v0.3.6`
@@ -89,9 +92,6 @@ async fn main() -> eyre::Result<()> {
                 .await?
                 .monitor_process()
                 .await;
-        }
-        Commands::Update { exedir } => {
-            commands::update(exedir).await;
         }
     };
 

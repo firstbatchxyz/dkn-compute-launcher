@@ -42,29 +42,39 @@ It is packed with many features:
 
 ## Installation
 
-You can download the latest executable for your operating system from:
+You can download the latest executable for your operating system using a number of options:
 
-- from [dria.co/join](https://dria.co/join)
-- from [github](https://github.com/firstbatchxyz/dkn-compute-launcher/releases)
-- via [cargo](https://www.rust-lang.org/) globally with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher`
-- via [cargo]() locally with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher --root .`
+- visit [dria.co/join](https://dria.co/join) and download the release for your machine.
+- visit [GitHub releases](https://github.com/firstbatchxyz/dkn-compute-launcher/releases) and download the release for your machine.
+- use [cargo](https://www.rust-lang.org/) and install binary with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher --root .`
 
 > [!NOTE]
 >
-> The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`.
+> If you are installing with **cargo**:
+>
+> - the `--root .` option installs the binary to current directory instead of installing globally
+> - [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`
+
+### Model Providers
+
+The purpose of running a Dria Compute Node is to serve LLMs to the network. These models can either be locally-hosted models via Ollama, or API-based models such as Gemini and OpenAI.
+
+To serve API-based models ([OpenAI](https://openai.com/), [Gemini](https://gemini.google.com/app), [OpenRouter](https://openrouter.ai/)), you will need to get their API keys.
+
+To serve a locally-hosted model with [Ollama](https://ollama.com/), you of course need Ollama installed, and you must make sure that your machine can handle your chosen models. See ["Measuring Local Models"](#measuring-local-models) chapter below to see the command-line tools that help you measure TPS.
 
 ## Usage
 
 Double-click the executable or run it via the command line. The `help` to see available options:
 
 ```sh
-# with cargo
+# as a cargo binary
 dkn-compute-launcher help
 
-# macos or linux
+# as a Unix executable
 ./dkn-compute-launcher help
 
-# windows
+# as a Windows executable
 .\dkn-compute-launcher.exe help
 ```
 
@@ -75,6 +85,12 @@ dkn-compute-launcher help
 > ```sh
 > xattr -d com.apple.quarantine dkn-compute-launcher
 > ```
+
+All commands that you see with `help` have their own help messages within as well, you can view it with:
+
+```sh
+./dkn-compute-launcher <some-command> --help
+```
 
 ### Starting a Node
 
@@ -89,7 +105,7 @@ Start your node with `start` command:
 > When you are running for the first time, the launcher will prompt you to fill in
 > node information, such as your private key, chosen models and their respective provider information.
 
-TODO: !!!
+You can stop the node with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS)
 
 ### Changing Settings
 
@@ -119,21 +135,23 @@ Using this menu, you are able to change the following settings:
 - **Models**: view all models & edit the models that you want to serve
 - **Ollama**: edit host & port of the Ollama server
 - **API Keys**: change API keys for providers
-- **Log Levels**: change log-levels for modules within compute node
+- **Log Levels**: change log-levels for modules within compute node & launcher
 
 Within a menu, you can go back with the <kbd>ESC</kbd> key. At the top level, you must select **Save & Exit** to save your changes & write them to the environment file. If you ESC here without saving changes, your changes will be lost.
 
 > [!TIP]
 >
-> You can always abort any changes with <kbd>CTRL+C</kbd> (on Linux/Windows) or <kbd>CMD+C</kbd> (on macOS).
+> You can always abort any changes with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS).
 
-For more advanced users that would like to view the environment file in more detail, we provide the `env-editor` command:
+### Environment Editor
+
+For more advanced users that would like to view the environment file in more detail & plain-text, we provide the `env-editor` command:
 
 ```sh
 ./dkn-compute-launcher env-editor
 ```
 
-This command will open the selected environment file using a terminal-native text editor, allowing you to edit everything. If there happens to be multiple keys for a single value in the environment, the `settings` command will edit the _last uncommented key_ on **Save**.
+This command will open the selected environment file using a terminal-native text editor, allowing you to edit everything in it. If there happens to be multiple keys for a single value in the environment, the `settings` command will edit the _last uncommented key_ on **Save**.
 
 ### Measuring Local Models
 
@@ -160,9 +178,7 @@ Using the `update` command you can check for updates & automatically update your
 ./dkn-compute-launcher update
 ```
 
-You can check the launcher version
-
-### Choosing a Specific Release
+### Running a Specific Release
 
 Using the `specific` command you can choose to run a specific release:
 
@@ -177,7 +193,7 @@ Using the `specific` command you can choose to run a specific release:
 ./dkn-compute-launcher specific --run --tag 0.3.4
 ```
 
-This is completely optional, and should mostly be used for debugging and testing on the live network. Note that when you run a specific release your node & launcher will not be automatically updated!
+This is completely optional, and should mostly be used for debugging and testing on the live network. When you run a specific release your node & launcher will not be automatically updated!
 
 > [!CAUTION]
 >

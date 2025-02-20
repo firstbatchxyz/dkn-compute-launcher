@@ -6,7 +6,14 @@ use super::{get_latest_release, DriaRelease, DriaRepository, DKN_LATEST_COMPUTE_
 
 /// Check if there is an update required for the compute node.
 ///
+/// ### Arguments
+/// - `exe_dir` - The directory where the compute node executable is located.
+///
+/// ### Returns
 /// Returns the latest release, along with a boolean indicating whether an update is required.
+///
+/// ### Errors
+/// - if the latest release cannot be fetched.
 pub async fn check_for_compute_node_update(exe_dir: &Path) -> Result<(DriaRelease, bool)> {
     // read the local latest version from the tracker file
     // if file does not exist it returns `None`, which indicates an update is required
@@ -30,7 +37,14 @@ pub async fn check_for_compute_node_update(exe_dir: &Path) -> Result<(DriaReleas
 
 /// Check if there is an update required for the launcher.
 ///
+/// ### Arguments
+/// - `current_version` - The current version of the launcher.
+///
+/// ### Returns
 /// Returns the latest release, along with a boolean indicating whether update is required.
+///
+/// ### Errors
+/// - if the latest release cannot be fetched.
 pub async fn check_for_launcher_update(current_version: &str) -> Result<(DriaRelease, bool)> {
     // get the latest release version from repo
     let latest_release = get_latest_release(DriaRepository::Launcher).await?;

@@ -64,7 +64,7 @@ impl DriaRelease {
         }
     }
 
-    /// Returns the os, arch and family extension name for the current machine.
+    /// Returns the `os`, `arch` and `family` extension name for the current machine.
     ///
     /// If the current machine is not supported, returns `None`.
     pub fn get_labels() -> Option<(&'static str, &'static str, &'static str)> {
@@ -323,6 +323,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "until we have a new launcher release"]
     async fn test_download_last_launcher_release() {
         let final_release = super::get_latest_release(DriaRepository::Launcher)
             .await

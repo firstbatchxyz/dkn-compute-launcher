@@ -18,6 +18,7 @@ pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     }
     let port = parts[4].parse::<u16>().unwrap();
 
+    // validate the port
     let validator = |port_str: &str| match port_str.parse::<u16>() {
         Ok(_) => Ok(Validation::Valid),
         Err(_) => Ok(Validation::Invalid(
@@ -34,6 +35,7 @@ pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         return Ok(());
     };
 
+    // update the port in the address
     parts[4] = &new_port;
     let new_listen_addr = parts.join("/");
     log::info!("New listen address: {:?}", new_listen_addr);
