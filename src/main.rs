@@ -68,7 +68,11 @@ async fn main() -> eyre::Result<()> {
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
         Commands::Measure => commands::measure_tps().await?,
         Commands::Specific { exedir, run, tag } => {
+            // downloads the specific version under the `exedir`, with the filename including the version tag
+            // e.g. `./my/dir/dkn-compute-node_v0.3.6`
             let exe = commands::download_specific_release(exedir, tag.as_ref()).await?;
+
+            // if `run` is true, the binary is executed immediately
             if *run {
                 commands::run_compute(&exe, false)
                     .await?
@@ -77,7 +81,11 @@ async fn main() -> eyre::Result<()> {
             }
         }
         Commands::Start { exedir } => {
-            commands::run_compute(exedir, true)
+            // downloads the latest version under the `exedir`, with the filename including "latest"
+            // e.g. `./my/dir/dkn-compute-node_latest`
+            let exe = exedir.join(DKN_LATEST_COMPUTE_FILE);
+
+            commands::run_compute(&exe, true)
                 .await?
                 .monitor_process()
                 .await;

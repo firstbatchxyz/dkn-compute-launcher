@@ -1,10 +1,24 @@
+use eyre::{eyre, Result};
 use inquire::{Confirm, Select};
 use std::path::Path;
 
 use crate::{settings::*, DriaEnv};
 
 /// Starts the interactive settings editor for the given environment.
-pub fn change_settings(env_path: &Path) -> eyre::Result<()> {
+///
+/// ### Arguments
+/// - `env_path`: path to the environment file
+///
+/// ### Errors
+/// - If the environment file is not a file
+pub fn change_settings(env_path: &Path) -> Result<()> {
+    if !env_path.exists() {
+        return Err(eyre!(
+            "Environment file does not exist: {}",
+            env_path.display()
+        ));
+    }
+
     // an environment object is created from the existing environment variables
     let mut dria_env = DriaEnv::new_from_env();
 

@@ -17,6 +17,12 @@ const BASE_ENV_FILE_CONTENT: &str = include_str!("../../.env.example");
 /// 4. Optional API Keys for Jina and Serper
 ///
 /// This also runs on first launch when an env file is not found.
+///
+/// ### Arguments
+/// - `env_path`: path to the environment file
+///
+/// ### Errors
+/// - If the environment file is not a file
 pub fn setup_environment(env_path: &Path) -> Result<()> {
     let mut dria_env = DriaEnv::new_from_env();
 

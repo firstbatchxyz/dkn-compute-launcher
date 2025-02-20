@@ -83,7 +83,7 @@ impl DriaApiKeyKind {
 
     #[inline]
     pub fn prompt_skippable(&self, dria_env: &DriaEnv) -> InquireResult<Option<String>> {
-        inquire::Text::new("Enter the new value:")
+        inquire::Text::new(&format!("Enter your {}:", self.name()))
             .with_default(dria_env.get(self.name()).unwrap_or_default())
             .with_help_message("ESC to skip")
             .with_validator(non_empty_string_validator())
@@ -92,7 +92,7 @@ impl DriaApiKeyKind {
 
     #[inline]
     pub fn prompt(&self, dria_env: &DriaEnv) -> InquireResult<String> {
-        inquire::Text::new("Enter the new value:")
+        inquire::Text::new(&format!("Enter your {}:", self.name()))
             .with_default(dria_env.get(self.name()).unwrap_or_default())
             .with_validator(non_empty_string_validator())
             .prompt()

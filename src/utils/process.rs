@@ -8,6 +8,11 @@ use crate::utils::{DriaRelease, DKN_LATEST_COMPUTE_FILE};
 
 use super::{check_for_compute_node_update, check_for_launcher_update};
 
+/// Number of seconds between refreshing for compute node updates.
+const COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS: u64 = 60 * 60; // every few hours
+/// Number of seconds between refreshing for launcher updates.
+const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 3 * 60 * 60; // every few hours
+
 /// A launched compute node.
 pub struct ComputeInstance {
     /// Executed compute node's directory.
@@ -36,11 +41,6 @@ impl ComputeInstance {
     /// - Every now and then checks for the latest compute node release, and restarts it if there is an update.
     /// - EVery now and then checks for the latest launcher release, and replaces the binary "in-place" if there is an update.
     pub async fn monitor_process(&mut self) {
-        /// Number of seconds between refreshing for compute node updates.
-        const COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS: u64 = 15; // 2 * 60;
-        /// Number of seconds between refreshing for launcher updates.
-        const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 60 * 60; // every hour
-
         let mut compute_node_update_interval = time::interval(time::Duration::from_secs(
             COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS,
         ));
@@ -67,6 +67,7 @@ impl ComputeInstance {
               // compute node update checks
                _ = compute_node_update_interval.tick() => {
                   if !self.check_updates { continue; }
+
                   if let Err(e) = self.handle_compute_update().await {
                     log::error!("Error updating compute node: {}", e);
                   }
@@ -74,6 +75,7 @@ impl ComputeInstance {
               // launcher self-update checks
                _ = launcher_update_interval.tick() => {
                   if !self.check_updates { continue; }
+
                   if let Err(e) = self.handle_launcher_update().await {
                     log::error!("Error updating launcher: {}", e);
                   }

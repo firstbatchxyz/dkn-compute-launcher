@@ -1,14 +1,28 @@
-use std::path::{Path, PathBuf};
-
+use eyre::{eyre, Result};
 use inquire::Select;
+use std::path::{Path, PathBuf};
 
 use crate::{get_releases, utils::DriaRepository};
 
 /// Prompts the user to select a version to download, which is downloaded to `exe_dir` directory.
-pub async fn download_specific_release(
-    exe_dir: &Path,
-    tag: Option<&String>,
-) -> eyre::Result<PathBuf> {
+///
+/// ### Arguments
+/// - `exe_dir`: directory where the binary is located
+/// - `tag`: optional tag to download directly
+///
+/// ### Returns
+/// Path to the downloaded binary.
+///
+/// ### Errors
+/// - If the `exe_dir` is not a directory
+/// - If the release could not be downloaded
+/// - If the release could not be found for the given tag
+/// - If the user cancels the prompt
+pub async fn download_specific_release(exe_dir: &Path, tag: Option<&String>) -> Result<PathBuf> {
+    if !exe_dir.is_dir() {
+        return Err(eyre!("{} must be a directory", exe_dir.display()));
+    }
+
     let releases = get_releases(DriaRepository::ComputeNode).await?;
 
     let chosen_release = match tag {

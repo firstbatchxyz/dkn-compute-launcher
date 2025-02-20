@@ -1,4 +1,5 @@
 use clap::Subcommand;
+use colored::Colorize;
 use std::path::PathBuf;
 
 mod start;
@@ -54,9 +55,33 @@ pub enum Commands {
         #[arg(short, long, default_value_t = false)]
         run: bool,
         /// Tag of the version to download, bypasses the prompt if provided.
-        #[arg(short, long)]
+        #[arg(short, long, value_parser = parse_version_tag)]
         tag: Option<String>,
     },
+}
+
+/// Parses a version tag in the format `major.minor.patch`.
+fn parse_version_tag(s: &str) -> Result<String, String> {
+    let parts: Vec<&str> = s.split('.').collect();
+    if parts.len() != 3 {
+        return Err("Version must be in format 'major.minor.patch'".to_string());
+    }
+
+    for (idx, part) in parts.iter().enumerate() {
+        if part.parse::<u32>().is_err() {
+            return Err(format!(
+                "{} version must be a non-negative integer",
+                match idx {
+                    0 => "Major".bold(),
+                    1 => "Minor".bold(),
+                    2 => "Patch".bold(),
+                    _ => unreachable!(),
+                }
+            ));
+        }
+    }
+
+    Ok(s.to_string())
 }
 
 /// Returns the default targeted environment file.

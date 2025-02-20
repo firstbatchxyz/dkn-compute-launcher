@@ -6,7 +6,10 @@ use indicatif::{ProgressBar, ProgressStyle};
 use inquire::{list_option::ListOption, validator::Validation, MultiSelect};
 use ollama_rs::{
     error::OllamaError,
-    generation::completion::{request::GenerationRequest, GenerationResponse},
+    generation::{
+        completion::{request::GenerationRequest, GenerationResponse},
+        embeddings::request::{EmbeddingsInput, GenerateEmbeddingsRequest},
+    },
     Ollama,
 };
 
@@ -15,101 +18,11 @@ use crate::utils::{check_ollama, DriaEnv, PROGRESS_BAR_CHARS, PROGRESS_BAR_TEMPL
 const MINIMUM_EVAL_TPS: f64 = 15.0;
 const MINIMUM_DURATION_MS: u64 = 80_000;
 
-struct TableRow {
-    model: String,
-    prompt_tps: f64,
-    prompt_dur_ms: u64,
-    eval_tps: f64,
-    eval_dur_ms: u64,
-    total_dur_ms: u64,
-}
-
-impl From<GenerationResponse> for TableRow {
-    fn from(res: GenerationResponse) -> Self {
-        let prompt_tps = (res.prompt_eval_count.unwrap_or_default() as f64)
-            / (res.prompt_eval_duration.unwrap_or(1) as f64)
-            * 1e9;
-
-        let eval_tps = (res.eval_count.unwrap_or_default() as f64)
-            / (res.eval_duration.unwrap_or(1) as f64)
-            * 1e9;
-
-        Self {
-            model: res.model,
-            prompt_tps,
-            prompt_dur_ms: res.prompt_eval_duration.unwrap_or_default() / 1e6 as u64,
-            eval_tps,
-            eval_dur_ms: res.eval_duration.unwrap_or_default() / 1e6 as u64,
-            total_dur_ms: res.total_duration.unwrap_or_default() / 1e6 as u64,
-        }
-    }
-}
-
-impl TableRow {
-    fn print_row(&self) -> String {
-        let eval_tps = self.eval_tps;
-        let dur = self.total_dur_ms;
-        format!(
-            "{:<36} {:<12.4} {:<12} {} {:<12} {}",
-            self.model,
-            self.prompt_tps,
-            self.prompt_dur_ms,
-            if eval_tps > 1.5 * MINIMUM_EVAL_TPS {
-                format!("{:<12.4}", eval_tps).green()
-            } else if eval_tps > MINIMUM_EVAL_TPS {
-                format!("{:<12.4}", eval_tps).yellow()
-            } else {
-                format!("{:<12.4}", eval_tps).red()
-            },
-            self.eval_dur_ms,
-            if dur > MINIMUM_DURATION_MS {
-                dur.to_string().red()
-            } else if dur > MINIMUM_DURATION_MS / 2 {
-                dur.to_string().yellow()
-            } else {
-                dur.to_string().green()
-            },
-        )
-    }
-}
-
-#[derive(Default)]
-struct Table {
-    rows: Vec<TableRow>,
-}
-impl Table {
-    #[inline]
-    pub fn add_row(&mut self, row: TableRow) {
-        self.rows.push(row);
-    }
-
-    /// Returns a line of header string.
-    #[inline]
-    fn get_header() -> String {
-        format!(
-            "{:<36} {:<12} {:<12} {:<12} {:<12} {}",
-            "Model".bold(),
-            "Prompt TPS".bold().dimmed(),
-            "Time (ms)".bold().dimmed(),
-            "Eval TPS".bold(),
-            "Time (ms)".bold(),
-            "Total (ms)".bold(),
-        )
-    }
-}
-
-impl std::fmt::Display for Table {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{}", Self::get_header())?;
-
-        for row in &self.rows {
-            writeln!(f, "{}", row.print_row(),)?;
-        }
-
-        Ok(())
-    }
-}
-
+/// Prompts the user to select Ollama models, and measures the TPS for each one.
+/// The user can select multiple models to be benchmarked.
+///
+/// ### Errors
+/// - If Ollama is not available / something is wrong about the chosen model.
 pub async fn measure_tps() -> eyre::Result<()> {
     let dria_env = DriaEnv::new_from_env();
 
@@ -247,6 +160,17 @@ pub async fn measure_tps() -> eyre::Result<()> {
             }
         }
 
+        // do an embedding request to warm stuff up
+        log::debug!("Warming up model {} with an embedding generation.", model);
+        let request = GenerateEmbeddingsRequest::new(
+            model.to_string(),
+            EmbeddingsInput::Single("and the bird you cannot change".into()),
+        );
+        if let Err(err) = ollama.generate_embeddings(request).await {
+            log::error!("Failed to generate embedding for model {}: {}", model, err);
+            continue;
+        };
+
         // generate a prompt
         log::info!("Measuring {}", model.to_string().bold());
         match ollama
@@ -272,4 +196,99 @@ pub async fn measure_tps() -> eyre::Result<()> {
     eprintln!("{}", table);
 
     Ok(())
+}
+
+struct TableRow {
+    model: String,
+    prompt_tps: f64,
+    prompt_dur_ms: u64,
+    eval_tps: f64,
+    eval_dur_ms: u64,
+    total_dur_ms: u64,
+}
+
+impl From<GenerationResponse> for TableRow {
+    fn from(res: GenerationResponse) -> Self {
+        let prompt_tps = (res.prompt_eval_count.unwrap_or_default() as f64)
+            / (res.prompt_eval_duration.unwrap_or(1) as f64)
+            * 1e9;
+
+        let eval_tps = (res.eval_count.unwrap_or_default() as f64)
+            / (res.eval_duration.unwrap_or(1) as f64)
+            * 1e9;
+
+        Self {
+            model: res.model,
+            prompt_tps,
+            prompt_dur_ms: res.prompt_eval_duration.unwrap_or_default() / 1e6 as u64,
+            eval_tps,
+            eval_dur_ms: res.eval_duration.unwrap_or_default() / 1e6 as u64,
+            total_dur_ms: res.total_duration.unwrap_or_default() / 1e6 as u64,
+        }
+    }
+}
+
+impl TableRow {
+    fn print_row(&self) -> String {
+        let eval_tps = self.eval_tps;
+        let dur = self.total_dur_ms;
+        format!(
+            "{:<36} {:<12.4} {:<12} {} {:<12} {}",
+            self.model,
+            self.prompt_tps,
+            self.prompt_dur_ms,
+            if eval_tps > 1.5 * MINIMUM_EVAL_TPS {
+                format!("{:<12.4}", eval_tps).green()
+            } else if eval_tps > MINIMUM_EVAL_TPS {
+                format!("{:<12.4}", eval_tps).yellow()
+            } else {
+                format!("{:<12.4}", eval_tps).red()
+            },
+            self.eval_dur_ms,
+            if dur > MINIMUM_DURATION_MS {
+                dur.to_string().red()
+            } else if dur > MINIMUM_DURATION_MS / 2 {
+                dur.to_string().yellow()
+            } else {
+                dur.to_string().green()
+            },
+        )
+    }
+}
+
+#[derive(Default)]
+struct Table {
+    rows: Vec<TableRow>,
+}
+impl Table {
+    #[inline]
+    pub fn add_row(&mut self, row: TableRow) {
+        self.rows.push(row);
+    }
+
+    /// Returns a line of header string.
+    #[inline]
+    fn get_header() -> String {
+        format!(
+            "{:<36} {:<12} {:<12} {:<12} {:<12} {}",
+            "Model".bold(),
+            "Prompt TPS".bold().dimmed(),
+            "Time (ms)".bold().dimmed(),
+            "Eval TPS".bold(),
+            "Time (ms)".bold(),
+            "Total (ms)".bold(),
+        )
+    }
+}
+
+impl std::fmt::Display for Table {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "{}", Self::get_header())?;
+
+        for row in &self.rows {
+            writeln!(f, "{}", row.print_row(),)?;
+        }
+
+        Ok(())
+    }
 }

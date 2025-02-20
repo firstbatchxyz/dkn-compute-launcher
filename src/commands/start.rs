@@ -3,17 +3,32 @@ use std::path::Path;
 use tokio::process::Command;
 
 use crate::{
-    utils::{check_ollama, spawn_ollama, ComputeInstance, DKN_LATEST_COMPUTE_FILE},
+    utils::{check_ollama, spawn_ollama, ComputeInstance},
     DriaEnv, DKN_LAUNCHER_VERSION,
 };
 
-/// Starts the latest compute node version.
+/// Starts the latest compute node version at the given path.
 ///
-/// The given directory is checked for the latest version of the compute node.
-/// If the version is not found or differs from the latest version, the latest version is downloaded automatically.
-pub async fn run_compute(exe_dir: &Path, specific: Option<&Path>) -> Result<ComputeInstance> {
+/// If the environment has Ollama models configured, it will check for Ollama as well
+/// and spawn it optionally.
+///
+/// Automatic updates can be disabled optionally, which is used when we are running a specific version
+/// via the `specific` command.
+///
+/// ### Arguments
+/// - `exe_path`: path to the compute node binary
+/// - `check_updates`: whether to check for updates or not
+///
+/// ### Returns
+/// A [`ComputeInstance`] with the running compute node process.
+///
+/// ### Errors
+/// - If the compute node process could not be spawned
+/// - If the Ollama process is required but could not be spawned
+/// - If the file-descriptor limits could not be set
+pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<ComputeInstance> {
+    let exe_dir = exe_path.parent().expect("must be a file");
     // check the update if requested, similar to calling `update` command
-    let check_updates = specific.is_none();
     if check_updates {
         log::info!("Checking for updates.");
         super::update(exe_dir).await;
@@ -54,12 +69,9 @@ pub async fn run_compute(exe_dir: &Path, specific: Option<&Path>) -> Result<Comp
     }
 
     // spawn compute node
-    let compute_process = Command::new(match specific {
-        Some(path) => path.to_path_buf(),
-        None => exe_dir.join(DKN_LATEST_COMPUTE_FILE),
-    })
-    .spawn()
-    .wrap_err("failed to spawn compute node")?;
+    let compute_process = Command::new(exe_path)
+        .spawn()
+        .wrap_err("failed to spawn compute node")?;
 
     Ok(ComputeInstance {
         compute_dir: exe_dir.into(),
