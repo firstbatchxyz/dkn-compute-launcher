@@ -137,7 +137,7 @@ Using this menu, you are able to change the following settings:
 - **API Keys**: change API keys for providers
 - **Log Levels**: change log-levels for modules within compute node & launcher
 
-Within a menu, you can go back with the <kbd>← Go Back</kbd>. Within the main menu, you can choose <kbd>✓ Save & Exit</kbd> to save your changes & write them to the environment file, or you can choose <kbd>✗ Abort Changes</kbd> to abort all changes.
+Within a menu, you can go back by selecting <kbd>← Go Back</kbd>. Within the main menu, you can select <kbd>✓ Save & Exit</kbd> to save your changes & write them to the environment file, or you can choose <kbd>✗ Abort Changes</kbd> to abort all changes.
 
 > [!TIP]
 >
@@ -145,7 +145,36 @@ Within a menu, you can go back with the <kbd>← Go Back</kbd>. Within the main 
 
 ### Choosing Models
 
-TODO: !!!
+When you select <kbd>Model</kbd> option in the Settings menu, you will be greeted with a list of model providers:
+
+```sh
+? Select a model provider:
+> ollama
+  openai
+  gemini
+  openrouter
+  VLLM
+  ← Go Back
+```
+
+Here, you can select a provider to choose models served by them, where you will be greeted with the following menu:
+
+```sh
+> Select a model provider: openai
+? Choose your models with SPACE, then press ENTER:
+  [ ] gpt-4-turbo
+  [x] gpt-4o
+> [ ] gpt-4o-mini
+  [ ] o1-mini
+  [ ] o1-preview
+  [ ] o1
+  [ ] o3-mini
+# ...
+```
+
+Within this menu you can navigate by using the arrow keys <kbd>↑</kbd> <kbd>↓</kbd> and press <kbd>SPACE</kbd> to select a model. You can select all models using <kbd>→</kbd>, or de-select everything with <kbd>←</kbd>. To finish selecting models, press <kbd>ENTER</kbd>.
+
+When you are done selecting models for all providers, you can go back to the main menu by selecting <kbd>← Go Back</kbd>.
 
 ### Measuring Local Models
 

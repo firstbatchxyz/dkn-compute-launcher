@@ -50,7 +50,6 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
                 }
             })
             .collect::<Vec<_>>();
-        println!("Selecting models for provider: {:?}", my_prov_models);
 
         let  selected_prov_models = MultiSelect::new(
             "Choose your models with SPACE, then press ENTER:",

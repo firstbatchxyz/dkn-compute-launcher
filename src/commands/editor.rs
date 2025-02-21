@@ -20,7 +20,7 @@ pub fn edit_environment_file(env_path: &PathBuf) -> Result<()> {
     }
 
     let Ok(existing_env_content) = fs::read_to_string(env_path) else {
-        return Err(eyre::eyre!("Could not read {}", env_path.display()));
+        return Err(eyre!("Could not read {}", env_path.display()));
     };
 
     let Some(new_env_content) =

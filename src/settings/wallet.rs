@@ -33,7 +33,7 @@ pub fn edit_wallet(dria_env: &mut DriaEnv, skippable: bool) -> eyre::Result<()> 
         if secret_key.trim_start_matches("0x").len() != 64 {
             if skippable & secret_key.is_empty() {
                 // empty string is ok if skippable
-                return Ok(Validation::Valid);
+                Ok(Validation::Valid)
             } else {
                 Ok(Validation::Invalid(
                     "Key must be exactly 64 characters hexadecimal, with or without 0x prefix."

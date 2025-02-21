@@ -2,7 +2,7 @@ use colored::Colorize;
 use std::fmt::Display;
 
 /// The message to display when the user wants to exit the `Select` prompt.
-const DESELECT_MSG: &'static str = "← Go Back";
+const DESELECT_MSG: &str = "← Go Back";
 
 /// A wrapper for a type `T` that behaves like an option.
 ///
