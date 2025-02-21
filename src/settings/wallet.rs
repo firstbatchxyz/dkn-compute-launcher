@@ -1,4 +1,4 @@
-use inquire::{validator::Validation, Text};
+use inquire::{validator::Validation, Password};
 
 use crate::DriaEnv;
 
@@ -29,10 +29,11 @@ pub fn edit_wallet(dria_env: &mut DriaEnv, skippable: bool) -> eyre::Result<()> 
 
     // validates the secret key to be 64 characters hexadecimal, with or without 0x prefix
     // empty string is ok, as it means the user wants to skip
+    let existing_secret_is_some = existing_secret_opt.is_some();
     let validator = move |secret_key: &str| {
         if secret_key.trim_start_matches("0x").len() != 64 {
-            if skippable & secret_key.is_empty() {
-                // empty string is ok if skippable
+            if secret_key.is_empty() && (skippable || existing_secret_is_some) {
+                // empty string is ok if skippable, or there is an existing value
                 Ok(Validation::Valid)
             } else {
                 Ok(Validation::Invalid(
@@ -45,26 +46,25 @@ pub fn edit_wallet(dria_env: &mut DriaEnv, skippable: bool) -> eyre::Result<()> 
         }
     };
 
-    // custom confirmation message
-    let formatter = |s: &str| mask(s);
-
-    let new_secret = Text::new("Enter wallet secret key:")
+    let new_secret = Password::new("Enter wallet secret key:")
         .with_validator(validator)
-        .with_formatter(&formatter)
-        .with_default(existing_secret_opt.unwrap_or_default())
+        .with_formatter(&|s| {
+            if s.is_empty() {
+                match existing_secret_opt {
+                    Some(existing_s) => mask(existing_s),
+                    None => "No secret key entered".to_string(),
+                }
+            } else {
+                mask(s)
+            }
+        })
+        .without_confirmation()
+        .with_display_mode(inquire::PasswordDisplayMode::Masked)
         .with_help_message(&match existing_secret_opt {
             Some(secret) => format!("ENTER without typing to keep using {}", mask(secret)),
             None => "You can get your secret from a wallet like MetaMask.".to_string(),
         })
-        .prompt()
-        .map(|s| {
-            // if the user skips by entering an empty input, we keep the existing secret key
-            if s.is_empty() {
-                existing_secret_opt.unwrap_or_default().to_string()
-            } else {
-                s
-            }
-        })?;
+        .prompt()?;
 
     if !new_secret.is_empty() {
         dria_env.set(WALLET_KEY, new_secret);
