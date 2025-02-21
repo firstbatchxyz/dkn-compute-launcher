@@ -23,11 +23,11 @@ pub fn edit_environment_file(env_path: &PathBuf) -> Result<()> {
         return Err(eyre::eyre!("Could not read {}", env_path.display()));
     };
 
-    let prompt = format!("Edit {} file:", env_path.display());
-    let Some(new_env_content) = Editor::new(&prompt)
-        .with_predefined_text(&existing_env_content)
-        .with_help_message("ESC to go back")
-        .prompt_skippable()?
+    let Some(new_env_content) =
+        Editor::new(&format!("Edit environment file at {}:", env_path.display()))
+            .with_predefined_text(&existing_env_content)
+            .with_help_message("ESC to go back") // TODO: !!!
+            .prompt_skippable()?
     else {
         return Ok(());
     };

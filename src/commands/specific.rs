@@ -32,8 +32,8 @@ pub async fn download_specific_release(exe_dir: &Path, tag: Option<&String>) -> 
             .find(|release| release.version() == tag)
             .ok_or_else(|| eyre::eyre!("No release found for tag: {}", tag))?,
         // prompt the user for selection
-        None => Select::new("Select a version:", releases)
-            .with_help_message("↑↓ to move, enter to select, type to filter, ESC to abort")
+        None => Select::new("Choose a version and press ENTER:", releases)
+            .with_help_message("↑↓ to move, type to filter by name, ENTER to select")
             .prompt()?,
     };
 

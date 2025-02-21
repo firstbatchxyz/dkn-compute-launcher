@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/firstbatchxyz/.github/refs/heads/master/branding/dria-logo-square.svg" alt="logo" width="168">
+  <img src="https://raw.githubusercontent.com/firstbatchxyz/.github/refs/heads/master/branding/dria-logo-square.svg" alt="dria-logo" width="168">
 </p>
 
 <p align="center">
@@ -7,7 +7,7 @@
     Dria Compute Launcher
   </h1>
   <p align="center">
-    <i>A version manager, settings editor, and launcher for Dria Compute Node!</i>
+    <i>A launcher, editor, and version manager for Dria Compute Node.</i>
   </p>
 </p>
 
@@ -21,7 +21,7 @@
     <a href="./.github/workflows/tests.yml" target="_blank">
         <img alt="Workflow: Tests" src="https://github.com/firstbatchxyz/dkn-compute-launcher/actions/workflows/tests.yml/badge.svg?branch=master">
     </a>
-        <a href="./" target="_blank">
+    <a href="./" target="_blank">
         <img alt="Downloads" src="https://img.shields.io/github/downloads/firstbatchxyz/dkn-compute-launcher/total?logo=github&logoColor=%23F2FFEE&color=%2332C754">
     </a>
     <a href="https://discord.gg/dria" target="_blank">
@@ -125,7 +125,7 @@ You will be greeted with a menu, where you can navigate with arrow keys <kbd>↑
   Ollama
   API Keys
   Log Levels
-  Save & Exit
+  ✓ Save & Exit
 ```
 
 Using this menu, you are able to change the following settings:
@@ -137,21 +137,15 @@ Using this menu, you are able to change the following settings:
 - **API Keys**: change API keys for providers
 - **Log Levels**: change log-levels for modules within compute node & launcher
 
-Within a menu, you can go back with the <kbd>ESC</kbd> key. At the top level, you must select **Save & Exit** to save your changes & write them to the environment file. If you ESC here without saving changes, your changes will be lost.
+Within a menu, you can go back with the <kbd>← Go Back</kbd>. Within the main menu, you can choose <kbd>✓ Save & Exit</kbd> to save your changes & write them to the environment file, or you can choose <kbd>✗ Abort Changes</kbd> to abort all changes.
 
 > [!TIP]
 >
-> You can always abort any changes with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS).
+> You can always exit the process (ungracefully) with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS).
 
-### Environment Editor
+### Choosing Models
 
-For more advanced users that would like to view the environment file in more detail & plain-text, we provide the `env-editor` command:
-
-```sh
-./dkn-compute-launcher env-editor
-```
-
-This command will open the selected environment file using a terminal-native text editor, allowing you to edit everything in it. If there happens to be multiple keys for a single value in the environment, the `settings` command will edit the _last uncommented key_ on **Save**.
+TODO: !!!
 
 ### Measuring Local Models
 
@@ -178,6 +172,18 @@ Using the `update` command you can check for updates & automatically update your
 ./dkn-compute-launcher update
 ```
 
+You don't need to do this usually, as the launcher will always check for updates when you run the `start` command.
+
+### Environment Editor
+
+For more advanced users that would like to view the environment file in more detail & plain-text, we provide the `env-editor` command:
+
+```sh
+./dkn-compute-launcher env-editor
+```
+
+This command will open the selected environment file using a terminal-native text editor, allowing you to edit everything in it. If there happens to be multiple keys for a single value in the environment, the `settings` command will edit the _last uncommented key_ on **Save**.
+
 ### Running a Specific Release
 
 Using the `specific` command you can choose to run a specific release:
@@ -198,6 +204,14 @@ This is completely optional, and should mostly be used for debugging and testing
 > [!CAUTION]
 >
 > The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore, if the latest is `0.3.x` and you decide to run a smaller version like `0.2.x` you will most likely kept out of network due to protocol mismatch.
+
+## Documentation
+
+To see the launcher's internal documentation clone the repo and run:
+
+```sh
+cargo doc --open --no-deps
+```
 
 ## License
 

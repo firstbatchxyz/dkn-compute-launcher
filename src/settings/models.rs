@@ -1,7 +1,7 @@
 use dkn_workflows::{Model, ModelProvider};
 use inquire::{MultiSelect, Select};
 
-use crate::DriaEnv;
+use crate::{utils::Selectable, DriaEnv};
 
 const MODELS_KEY: &str = "DKN_MODELS";
 
@@ -17,10 +17,12 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
 
     // choose a provider
     loop {
-        let Some(provider) =
-            Select::new("Select a model provider:", ModelProvider::all().collect())
-                .with_help_message("↑↓ to move, enter to select, type to filter, ESC to go back")
-                .prompt_skippable()?
+        let Selectable::Some(provider) = Select::new(
+            "Select a model provider:",
+            Selectable::new(ModelProvider::all().collect()),
+        )
+        .with_help_message("↑↓ to move, type to filter provider, ENTER to select")
+        .prompt()?
         else {
             if chosen_models.is_empty() {
                 log::error!("You must choose at least 1 model!");
@@ -30,13 +32,13 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
             }
         };
 
-        // then choose a model of that provider
+        // then choose models that belong to this provider
         let my_prov_models = chosen_models
             .iter()
             .filter(|m| ModelProvider::from(*m) == provider)
             .cloned()
             .collect::<Vec<_>>();
-        let all_prov_models = Model::all_with_provider(provider).collect::<Vec<_>>();
+        let all_prov_models = Model::all_with_provider(provider.clone()).collect::<Vec<_>>();
         let default_selected_idxs = all_prov_models
             .iter()
             .enumerate()
@@ -48,28 +50,24 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
                 }
             })
             .collect::<Vec<_>>();
+        println!("Selecting models for provider: {:?}", my_prov_models);
 
-        let Some(mut selected_prov_models) = MultiSelect::new(
-            "Choose the models that you would like to serve:",
-            all_prov_models,
+        let  selected_prov_models = MultiSelect::new(
+            "Choose your models with SPACE, then press ENTER:",
+            all_prov_models.clone(),
         )
         .with_default(&default_selected_idxs)
         .with_help_message(
-            "↑↓ to move, space to select one, → to all, ← to none, type to filter, ESC to go back",
+            "↑↓ to move, SPACE to select one, ←/→ to select all/none, type to filter models, ENTER to confirm"
         )
-        .prompt_skippable()?
-        else {
-            continue;
-        };
+        .prompt()?;
 
         is_changed = true;
 
-        // update the chosen models
-        // those that exist in chosen_models but not in selected_prov_models are removed (via retain)
-        chosen_models.retain(|m| !selected_prov_models.contains(m));
+        // remove all provider models from the chosen models
+        chosen_models.retain(|m| ModelProvider::from(m) != provider);
 
-        // those that exist in selected_prov_models but not in chosen_models are added
-        selected_prov_models.retain(|m| !chosen_models.contains(m));
+        // and then extend the chosen models with the selected models
         chosen_models.extend(selected_prov_models);
     }
 

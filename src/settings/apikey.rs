@@ -1,40 +1,31 @@
 use std::collections::HashSet;
 
 use dkn_workflows::ModelProvider;
-use inquire::{
-    error::InquireResult,
-    validator::{StringValidator, Validation},
-    Select,
-};
+use inquire::{error::InquireResult, Select};
 
-use crate::DriaEnv;
-
-fn non_empty_string_validator() -> impl StringValidator {
-    |input: &str| match !input.is_empty() && input.is_ascii() {
-        true => Ok(Validation::Valid),
-        false => Ok(Validation::Invalid(
-            "API KEY must be non-empty & made of ASCII characters.".into(),
-        )),
-    }
-}
+use crate::{utils::Selectable, DriaEnv};
 
 pub fn edit_api_keys(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     loop {
         // choose an API key name
-        let Some(chosen_api_key) =
-            Select::new("Select an API key to change:", DriaApiKeyKind::all())
-                .with_help_message("↑↓ to move, enter to select, type to filter, ESC to go back")
-                .prompt_skippable()?
+        let Selectable::Some(chosen_api_key) = Select::new(
+            "Select an API key to change:",
+            Selectable::new(DriaApiKeyKind::all()),
+        )
+        .with_help_message("↑↓ to move, ENTER to select, type to filter")
+        .prompt()?
         else {
             break;
         };
 
         // edit the API key
-        let Some(new_value) = chosen_api_key.prompt_skippable(dria_env)? else {
+        let new_value = chosen_api_key.prompt_api(dria_env)?;
+
+        // empty value is ignored immediately
+        if new_value.is_empty() {
             continue;
         };
 
-        log::info!("Setting {} to {}", chosen_api_key, new_value);
         dria_env.set(chosen_api_key.name(), new_value);
     }
 
@@ -81,20 +72,12 @@ impl DriaApiKeyKind {
         set.into_iter().collect()
     }
 
+    /// A wrapper for `inquire::Text` for prompting the user to enter the API key.
     #[inline]
-    pub fn prompt_skippable(&self, dria_env: &DriaEnv) -> InquireResult<Option<String>> {
+    pub fn prompt_api(&self, dria_env: &DriaEnv) -> InquireResult<String> {
         inquire::Text::new(&format!("Enter your {}:", self.name()))
             .with_default(dria_env.get(self.name()).unwrap_or_default())
-            .with_help_message("ESC to skip")
-            .with_validator(non_empty_string_validator())
-            .prompt_skippable()
-    }
-
-    #[inline]
-    pub fn prompt(&self, dria_env: &DriaEnv) -> InquireResult<String> {
-        inquire::Text::new(&format!("Enter your {}:", self.name()))
-            .with_default(dria_env.get(self.name()).unwrap_or_default())
-            .with_validator(non_empty_string_validator())
+            .with_help_message("ENTER without typing anything to keep using the existing value")
             .prompt()
     }
 }

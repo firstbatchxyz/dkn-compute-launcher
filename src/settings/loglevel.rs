@@ -1,6 +1,6 @@
 use inquire::Select;
 
-use crate::DriaEnv;
+use crate::{utils::Selectable, DriaEnv};
 
 // the log levels are stored within `RUST_LOG` as used by `env_logger`
 const LOG_LEVELS_KEY: &str = "RUST_LOG";
@@ -20,9 +20,12 @@ pub fn edit_log_level(dria_env: &mut DriaEnv) -> eyre::Result<()> {
 
     loop {
         // choose a module
-        let Some(module) = Select::new("Select a module to change log level:", LogModules::all())
-            .with_help_message("↑↓ to move, enter to select, type to filter, ESC to go back")
-            .prompt_skippable()?
+        let Selectable::Some(module) = Select::new(
+            "Select a module to change log level:",
+            Selectable::new(LogModules::all()),
+        )
+        .with_help_message("↑↓ to move, ENTER to select")
+        .prompt()?
         else {
             break;
         };
@@ -41,10 +44,11 @@ pub fn edit_log_level(dria_env: &mut DriaEnv) -> eyre::Result<()> {
             .unwrap_or(0);
 
         // choose a log level
-        let Some(choice) = Select::new("Choose log level:", LogLevels::all())
-            .with_help_message("↑↓ to move, enter to select, type to filter, ESC to go back")
-            .with_starting_cursor(starting_cursor)
-            .prompt_skippable()?
+        let Selectable::Some(choice) =
+            Select::new("Choose log level:", Selectable::new(LogLevels::all()))
+                .with_help_message("↑↓ to move, ENTER to select")
+                .with_starting_cursor(starting_cursor)
+                .prompt()?
         else {
             continue;
         };

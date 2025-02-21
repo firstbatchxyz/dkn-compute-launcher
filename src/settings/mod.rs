@@ -1,4 +1,5 @@
 mod models;
+use colored::Colorize;
 pub use models::edit_models;
 
 mod apikey;
@@ -33,6 +34,8 @@ pub enum Settings {
     LogLevels,
     /// Quit settings menu.
     SaveExit,
+    /// Abort all changes.
+    Abort,
 }
 
 impl Settings {
@@ -51,7 +54,8 @@ impl std::fmt::Display for Settings {
             Self::Ollama => write!(f, "Ollama"),
             Self::ApiKeys => write!(f, "API Keys"),
             Self::LogLevels => write!(f, "Log Levels"),
-            Self::SaveExit => write!(f, "Save & Exit"),
+            Self::SaveExit => write!(f, "{}", "✓ Save & Exit".bold().green()),
+            Self::Abort => write!(f, "{}", "✗ Abort Changes".bold().red()),
         }
     }
 }

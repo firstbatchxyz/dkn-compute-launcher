@@ -28,7 +28,8 @@ pub fn change_settings(env_path: &Path) -> Result<()> {
             &format!("Choose settings (for {})", env_path.display()),
             Settings::all(),
         )
-        .with_help_message("↑↓ to move, enter to select, type to filter, ESC to quit")
+        .with_help_message("↑↓ to move, ENTER to select")
+        .with_page_size(Settings::all().len())
         .prompt_skippable()?
         else {
             if dria_env.is_changed() {
@@ -73,6 +74,10 @@ pub fn change_settings(env_path: &Path) -> Result<()> {
                 } else {
                     log::info!("No changes made.");
                 }
+                break;
+            }
+            Settings::Abort => {
+                log::info!("Aborting changes.");
                 break;
             }
         }

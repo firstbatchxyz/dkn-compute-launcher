@@ -107,19 +107,19 @@ impl DriaRelease {
         Ok(compute_path)
     }
 
-    /// Returns the release asset for this machine.
-    ///
     /// Selects the asset w.r.t current OS and ARCH.
     ///
     /// ### Returns
-    ///
-    /// For example, the compute node binaries will returns one of the following assets:
+    /// The release asset for this machine; for example, the compute node binaries will look like one of the following:
     ///
     /// - `"dkn-compute-binary-linux-amd64`
     /// - `"dkn-compute-binary-linux-arm64`
     /// - `"dkn-compute-binary-macOS-amd64`
     /// - `"dkn-compute-binary-macOS-arm64`
     /// - `"dkn-compute-binary-windows-amd64.exe"`
+    ///
+    /// ### Errors
+    /// - If an asset could not be found for the current OS and ARCH.
     pub fn asset(&self) -> Result<ReleaseAsset> {
         let Some((os, arch, ext)) = Self::get_labels() else {
             return Err(eyre!("unsupported platform: {}-{}", ARCH, OS));

@@ -3,7 +3,7 @@ use dkn_workflows::{Model, ModelProvider};
 use eyre::eyre;
 use futures::stream::StreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
-use inquire::{list_option::ListOption, validator::Validation, MultiSelect};
+use inquire::MultiSelect;
 use ollama_rs::{
     error::OllamaError,
     generation::{
@@ -62,27 +62,20 @@ pub async fn measure_tps() -> eyre::Result<()> {
         .collect::<Vec<_>>();
 
     // prompt the user to select models to be benchmarked
-    let Some(selected_ollama_models) = MultiSelect::new(
+    let selected_ollama_models = MultiSelect::new(
         "Choose the Ollama models that you would like to measure:",
         all_ollama_models,
     )
     .with_default(&default_selected_idxs)
-    .with_validator(|models: &[ListOption<&Model>]| {
-        if models.is_empty() {
-            Ok(Validation::Invalid(
-                "Please select at least one model.".into(),
-            ))
-        } else {
-            Ok(Validation::Valid)
-        }
-    })
     .with_help_message(
-        "↑↓ to move, space to select one, → to all, ← to none, type to filter, ESC to go back",
+        "↑↓ to move, SPACE to select one, ←/→ to select all/none, type to filter models, ENTER to confirm",
     )
-    .prompt_skippable()?
-    else {
+    .prompt()?;
+
+    if selected_ollama_models.is_empty() {
+        log::info!("No models selected, exiting.");
         return Ok(());
-    };
+    }
 
     // create a table
     let mut table = Table::default();

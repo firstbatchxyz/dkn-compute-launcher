@@ -17,7 +17,6 @@ pub async fn update(exe_dir: &Path) {
         log::error!("Error updating compute node: {}", e);
     }
 
-    // FIXME: enable after first release
     log::debug!("Checking launcher version.");
     if let Err(e) = update_launcher(exe_dir).await {
         log::error!("Error updating launcher: {}", e);

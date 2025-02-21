@@ -26,20 +26,19 @@ pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         )),
     };
 
-    let Some(new_port) = Text::new("Enter port (enter 0 for random):")
-        .with_help_message(&format!("ESC to go back and keep using {}", port))
+    let existing_port_str = port.to_string();
+    let new_port = Text::new("Enter compute node port:")
         .with_validator(validator)
-        .with_default(&port.to_string())
-        .prompt_skippable()?
-    else {
-        return Ok(());
-    };
+        .with_default(&existing_port_str)
+        .prompt()?;
 
-    // update the port in the address
-    parts[4] = &new_port;
-    let new_listen_addr = parts.join("/");
-    log::info!("New listen address: {:?}", new_listen_addr);
-    dria_env.set(LISTEN_ADDR_KEY, new_listen_addr);
+    if new_port != existing_port_str {
+        // update the port in the address
+        parts[4] = &new_port;
+        let new_listen_addr = parts.join("/");
+        log::info!("New listen address: {:?}", new_listen_addr);
+        dria_env.set(LISTEN_ADDR_KEY, new_listen_addr);
+    }
 
     Ok(())
 }

@@ -28,6 +28,7 @@ use crate::{
 /// - If the file-descriptor limits could not be set
 pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<ComputeInstance> {
     let exe_dir = exe_path.parent().expect("must be a file");
+
     // check the update if requested, similar to calling `update` command
     if check_updates {
         log::info!("Checking for updates.");

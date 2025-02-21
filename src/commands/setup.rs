@@ -39,7 +39,7 @@ pub fn setup_environment(env_path: &Path) -> Result<()> {
     let required_api_keys = DriaApiKeyKind::from_providers(&configured_providers);
     for api_key in required_api_keys {
         log::info!("Provide {} because you are using its model", api_key);
-        let new_value = api_key.prompt(&dria_env)?;
+        let new_value = api_key.prompt_api(&dria_env)?;
         dria_env.set(api_key.name(), new_value);
     }
 
@@ -49,7 +49,11 @@ pub fn setup_environment(env_path: &Path) -> Result<()> {
             "Optionally provide {} for better performance",
             optional_api_key
         );
-        if let Some(new_value) = optional_api_key.prompt_skippable(&dria_env)? {
+
+        let new_value = optional_api_key.prompt_api(&dria_env)?;
+        if new_value.is_empty() {
+            continue;
+        } else {
             dria_env.set(optional_api_key.name(), new_value);
         }
     }
