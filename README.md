@@ -46,14 +46,11 @@ You can download the latest executable for your operating system using a number 
 
 - visit [dria.co/join](https://dria.co/join) and download the release for your machine.
 - visit [GitHub releases](https://github.com/firstbatchxyz/dkn-compute-launcher/releases) and download the release for your machine.
-- use [cargo](https://www.rust-lang.org/) and install binary with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher --root .`
+- use [cargo](https://www.rust-lang.org/) and install binary with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher`
 
 > [!NOTE]
 >
-> If you are installing with **cargo**:
->
-> - the `--root .` option installs the binary to current directory instead of installing globally
-> - [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`
+> If you are installing with **cargo** note that the [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`
 
 ### Model Providers
 
@@ -68,14 +65,14 @@ To serve a locally-hosted model with [Ollama](https://ollama.com/), you of cours
 Double-click the executable or run it via the command line. The `help` to see available options:
 
 ```sh
-# as a cargo binary
-dkn-compute-launcher help
-
 # as a Unix executable
 ./dkn-compute-launcher help
 
 # as a Windows executable
 .\dkn-compute-launcher.exe help
+
+# as a cargo global binary
+dkn-compute-launcher help
 ```
 
 > [!CAUTION]
