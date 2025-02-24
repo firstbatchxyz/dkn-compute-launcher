@@ -42,7 +42,7 @@ It is packed with many features:
 
 ## Installation
 
-The recommended way to install the launcher is to run the command below based on your machine:
+The recommended way to install the launcher is to run the command below in your terminal based on your machine:
 
 **Linux / MacOS**
 

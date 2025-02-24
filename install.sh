@@ -62,14 +62,16 @@ get_release_name() {
 }
 
 get_latest_version() {
+    # FIXME: for testing only
+    VERSION="v0.1.0-test"
     # this retuns a release object with a `tag_name` field that contains the `tag` as appears in GitHub release
-    LATEST_RELEASE_URL="https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
-    # we cURL that and extract the `tag_name` field
-    VERSION=$(curl -s $LATEST_RELEASE_URL | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-    if [ -z "$VERSION" ]; then
-        print_error "Failed to fetch latest version"
-        exit 1
-    fi
+    # LATEST_RELEASE_URL="https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
+    # # we cURL that and extract the `tag_name` field
+    # VERSION=$(curl -s $LATEST_RELEASE_URL | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    # if [ -z "$VERSION" ]; then
+    #     print_error "Failed to fetch latest version"
+    #     exit 1
+    # fi
 }
 
 download_binary() {

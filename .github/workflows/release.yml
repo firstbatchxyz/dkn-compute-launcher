@@ -86,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
-          path: target/${{ matrix.target }}/release/dkn-compute-launcher${{ matrix.extension }}
+          path: target/${{ matrix.target }}/release/dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
 
   ########################################
   # Uploads the built release artifacts

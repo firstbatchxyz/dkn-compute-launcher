@@ -42,10 +42,12 @@ function Get-ReleaseName {
 }
 
 function Get-LatestVersion {
-  $LATEST_RELEASE_URL = "https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
+  # $LATEST_RELEASE_URL = "https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
   try {
-    $response = Invoke-RestMethod -Uri $LATEST_RELEASE_URL
-    $script:VERSION = $response.tag_name
+    # $response = Invoke-RestMethod -Uri $LATEST_RELEASE_URL
+    # $script:VERSION = $response.tag_name
+    # FIXME: Hardcoding version for now
+    $script:VERSION = "v0.1.0-test"
   }
   catch {
     Write-Error "Failed to fetch latest version"
