@@ -69,11 +69,11 @@ function Download-Binary {
   
   try {
     Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile "$TMP_DIR\dkn-compute-launcher.exe"
-    Write-Success "Downloaded binary to $TMP_DIR"
+    Write-Success "Downloaded launcher to $TMP_DIR"
     $script:TMP_DIR = $TMP_DIR
   }
   catch {
-    Write-Error "Failed to download binary"
+    Write-Error "Failed to download launcher"
     Remove-Item -Path $TMP_DIR -Recurse -Force
     exit 1
   }

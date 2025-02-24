@@ -83,15 +83,15 @@ download_binary() {
     curl -f -L "$DOWNLOAD_URL" -o "${TMP_DIR}/dkn-compute-launcher"
     
     if [ $? -ne 0 ]; then
-        print_error "Failed to download binary"
+        print_error "Failed to download launcher"
         rm -rf "$TMP_DIR"
         exit 1
     fi
 
-    print_success "Downloaded binary to ${TMP_DIR}"zxx
+    print_success "Downloaded launcher to ${TMP_DIR}"zxx
 }
 
-# extract the binary and make it executable
+# move launcher to current directory
 install_binary() {
     chmod +x "${TMP_DIR}/dkn-compute-launcher"
     mv "${TMP_DIR}/dkn-compute-launcher" ./dkn-compute-launcher
