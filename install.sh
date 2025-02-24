@@ -3,9 +3,9 @@
 # inspired from: https://github.com/chaqchase/lla/blob/main/install.sh
 # this script is for Linux / macOS
 #
-# use with:
+# use with command:
 #
-# ```sh
+# ```bash
 # curl -fsSL https://dria.co/install | bash
 # ```
 
@@ -13,7 +13,7 @@
 # exit on error
 set -e
 
-################# COLORS #################
+################# LOGGERS #################
 
 NC='\033[0m' 
 RED='\033[0;31m'
@@ -29,6 +29,8 @@ print_success() {
 print_error() {
     echo -e "${RED}==>${NC} $1"
 }
+
+################## LOGIC ##################
 
 # detects the platform and returns the respective asset name
 # e.g. dkn-compute-launcher-linux-amd64
@@ -62,16 +64,14 @@ get_release_name() {
 }
 
 get_latest_version() {
-    # FIXME: for testing only
-    VERSION="v0.1.0-test"
     # this retuns a release object with a `tag_name` field that contains the `tag` as appears in GitHub release
-    # LATEST_RELEASE_URL="https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
-    # # we cURL that and extract the `tag_name` field
-    # VERSION=$(curl -s $LATEST_RELEASE_URL | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-    # if [ -z "$VERSION" ]; then
-    #     print_error "Failed to fetch latest version"
-    #     exit 1
-    # fi
+    LATEST_RELEASE_URL="https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
+    # we cURL that and extract the `tag_name` field
+    VERSION=$(curl -s $LATEST_RELEASE_URL | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    if [ -z "$VERSION" ]; then
+        print_error "Failed to fetch latest version"
+        exit 1
+    fi
 }
 
 download_binary() {

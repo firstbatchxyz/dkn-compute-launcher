@@ -47,13 +47,13 @@ The recommended way to install the launcher is to run the command below in your 
 **Linux / MacOS**
 
 ```sh
-curl -fsSL https://dria.co/install | bash
+curl -fsSL https://dria.co/launcher | bash
 ```
 
 **Windows**
 
-```
-powershell -c "irm dria.co/install.ps1|iex"
+```sh
+powershell -c "irm dria.co/launcher.ps1 | iex"
 ```
 
 That's all!

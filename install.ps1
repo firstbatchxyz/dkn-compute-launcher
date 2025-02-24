@@ -1,16 +1,19 @@
-# Inspired from: https://github.com/chaqchase/lla/blob/main/install.sh
-# This script is for Windows
+# inspired from: https://github.com/chaqchase/lla/blob/main/install.sh
+# and converted to Powershell by LLMs
 #
-# Use with command:
+# use with command:
 #
 # ```bash
 # powershell -c "irm dria.co/install.ps1|iex"
 # ```
 #
-# Here `irm` tells it to do `Invoke-RestMethod` and the piped `iex` tells it to `Invoke-Expression`,
+# here `irm` tells it to do `Invoke-RestMethod` and the piped `iex` tells it to `Invoke-Expression`,
 # allowing it to run the script.
 
-################# COLORS #################
+################# LOGGERS #################
+
+# the methods here are compatible with older Powershell versions
+
 function Write-Step {
   param([string]$message)
   Write-Host "==> " -ForegroundColor Blue -NoNewline
@@ -29,6 +32,8 @@ function Write-Error {
   Write-Host $message
 }
 
+################## LOGIC ##################
+
 function Get-ReleaseName {
   $OS = "windows"
   $ARCH = if ([System.Environment]::Is64BitOperatingSystem) { "amd64" } else { "386" }
@@ -42,12 +47,10 @@ function Get-ReleaseName {
 }
 
 function Get-LatestVersion {
-  # $LATEST_RELEASE_URL = "https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
+  $LATEST_RELEASE_URL = "https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
   try {
-    # $response = Invoke-RestMethod -Uri $LATEST_RELEASE_URL
-    # $script:VERSION = $response.tag_name
-    # FIXME: Hardcoding version for now
-    $script:VERSION = "v0.1.0-test"
+    $response = Invoke-RestMethod -Uri $LATEST_RELEASE_URL
+    $script:VERSION = $response.tag_name
   }
   catch {
     Write-Error "Failed to fetch latest version"

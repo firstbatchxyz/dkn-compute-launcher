@@ -17,7 +17,7 @@ impl DriaEnv {
         "DKN_WALLET_SECRET_KEY",
         "DKN_MODELS",
         "DKN_P2P_LISTEN_ADDR",
-        "DKN_BATCH_SIZE",
+        "DKN_BATCH_SIZE", // TODO: not configured yet
         // API keys
         "OPENAI_API_KEY",
         "GEMINI_API_KEY",
@@ -30,6 +30,7 @@ impl DriaEnv {
         "OLLAMA_AUTO_PULL",
     ];
 
+    /// Check if the environment has been changed.
     #[inline]
     pub fn is_changed(&self) -> bool {
         self.is_changed
@@ -46,8 +47,7 @@ impl DriaEnv {
     pub fn set(&mut self, key: &'static str, value: impl ToString) {
         self.kv.insert(key, value.to_string());
 
-        // we dont really set this to `false` anywhere because the program will
-        // exit when this whole thing is saved
+        // we should not set this to `false` anywhere
         self.is_changed = true;
     }
 
