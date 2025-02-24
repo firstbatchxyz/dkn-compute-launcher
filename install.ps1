@@ -1,5 +1,14 @@
 # Inspired from: https://github.com/chaqchase/lla/blob/main/install.sh
 # This script is for Windows
+#
+# Use with command:
+#
+# ```bash
+# powershell -c "irm dria.co/install.ps1|iex"
+# ```
+#
+# Here `irm` tells it to do `Invoke-RestMethod` and the piped `iex` tells it to `Invoke-Expression`,
+# allowing it to run the script.
 
 ################# COLORS #################
 $PSStyle.Foreground.Blue = "`e[34m"

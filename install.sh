@@ -2,6 +2,13 @@
 
 # inspired from: https://github.com/chaqchase/lla/blob/main/install.sh
 # this script is for Linux / macOS
+#
+# use with:
+#
+# ```sh
+# curl -fsSL https://dria.co/install | bash
+# ```
+
 
 # exit on error
 set -e

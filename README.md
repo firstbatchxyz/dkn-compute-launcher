@@ -42,23 +42,35 @@ It is packed with many features:
 
 ## Installation
 
-You can download the latest executable for your operating system using a number of options:
+The recommended way to install the launcher is to run the command below based on your machine:
 
-- visit [dria.co/join](https://dria.co/join) and download the release for your machine.
-- visit [GitHub releases](https://github.com/firstbatchxyz/dkn-compute-launcher/releases) and download the release for your machine.
-- use [cargo](https://www.rust-lang.org/) and install binary with `cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher`
+**Linux / MacOS**
 
-> [!NOTE]
->
-> If you are installing with **cargo** note that the [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`
+```sh
+curl -fsSL https://dria.co/install | bash
+```
 
-### Model Providers
+**Windows**
 
-The purpose of running a Dria Compute Node is to serve LLMs to the network. These models can either be locally-hosted models via Ollama, or API-based models such as Gemini and OpenAI.
+```
+powershell -c "irm dria.co/install.ps1|iex"
+```
 
-To serve API-based models ([OpenAI](https://openai.com/), [Gemini](https://gemini.google.com/app), [OpenRouter](https://openrouter.ai/)), you will need to get their API keys.
+That's all!
 
-To serve a locally-hosted model with [Ollama](https://ollama.com/), you of course need Ollama installed, and you must make sure that your machine can handle your chosen models. See ["Measuring Local Models"](#measuring-local-models) chapter below to see the command-line tools that help you measure TPS.
+### Download Specific Release
+
+You can visit [GitHub releases](https://github.com/firstbatchxyz/dkn-compute-launcher/releases) and download a specific release for your machine.
+
+### Build from Source
+
+You can build from source using [Rust](https://www.rust-lang.org/) & install the launcher globally using the command below:
+
+```sh
+cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher
+```
+
+Note that the [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`.
 
 ## Usage
 
@@ -70,9 +82,6 @@ Double-click the executable or run it via the command line. The `help` to see av
 
 # as a Windows executable
 .\dkn-compute-launcher.exe help
-
-# as a cargo global binary
-dkn-compute-launcher help
 ```
 
 > [!CAUTION]
@@ -88,6 +97,14 @@ All commands that you see with `help` have their own help messages within as wel
 ```sh
 ./dkn-compute-launcher <some-command> --help
 ```
+
+### Model Providers
+
+The purpose of running a Dria Compute Node is to serve LLMs to the network. These models can either be locally-hosted models via Ollama, or API-based models such as Gemini and OpenAI.
+
+= To serve API-based models ([OpenAI](https://openai.com/), [Gemini](https://gemini.google.com/app), [OpenRouter](https://openrouter.ai/)), you will need to get their API keys.
+
+- To serve a locally-hosted model with [Ollama](https://ollama.com/), you of course need Ollama installed, and you must make sure that your machine can handle your chosen models. See ["Measuring Local Models"](#measuring-local-models) chapter below to see the command-line tools that help you measure TPS.
 
 ### Starting a Node
 
