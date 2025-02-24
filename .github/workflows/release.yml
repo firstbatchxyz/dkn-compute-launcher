@@ -82,11 +82,17 @@ jobs:
           args: "--locked --release"
           strip: true
 
-      - name: Upload Launch Artifacts
+      # we need to `mv` here to add the correct filename for the artifacts
+      - name: Prepare file
+        run: |
+          # move the binary
+          mv target/${{ matrix.target }}/release/dkn-compute-launcher${{ matrix.extension }} ./dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
-          path: target/${{ matrix.target }}/release/dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
+          name: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}
+          path: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
 
   ########################################
   # Uploads the built release artifacts
@@ -102,14 +108,14 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all tags and history
 
-      - name: Download Launch Artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           merge-multiple: true
           path: ./artifacts
 
       # https://github.com/ncipollo/release-action
-      - name: Create release with artifacts
+      - name: Create releases
         uses: ncipollo/release-action@v1
         with:
           name: ${{ github.event.release.name }}
