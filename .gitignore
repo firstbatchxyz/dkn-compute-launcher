@@ -9,5 +9,6 @@
 # binaries and stuff
 dkn-compute-node*
 .dkn-compute-version
+dkn-compute-launcher*
 
 tmp_*

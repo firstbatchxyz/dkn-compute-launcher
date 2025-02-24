@@ -24,11 +24,11 @@ print_error() {
 }
 
 # detects the platform and returns the respective asset name
-# e.g. dkn-compute-node-linux-amd64
+# e.g. dkn-compute-launcher-linux-amd64
 #
 # this can be used with version to obtain the download URL like:
-# https://github.com/firstbatchxyz/dkn-compute-node/releases/download/v0.1.0/dkn-compute-node-linux-amd64
-detect_platform() {
+# https://github.com/firstbatchxyz/dkn-compute-launcher/releases/download/v0.1.0/dkn-compute-launcher-linux-amd64
+get_release_name() {
     OS="$(uname -s)"
     ARCH="$(uname -m)"
 
@@ -51,12 +51,12 @@ detect_platform() {
             ;;
     esac
 
-    PLATFORM="dkn-compute-node-${OS}-${ARCH}"
+    RELEASE_NAME="dkn-compute-binary-${OS}-${ARCH}"
 }
 
 get_latest_version() {
     # this retuns a release object with a `tag_name` field that contains the `tag` as appears in GitHub release
-    LATEST_RELEASE_URL="https://api.github.com/repos/firstbatchxyz/dkn-compute-node/releases/latest"
+    LATEST_RELEASE_URL="https://api.github.com/repos/firstbatchxyz/dkn-compute-launcher/releases/latest"
     # we cURL that and extract the `tag_name` field
     VERSION=$(curl -s $LATEST_RELEASE_URL | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
     if [ -z "$VERSION" ]; then
@@ -68,9 +68,10 @@ get_latest_version() {
 download_binary() {
     print_step "Downloading Dria Compute Launcher ${VERSION} for ${OS}-${ARCH}..."
     
-    DOWNLOAD_URL="https://github.com/firstbatchxyz/dkn-compute-node/releases/download/${VERSION}/${PLATFORM}"
+    DOWNLOAD_URL="https://github.com/firstbatchxyz/dkn-compute-launcher/releases/download/${VERSION}/${RELEASE_NAME}"
+    print_step "Downloading from $DOWNLOAD_URL"
     TMP_DIR=$(mktemp -d)
-    curl -L "$DOWNLOAD_URL" -o "${TMP_DIR}/dkn-compute-node"
+    curl -f -L "$DOWNLOAD_URL" -o "${TMP_DIR}/dkn-compute-launcher"
     
     if [ $? -ne 0 ]; then
         print_error "Failed to download binary"
@@ -78,13 +79,13 @@ download_binary() {
         exit 1
     fi
 
-    print_success "Downloaded binary to ${TMP_DIR}"
+    print_success "Downloaded binary to ${TMP_DIR}"zxx
 }
 
 # extract the binary and make it executable
 install_binary() {
-    chmod +x "${TMP_DIR}/dkn-compute-node"
-    mv "${TMP_DIR}/dkn-compute-node" ./dkn-compute-node
+    chmod +x "${TMP_DIR}/dkn-compute-launcher"
+    mv "${TMP_DIR}/dkn-compute-launcher" ./dkn-compute-launcher
     rm -rf "$TMP_DIR"
    
 }
@@ -96,14 +97,14 @@ main() {
         exit 1
     fi
     
-    detect_platform
+    get_release_name
     get_latest_version
     download_binary
     install_binary
 
-    print_success "dkn-compute-node ${VERSION} has been installed successfully!"
-    print_success "Run './dkn-compute-node help' to see settings"
-    print_success "Run './dkn-compute-node start' to start a node!"
+    print_success "DKN Compute Launcher ${VERSION} has been installed successfully!"
+    print_success "Run './dkn-compute-launcher help' to see settings"
+    print_success "Run './dkn-compute-launcher start' to start a node!"
 }
 
 main
