@@ -36,11 +36,18 @@ function Write-Error {
 
 function Get-ReleaseName {
   $OS = "windows"
-  $ARCH = if ([System.Environment]::Is64BitOperatingSystem) { "amd64" } else { "386" }
+  $script:ARCH = "amd64"
+
+  # handle 32-bit arch error
+  if (-not [System.Environment]::Is64BitOperatingSystem) {
+    Write-Error "32-bit architecture is not supported, the launcher only works on AMD64 systems."
+    exit 1
+  }
   
-  # For ARM64 Windows
+  # handle arm64 arch error
   if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
-    $ARCH = "arm64"
+    Write-Error "ARM64 architecture is not supported, the launcher only works on AMD64 systems."
+    exit 1
   }
   
   $script:RELEASE_NAME = "dkn-compute-launcher-${OS}-${ARCH}.exe"
@@ -59,7 +66,7 @@ function Get-LatestVersion {
 }
 
 function Download-Binary {
-  Write-Step "Downloading Dria Compute Launcher $VERSION for Windows-$ARCH..."
+  Write-Step "Downloading Dria Compute Launcher $VERSION for windows-$ARCH..."
   
   $DOWNLOAD_URL = "https://github.com/firstbatchxyz/dkn-compute-launcher/releases/download/${VERSION}/${RELEASE_NAME}"
   Write-Step "Downloading from $DOWNLOAD_URL"
