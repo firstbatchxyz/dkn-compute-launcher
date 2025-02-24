@@ -11,24 +11,22 @@
 # allowing it to run the script.
 
 ################# COLORS #################
-$PSStyle.Foreground.Blue = "`e[34m"
-$PSStyle.Foreground.Green = "`e[32m"
-$PSStyle.Foreground.Red = "`e[31m"
-$PSStyle.Reset = "`e[0m"
-
 function Write-Step {
   param([string]$message)
-  Write-Host "$($PSStyle.Foreground.Blue)==>$($PSStyle.Reset) $message"
+  Write-Host "==> " -ForegroundColor Blue -NoNewline
+  Write-Host $message
 }
 
 function Write-Success {
   param([string]$message)
-  Write-Host "$($PSStyle.Foreground.Green)==>$($PSStyle.Reset) $message"
+  Write-Host "==> " -ForegroundColor Green -NoNewline
+  Write-Host $message
 }
 
 function Write-Error {
   param([string]$message)
-  Write-Host "$($PSStyle.Foreground.Red)==>$($PSStyle.Reset) $message"
+  Write-Host "==> " -ForegroundColor Red -NoNewline
+  Write-Host $message
 }
 
 function Get-ReleaseName {
