@@ -38,7 +38,7 @@ function Get-ReleaseName {
     $ARCH = "arm64"
   }
   
-  $script:RELEASE_NAME = "dkn-compute-binary-${OS}-${ARCH}.exe"
+  $script:RELEASE_NAME = "dkn-compute-launcher-${OS}-${ARCH}.exe"
 }
 
 function Get-LatestVersion {

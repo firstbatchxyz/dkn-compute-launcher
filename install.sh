@@ -58,7 +58,7 @@ get_release_name() {
             ;;
     esac
 
-    RELEASE_NAME="dkn-compute-binary-${OS}-${ARCH}"
+    RELEASE_NAME="dkn-compute-launcher-${OS}-${ARCH}"
 }
 
 get_latest_version() {
