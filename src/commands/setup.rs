@@ -58,7 +58,10 @@ pub fn setup_environment(env_path: &Path) -> Result<()> {
         }
     }
 
-    // first write the base environment
+    // create directories if they dont exist
+    if !env_path.exists() {
+        std::fs::create_dir_all(env_path.parent().expect("expected parent directory"))?;
+    }
     std::fs::write(env_path, BASE_ENV_FILE_CONTENT)?;
 
     // then overwrite it with the new values

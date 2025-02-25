@@ -86,30 +86,36 @@ fn parse_version_tag(s: &str) -> Result<String, String> {
 
 /// Returns the default targeted environment file.
 ///
-/// - On Unix systems, this is `~/.dria/compute/.env`.
+/// - On Unix systems, this is `~/.dria/dkn-compute-launcher/.env`.
 /// - On Windows systems, this is `%USERPROFILE%\.dria\compute\.env`.
 ///
 /// If there is an error, it will return just `.env`.
 #[inline]
 pub fn default_env() -> String {
-    ".env".to_string()
+    let env_filename = ".env.default".to_string();
 
-    // TODO: do the thing below for profile management
-    // let fallback_path = ".env.default".to_string();
-    // match homedir::my_home() {
-    //     Ok(Some(home)) => home
-    //         .join(".dria")
-    //         .join("compute")
-    //         .join(".env.default")
-    //         .into_os_string()
-    //         .into_string()
-    //         .unwrap_or(fallback_path),
-    //     Ok(None) | Err(_) => fallback_path,
-    // }
+    match homedir::my_home() {
+        Ok(Some(home)) => home
+            .join(".dria")
+            .join("dkn-compute-launcher")
+            .join(&env_filename)
+            .into_os_string()
+            .into_string()
+            .unwrap_or(env_filename),
+        Ok(None) | Err(_) => env_filename,
+    }
 }
 
 /// Returns the default executables directory.
 #[inline]
-pub fn default_exedir() -> &'static str {
-    "."
+pub fn default_exedir() -> String {
+    match homedir::my_home() {
+        Ok(Some(home)) => home
+            .join(".dria")
+            .join("dkn-compute-launcher")
+            .into_os_string()
+            .into_string()
+            .unwrap_or(".".to_string()),
+        Ok(None) | Err(_) => ".".to_string(),
+    }
 }
