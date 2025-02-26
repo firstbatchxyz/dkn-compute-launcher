@@ -58,6 +58,8 @@ function Get-LatestVersion {
   try {
     $response = Invoke-RestMethod -Uri $LATEST_RELEASE_URL
     $script:VERSION = $response.tag_name
+    
+    $script:VERSION = "v0.1.0-test" # FIXME: !!!
   }
   catch {
     Write-Error "Failed to fetch latest version"
@@ -86,9 +88,34 @@ function Download-Binary {
   }
 }
 
+# Globally installs the Launcher binary
 function Install-Binary {
-  Move-Item "$TMP_DIR\dkn-compute-launcher.exe" ".\dkn-compute-launcher.exe"
-  Remove-Item -Path $TMP_DIR -Recurse -Force
+  # Create Program Files directory if it doesn't exist
+  $installPath = "$env:ProgramFiles\Dria"
+  New-Item -ItemType Directory -Force -Path $installPath | Out-Null
+
+  try {
+    # Move the binary to Program Files
+    Move-Item "$TMP_DIR\dkn-compute-launcher.exe" "$installPath\dkn-compute-launcher.exe" -Force
+
+    # Add to PATH if not already present
+    $currentPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+    if ($currentPath -notlike "*$installPath*") {
+      [Environment]::SetEnvironmentVariable(
+        "Path",
+        "$currentPath;$installPath",
+        "Machine"
+      )
+    }
+
+    # Cleanup temp directory
+    Remove-Item -Path $TMP_DIR -Recurse -Force
+    Write-Success "Installed globally to $installPath"
+  }
+  catch {
+    Write-Error "Failed to install globally. Try running as administrator."
+    exit 1
+  }
 }
 
 function Main {

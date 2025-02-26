@@ -8,6 +8,8 @@
 # ```bash
 # curl -fsSL https://dria.co/install | bash
 # ```
+#
+# Requires password for sudo access to install the binary to /usr/local/bin.
 
 
 # exit on error
@@ -91,12 +93,12 @@ download_binary() {
     print_success "Downloaded launcher to ${TMP_DIR}"zxx
 }
 
-# move launcher to current directory
+# move launcher binary to /usr/local/bin for global access
 install_binary() {
-    chmod +x "${TMP_DIR}/dkn-compute-launcher"
-    mv "${TMP_DIR}/dkn-compute-launcher" ./dkn-compute-launcher
+    sudo mkdir -p /usr/local/bin
+    sudo chmod +x "${TMP_DIR}/dkn-compute-launcher"
+    sudo mv "${TMP_DIR}/dkn-compute-launcher" /usr/local/bin/
     rm -rf "$TMP_DIR"
-   
 }
 
 main() {
@@ -112,8 +114,9 @@ main() {
     install_binary
 
     print_success "DKN Compute Launcher ${VERSION} has been installed successfully!"
-    print_success "Run './dkn-compute-launcher help' to see settings"
-    print_success "Run './dkn-compute-launcher start' to start a node!"
+    print_success "Run 'dkn-compute-launcher help' to see settings."
+    print_success "Run 'dkn-compute-launcher start' to start a node!"
+    print_success "You may need to restart your terminal."
 }
 
 main
