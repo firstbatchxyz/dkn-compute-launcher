@@ -7,6 +7,9 @@
 #
 # ```bash
 # curl -fsSL https://dria.co/install | bash
+#
+# # or the direct link
+# curl -fsSL https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-launcher/refs/heads/master/install.ps1 | bash
 # ```
 #
 # Requires password for sudo access to install the binary to /usr/local/bin.
@@ -114,9 +117,9 @@ main() {
     install_binary
 
     print_success "DKN Compute Launcher ${VERSION} has been installed successfully!"
-    print_success "Run 'dkn-compute-launcher help' to see settings."
-    print_success "Run 'dkn-compute-launcher start' to start a node!"
-    print_success "You may need to restart your terminal."
+    print_success "Restart your terminal, and then:"
+    print_success "  'dkn-compute-launcher help' to see available commands,"
+    print_success "  'dkn-compute-launcher start' to start a node!"
 }
 
 main

@@ -42,15 +42,17 @@ It is packed with many features:
 
 ## Installation
 
-The recommended way to install the launcher is to run the command below in your terminal based on your machine:
-
 **Linux / MacOS**
+
+Open a terminal in and run the following command, it will ask for your user password:
 
 ```sh
 curl -fsSL https://dria.co/launcher | bash
 ```
 
 **Windows**
+
+Open a terminal in Administrator mode, and run the following command:
 
 ```sh
 powershell -c "irm dria.co/launcher.ps1 | iex"

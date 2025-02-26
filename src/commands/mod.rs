@@ -77,7 +77,7 @@ fn parse_version_tag(s: &str) -> Result<String, String> {
 /// - On Unix systems, this is `$HOME/.dria/dkn-compute-launcher/.env`.
 /// - On Windows systems, this is `%USERPROFILE%\.dria\compute\.env`.
 ///
-/// If there is an error, it will return just `.env`.
+/// If there is an error, it will return just `.env.default`.
 #[inline]
 pub fn default_env() -> String {
     let env_filename = ".env.default".to_string();

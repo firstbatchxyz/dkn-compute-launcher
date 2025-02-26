@@ -4,11 +4,15 @@
 # use with command:
 #
 # ```bash
-# powershell -c "irm dria.co/install.ps1|iex"
+# powershell -c "irm dria.co/launcher.ps1 | iex"
+#
+# # or the direct link
+# powershell -c "irm https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-launcher/refs/heads/master/install.ps1 | iex"
 # ```
 #
-# here `irm` tells it to do `Invoke-RestMethod` and the piped `iex` tells it to `Invoke-Expression`,
-# allowing it to run the script.
+# `irm` does `Invoke-RestMethod` and the piped `iex` does `Invoke-Expression`, allowing it to run the downloaded script.
+#
+# requires Administrator privileges to install globally
 
 ################# LOGGERS #################
 
@@ -132,8 +136,9 @@ function Main {
   Install-Binary
   
   Write-Success "DKN Compute Launcher $VERSION has been installed successfully!"
-  Write-Success "Run '.\dkn-compute-launcher.exe help' to see settings"
-  Write-Success "Run '.\dkn-compute-launcher.exe start' to start a node!"
+  Write-Success "Restart your terminal, and then:"
+  Write-Success "  'dkn-compute-launcher.exe help' to see available commands,"
+  Write-Success "  'dkn-compute-launcher.exe start' to start a node!"
 }
 
 Main
