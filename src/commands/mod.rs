@@ -1,6 +1,5 @@
 use clap::Subcommand;
 use colored::Colorize;
-use std::path::PathBuf;
 
 mod start;
 pub use start::run_compute;
@@ -35,27 +34,16 @@ pub enum Commands {
     /// Measure performance (TPS) of Ollama models on your machine.
     Measure,
     /// Start the latest compute node
-    Start {
-        /// Directory where the executables are stored.
-        #[arg(long, default_value = default_exedir())]
-        exedir: PathBuf,
-    },
+    Start,
     /// Manually update the compute node & launcher.
-    Update {
-        /// Directory where the executables are stored.
-        #[arg(long, default_value = default_exedir())]
-        exedir: PathBuf,
-    },
+    Update,
     /// Run a specific compute node version.
     Specific {
-        /// Directory where the executables are stored.
-        #[arg(long, default_value = default_exedir())]
-        exedir: PathBuf,
         /// Run the chosen executable immediately.
-        #[arg(short, long, default_value_t = false)]
+        #[arg(long, default_value_t = false)]
         run: bool,
         /// Tag of the version to download, bypasses the prompt if provided.
-        #[arg(short, long, value_parser = parse_version_tag)]
+        #[arg(long, value_parser = parse_version_tag)]
         tag: Option<String>,
     },
 }
@@ -86,7 +74,7 @@ fn parse_version_tag(s: &str) -> Result<String, String> {
 
 /// Returns the default targeted environment file.
 ///
-/// - On Unix systems, this is `~/.dria/dkn-compute-launcher/.env`.
+/// - On Unix systems, this is `$HOME/.dria/dkn-compute-launcher/.env`.
 /// - On Windows systems, this is `%USERPROFILE%\.dria\compute\.env`.
 ///
 /// If there is an error, it will return just `.env`.
@@ -103,19 +91,5 @@ pub fn default_env() -> String {
             .into_string()
             .unwrap_or(env_filename),
         Ok(None) | Err(_) => env_filename,
-    }
-}
-
-/// Returns the default executables directory.
-#[inline]
-pub fn default_exedir() -> String {
-    match homedir::my_home() {
-        Ok(Some(home)) => home
-            .join(".dria")
-            .join("dkn-compute-launcher")
-            .into_os_string()
-            .into_string()
-            .unwrap_or(".".to_string()),
-        Ok(None) | Err(_) => ".".to_string(),
     }
 }

@@ -21,7 +21,7 @@
     <a href="./.github/workflows/tests.yml" target="_blank">
         <img alt="Workflow: Tests" src="https://github.com/firstbatchxyz/dkn-compute-launcher/actions/workflows/tests.yml/badge.svg?branch=master">
     </a>
-    <a href="./" target="_blank">
+    <a href="https://github.com/firstbatchxyz/dkn-compute-launcher/releases" target="_blank">
         <img alt="Downloads" src="https://img.shields.io/github/downloads/firstbatchxyz/dkn-compute-launcher/total?logo=github&logoColor=%23F2FFEE&color=%2332C754">
     </a>
     <a href="https://discord.gg/dria" target="_blank">
@@ -242,7 +242,7 @@ Using the `specific` command you can choose to run a specific release:
 ./dkn-compute-launcher specific --run --tag 0.3.4
 ```
 
-This is completely optional, and should mostly be used for debugging and testing on the live network. When you run a specific release your node & launcher will not be automatically updated!
+This is completely optional, and should mostly be used for debugging and testing on the live network. When you run a specific release your node & launcher will **not** be automatically updated!
 
 > [!CAUTION]
 >

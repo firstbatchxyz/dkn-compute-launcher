@@ -72,6 +72,10 @@ impl DriaApiKeyKind {
         set.into_iter().collect()
     }
 
+    pub fn optional_apis() -> Vec<DriaApiKeyKind> {
+        vec![DriaApiKeyKind::Jina, DriaApiKeyKind::Serper]
+    }
+
     /// A wrapper for `inquire::Text` for prompting the user to enter the API key.
     #[inline]
     pub fn prompt_api(&self, dria_env: &DriaEnv) -> InquireResult<String> {

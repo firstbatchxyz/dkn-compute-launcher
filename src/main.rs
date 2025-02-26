@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 mod commands;
 use commands::Commands;
@@ -64,16 +64,19 @@ async fn main() -> eyre::Result<()> {
         }
     }
 
+    // get the directory w.r.t env file
+    let exe_dir = cli.env.parent().unwrap_or_else(|| Path::new("."));
+
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,
         Commands::Setup => commands::setup_environment(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
         Commands::Measure => commands::measure_tps().await?,
-        Commands::Update { exedir } => commands::update(exedir).await,
-        Commands::Specific { exedir, run, tag } => {
+        Commands::Update => commands::update(exe_dir).await,
+        Commands::Specific { run, tag } => {
             // downloads the specific version under the `exedir`, with the filename including the version tag
             // e.g. `./my/dir/dkn-compute-node_v0.3.6`
-            let exe = commands::download_specific_release(exedir, tag.as_ref()).await?;
+            let exe = commands::download_specific_release(exe_dir, tag.as_ref()).await?;
 
             // if `run` is true, the binary is executed immediately
             if *run {
@@ -81,12 +84,14 @@ async fn main() -> eyre::Result<()> {
                     .await?
                     .monitor_process()
                     .await;
+            } else {
+                log::info!("Executable is ready at {}", exe.display());
             }
         }
-        Commands::Start { exedir } => {
+        Commands::Start => {
             // downloads the latest version under the `exedir`, with the filename including "latest"
             // e.g. `./my/dir/dkn-compute-node_latest`
-            let exe = exedir.join(DKN_LATEST_COMPUTE_FILE);
+            let exe = exe_dir.join(DKN_LATEST_COMPUTE_FILE);
 
             commands::run_compute(&exe, true)
                 .await?

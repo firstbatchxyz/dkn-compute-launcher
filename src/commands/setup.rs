@@ -6,9 +6,6 @@ use crate::{
     utils::DriaEnv,
 };
 
-/// Example env file content, used for creating a new env file.
-const BASE_ENV_FILE_CONTENT: &str = include_str!("../../.env.example");
-
 /// Creates & sets up a new environment. It specifically asks for the following:
 ///
 /// 1. A wallet
@@ -44,7 +41,7 @@ pub fn setup_environment(env_path: &Path) -> Result<()> {
     }
 
     // ask for Jina and Serper api keys (optional)
-    for optional_api_key in [DriaApiKeyKind::Jina, DriaApiKeyKind::Serper] {
+    for optional_api_key in DriaApiKeyKind::optional_apis() {
         log::info!(
             "Optionally provide {} for better performance",
             optional_api_key
@@ -59,10 +56,7 @@ pub fn setup_environment(env_path: &Path) -> Result<()> {
     }
 
     // create directories if they dont exist
-    if !env_path.exists() {
-        std::fs::create_dir_all(env_path.parent().expect("expected parent directory"))?;
-    }
-    std::fs::write(env_path, BASE_ENV_FILE_CONTENT)?;
+    DriaEnv::new_default_file(env_path)?;
 
     // then overwrite it with the new values
     dria_env.save_to_file(env_path)?;

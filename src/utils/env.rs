@@ -116,6 +116,20 @@ impl DriaEnv {
         Ok(())
     }
 
+    pub fn new_default_file(env_path: &Path) -> io::Result<()> {
+        /// Example env file content, used for creating a new env file.
+        const BASE_ENV_FILE_CONTENT: &str = include_str!("../../.env.example");
+
+        // create directories if they dont exist
+        if !env_path.exists() {
+            if let Some(dir) = env_path.parent() {
+                std::fs::create_dir_all(dir)?;
+            }
+        }
+
+        std::fs::write(env_path, BASE_ENV_FILE_CONTENT)
+    }
+
     /// Returns the `host` and `port` values for the Ollama server w.r.t Dria environment.
     #[inline]
     pub fn get_ollama_config(&self) -> (&str, &str) {
