@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 mod commands;
 use commands::Commands;
@@ -54,38 +54,44 @@ async fn main() -> eyre::Result<()> {
                 "Creating a new environment to be saved at {}",
                 cli.env.display()
             );
-
             commands::setup_environment(&cli.env)?;
 
             // early-exit if the user wanted to setup anyways
             if let Commands::Setup = cli.command {
                 return Ok(());
+            } else {
+                // override the env file with the new one
+                dotenvy::from_path_override(&cli.env)?;
             }
         }
     }
 
-    // get the directory w.r.t env file
-    let exe_dir = cli.env.parent().unwrap_or_else(|| Path::new("."));
+    // get the directory w.r.t env file, which will be used for the executable's directory
+    let exe_dir = match cli.env.parent() {
+        Some(dir) => dir.to_owned(),
+        None => std::env::current_dir().expect("could not get env dir or current dir"),
+    };
 
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,
         Commands::Setup => commands::setup_environment(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
+        Commands::Info => commands::show_info(),
         Commands::Measure => commands::measure_tps().await?,
-        Commands::Update => commands::update(exe_dir).await,
+        Commands::Update => commands::update(&exe_dir).await,
         Commands::Specific { run, tag } => {
             // downloads the specific version under the `exedir`, with the filename including the version tag
             // e.g. `./my/dir/dkn-compute-node_v0.3.6`
-            let exe = commands::download_specific_release(exe_dir, tag.as_ref()).await?;
+            let exe_path = commands::download_specific_release(&exe_dir, tag.as_ref()).await?;
 
             // if `run` is true, the binary is executed immediately
             if *run {
-                commands::run_compute(&exe, false)
+                commands::run_compute(&exe_path, false)
                     .await?
                     .monitor_process()
                     .await;
             } else {
-                log::info!("Executable is ready at {}", exe.display());
+                log::info!("Executable is ready at {}", exe_path.display());
             }
         }
         Commands::Start => {

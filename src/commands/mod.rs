@@ -22,6 +22,9 @@ pub use measure::measure_tps;
 mod setup;
 pub use setup::setup_environment;
 
+mod info;
+pub use info::show_info;
+
 /// Launcher commands.
 #[derive(Subcommand)]
 pub enum Commands {
@@ -29,12 +32,12 @@ pub enum Commands {
     Settings,
     /// Setup the environment file from scratch (will overwrite existing values).
     Setup,
-    /// Open a command-line text editor for your environment file (advanced).
-    EnvEditor,
-    /// Measure performance (TPS) of Ollama models on your machine.
-    Measure,
     /// Start the latest compute node
     Start,
+    /// Show information about the current environment.
+    Info,
+    /// Measure performance (TPS) of Ollama models on your machine.
+    Measure,
     /// Manually update the compute node & launcher.
     Update,
     /// Run a specific compute node version.
@@ -46,6 +49,8 @@ pub enum Commands {
         #[arg(long, value_parser = parse_version_tag)]
         tag: Option<String>,
     },
+    /// Open a command-line text editor for your environment file (advanced).
+    EnvEditor,
 }
 
 /// Parses a version tag in the format `major.minor.patch`.

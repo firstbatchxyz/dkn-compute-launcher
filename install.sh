@@ -98,6 +98,7 @@ download_binary() {
 
 # move launcher binary to /usr/local/bin for global access
 install_binary() {
+    print_step "Extracting binary to /usr/local/bin (will ask for password)"
     sudo mkdir -p /usr/local/bin
     sudo chmod +x "${TMP_DIR}/dkn-compute-launcher"
     sudo mv "${TMP_DIR}/dkn-compute-launcher" /usr/local/bin/

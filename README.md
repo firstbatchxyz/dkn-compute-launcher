@@ -44,7 +44,7 @@ It is packed with many features:
 
 **Linux / MacOS**
 
-Open a terminal in and run the following command, it will ask for your user password:
+Open a terminal and run the following command, it will ask for your user password:
 
 ```sh
 curl -fsSL https://dria.co/launcher | bash
@@ -58,11 +58,7 @@ Open a terminal in Administrator mode, and run the following command:
 powershell -c "irm dria.co/launcher.ps1 | iex"
 ```
 
-That's all!
-
-### Download Specific Release
-
-You can visit [GitHub releases](https://github.com/firstbatchxyz/dkn-compute-launcher/releases) and download a specific release for your machine.
+You may need to allow network access to the launcher if Windows prompts you to do so.
 
 ### Build from Source
 
@@ -72,7 +68,7 @@ You can build from source using [Rust](https://www.rust-lang.org/) & install the
 cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher
 ```
 
-Note that the [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`.
+The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`.
 
 ## Usage
 
@@ -80,10 +76,10 @@ Double-click the executable or run it via the command line. The `help` to see av
 
 ```sh
 # as a Unix executable
-./dkn-compute-launcher help
+dkn-compute-launcher help
 
 # as a Windows executable
-.\dkn-compute-launcher.exe help
+dkn-compute-launcher.exe help
 ```
 
 > [!CAUTION]
@@ -97,7 +93,7 @@ Double-click the executable or run it via the command line. The `help` to see av
 All commands that you see with `help` have their own help messages within as well, you can view it with:
 
 ```sh
-./dkn-compute-launcher <some-command> --help
+dkn-compute-launcher <some-command> --help
 ```
 
 ### Model Providers
@@ -113,7 +109,7 @@ The purpose of running a Dria Compute Node is to serve LLMs to the network. Thes
 Start your node with `start` command:
 
 ```sh
-./dkn-compute-launcher start
+dkn-compute-launcher start
 ```
 
 > [!NOTE]
@@ -128,7 +124,7 @@ You can stop the node with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C<
 You can use the `settings` command to change anything about your node:
 
 ```sh
-./dkn-compute-launcher settings
+dkn-compute-launcher settings
 ```
 
 You will be greeted with a menu, where you can navigate with arrow keys <kbd>↑</kbd> <kbd>↓</kbd> and select an option with enter <kbd>ENTER</kbd> :
@@ -142,6 +138,7 @@ You will be greeted with a menu, where you can navigate with arrow keys <kbd>↑
   API Keys
   Log Levels
   ✓ Save & Exit
+  ✗ Abort Changes
 ```
 
 Using this menu, you are able to change the following settings:
@@ -209,12 +206,14 @@ deepseek-r1:1.5b                     21.4724      652          63.3591      1658
 driaforall/tiny-agent-a:1.5b         22.5653      842          47.1771      2586         3443
 ```
 
+Measurements the fail to meet the Compute Node requirements will be colored in red.
+
 ### Update Manually
 
 Using the `update` command you can check for updates & automatically update your compute node and launcher.
 
 ```sh
-./dkn-compute-launcher update
+dkn-compute-launcher update
 ```
 
 You don't need to do this usually, as the launcher will always check for updates when you run the `start` command.
@@ -224,7 +223,7 @@ You don't need to do this usually, as the launcher will always check for updates
 For more advanced users that would like to view the environment file in more detail & plain-text, we provide the `env-editor` command:
 
 ```sh
-./dkn-compute-launcher env-editor
+dkn-compute-launcher env-editor
 ```
 
 This command will open the selected environment file using a terminal-native text editor, allowing you to edit everything in it. If there happens to be multiple keys for a single value in the environment, the `settings` command will edit the _last uncommented key_ on **Save**.
@@ -235,13 +234,13 @@ Using the `specific` command you can choose to run a specific release:
 
 ```sh
 # select & download
-./dkn-compute-launcher specific
+dkn-compute-launcher specific
 
 # run after downloading
-./dkn-compute-launcher specific --run
+dkn-compute-launcher specific --run
 
 # specify tag, skipping the selection menu
-./dkn-compute-launcher specific --run --tag 0.3.4
+dkn-compute-launcher specific --run --tag 0.3.4
 ```
 
 This is completely optional, and should mostly be used for debugging and testing on the live network. When you run a specific release your node & launcher will **not** be automatically updated!
