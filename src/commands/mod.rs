@@ -82,10 +82,11 @@ fn parse_version_tag(s: &str) -> Result<String, String> {
 /// - On Unix systems, this is `$HOME/.dria/dkn-compute-launcher/.env`.
 /// - On Windows systems, this is `%USERPROFILE%\.dria\compute\.env`.
 ///
-/// If there is an error, it will return just `.env.default`.
+/// If there is an error, it will return just `.env`.
+/// Its important to name this `.env` due to how compute node reads it.
 #[inline]
 pub fn default_env() -> String {
-    let env_filename = ".env.default".to_string();
+    let env_filename = ".env".to_string();
 
     match homedir::my_home() {
         Ok(Some(home)) => home
