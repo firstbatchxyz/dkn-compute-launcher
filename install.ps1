@@ -62,8 +62,6 @@ function Get-LatestVersion {
   try {
     $response = Invoke-RestMethod -Uri $LATEST_RELEASE_URL
     $script:VERSION = $response.tag_name
-    
-    $script:VERSION = "v0.1.0-test" # FIXME: !!!
   }
   catch {
     Write-Error "Failed to fetch latest version"
