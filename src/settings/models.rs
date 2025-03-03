@@ -38,7 +38,7 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
             .filter(|m| ModelProvider::from(*m) == provider)
             .cloned()
             .collect::<Vec<_>>();
-        let all_prov_models = Model::all_with_provider(provider.clone()).collect::<Vec<_>>();
+        let all_prov_models = Model::all_with_provider(&provider).collect::<Vec<_>>();
         let default_selected_idxs = all_prov_models
             .iter()
             .enumerate()

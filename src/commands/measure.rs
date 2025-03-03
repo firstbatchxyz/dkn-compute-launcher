@@ -32,7 +32,7 @@ pub async fn measure_tps() -> eyre::Result<()> {
     }
 
     // get all Ollama models available
-    let all_ollama_models = Model::all_with_provider(ModelProvider::Ollama).collect::<Vec<_>>();
+    let all_ollama_models = Model::all_with_provider(&ModelProvider::Ollama).collect::<Vec<_>>();
 
     // get users ollama models
     let models_config = dria_env.get_model_config();
