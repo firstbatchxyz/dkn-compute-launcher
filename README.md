@@ -15,9 +15,6 @@
     <a href="https://opensource.org/license/apache-2-0" target="_blank">
         <img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache%202.0-7CB9E8.svg">
     </a>
-    <a href="./.github/workflows/release.yml" target="_blank">
-        <img alt="Workflow: Release" src="https://github.com/firstbatchxyz/dkn-compute-launcher/actions/workflows/release.yml/badge.svg?branch=master">
-    </a>
     <a href="./.github/workflows/tests.yml" target="_blank">
         <img alt="Workflow: Tests" src="https://github.com/firstbatchxyz/dkn-compute-launcher/actions/workflows/tests.yml/badge.svg?branch=master">
     </a>
@@ -100,7 +97,7 @@ dkn-compute-launcher <some-command> --help
 
 The purpose of running a Dria Compute Node is to serve LLMs to the network. These models can either be locally-hosted models via Ollama, or API-based models such as Gemini and OpenAI.
 
-= To serve API-based models ([OpenAI](https://openai.com/), [Gemini](https://gemini.google.com/app), [OpenRouter](https://openrouter.ai/)), you will need to get their API keys.
+- To serve API-based models ([OpenAI](https://openai.com/), [Gemini](https://gemini.google.com/app), [OpenRouter](https://openrouter.ai/)), you will need to get their API keys.
 
 - To serve a locally-hosted model with [Ollama](https://ollama.com/), you of course need Ollama installed, and you must make sure that your machine can handle your chosen models. See ["Measuring Local Models"](#measuring-local-models) chapter below to see the command-line tools that help you measure TPS.
 
