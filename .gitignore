@@ -1,3 +1,14 @@
-.env
-dkn_compute
+/target
+.vscode
 .DS_Store
+
+# ignore all env except example
+.env*
+!.env.example
+
+# binaries and stuff
+dkn-compute-node*
+.dkn-compute-version
+dkn-compute-launcher*
+
+tmp_*

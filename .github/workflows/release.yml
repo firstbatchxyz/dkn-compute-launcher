@@ -1,0 +1,126 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  ########################################
+  # TODO: what does this do?
+  ########################################
+  check_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo tag
+        run: |
+          echo "tag name: ${{ github.event.release.tag_name }}"
+          echo "release name: ${{ github.event.release.name }}"
+
+  ########################################
+  # Builds the releases for all platforms
+  ########################################
+  build:
+    needs: check_release
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          # macOS intel
+          - {
+              runner: macos-latest,
+              osname: macOS,
+              arch: amd64,
+              target: x86_64-apple-darwin,
+            }
+          # macOS arm (apple silicon)
+          - {
+              runner: macos-latest,
+              osname: macOS,
+              arch: arm64,
+              target: aarch64-apple-darwin,
+            }
+          # linux amd64
+          - {
+              runner: ubuntu-latest,
+              osname: linux,
+              arch: amd64,
+              target: x86_64-unknown-linux-musl,
+            }
+          # linux arm64
+          - {
+              runner: ubuntu-latest,
+              osname: linux,
+              arch: arm64,
+              target: aarch64-unknown-linux-musl,
+            }
+          # windows x86_64
+          - {
+              runner: windows-latest,
+              osname: windows,
+              arch: amd64,
+              target: x86_64-pc-windows-msvc,
+              extension: ".exe",
+            }
+
+    # this will run the following steps for each of the matrix
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get tag
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: "build"
+          target: ${{ matrix.target }}
+          args: "--locked --release"
+          strip: true
+
+      # we need to `mv` here to add the correct filename for the artifacts
+      - name: Prepare file
+        run: |
+          # move the binary
+          mv target/${{ matrix.target }}/release/dkn-compute-launcher${{ matrix.extension }} ./dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}
+          path: dkn-compute-launcher-${{ matrix.osname }}-${{ matrix.arch }}${{ matrix.extension }}
+
+  ########################################
+  # Uploads the built release artifacts
+  # to actual GitHub release
+  ########################################
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all tags and history
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: ./artifacts
+
+      # https://github.com/ncipollo/release-action
+      - name: Create releases
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ github.event.release.name }}
+          tag: ${{ github.event.release.tag_name }}
+          artifacts: "artifacts/*"
+          artifactContentType: application/octet-stream
+          allowUpdates: true
+          makeLatest: false
