@@ -151,7 +151,7 @@ Within a menu, you can go back by selecting <kbd>← Go Back</kbd>. Within the m
 
 > [!TIP]
 >
-> You can always exit the process (ungracefully) with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS).
+> You can always exit the process (ungracefully) with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS), or <kbd>ESC</kbd> on both systems.
 
 ### Choosing Models
 

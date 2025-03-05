@@ -27,6 +27,7 @@ use crate::{
 /// - If the Ollama process is required but could not be spawned
 /// - If the file-descriptor limits could not be set
 pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<ComputeInstance> {
+    // get the executables directory back from the path
     let exe_dir = exe_path.parent().expect("must be a file");
 
     // check the update if requested, similar to calling `update` command

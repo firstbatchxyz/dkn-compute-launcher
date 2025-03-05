@@ -104,6 +104,7 @@ async fn main() -> eyre::Result<()> {
                 .monitor_process()
                 .await;
         }
+        Commands::Referrals => commands::handle_referrals(),
     };
 
     Ok(())

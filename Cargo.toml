@@ -1,7 +1,7 @@
 [package]
 name = "dkn-compute-launcher"
 edition = "2021"
-version = "0.1.0"
+version = "0.1.1"
 license = "Apache-2.0"
 readme = "README.md"
 description = "Dria Compute Node Launcher"
@@ -20,8 +20,11 @@ tokio = { version = "1", features = [
 self_update = { version = "0.42.0", features = [
   "rustls",
 ], default-features = false }
-futures = "0.3.31"
+
+# OS stuff
 which = "7.0.2"
+rlimit = "0.10.2"
+homedir = "0.3.4"
 
 # CLI
 clap = { version = "4.5.27", features = [
@@ -34,19 +37,18 @@ inquire = { version = "0.7.5", features = ["editor"] }
 dotenvy = "0.15.7"
 hex = "0.4.3"
 enum-iterator = "2.1.0"
+futures = "0.3.31"
 
 # logging & errors
 env_logger = "0.11.3"
 log = "0.4.21"
 eyre = "0.6.12"
 indicatif = "0.17.11"
+colored = "2.2.0"
 
 ollama-rs = { version = "0.2.5", features = ["rustls", "stream"] }
 dkn-workflows = { git = "https://github.com/firstbatchxyz/dkn-compute-node" }
 reqwest = { version = "0.12.12", features = ["rustls-tls"] }
-rlimit = "0.10.2"
-colored = "2.2.0"
-homedir = "0.3.4"
 
 # vendor OpenSSL so that its easier to build cross-platform packages
 [dependencies.openssl]
