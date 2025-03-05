@@ -246,13 +246,33 @@ This is completely optional, and should mostly be used for debugging and testing
 >
 > The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore, if the latest is `0.3.x` and you decide to run a smaller version like `0.2.x` you will most likely kept out of network due to protocol mismatch.
 
-## Documentation
+## Uninstallation
 
-To see the launcher's internal documentation clone the repo and run:
+See the commands below to remove the launcher from your machine.
+
+**Linux / MacOS**
+
+Open a terminal and run the following command, it will ask for your user password:
 
 ```sh
-cargo doc --open --no-deps
+sudo rm $(which dkn-compute-launcher)
 ```
+
+The compute node binary and your `.env` are stored in `$HOME/.dria/dkn-compute-launcher` folder, so you can remove them as well if you want to with the following command:
+
+```sh
+rm -r $HOME/.dria/dkn-compute-launcher
+```
+
+**Windows**
+
+The launcher binary is located within the `ProgramFiles/Dria` folder, so you can simply remove that `Dria` folder to uninstall the launcher.
+
+<!-- TODO: The compute node binary and your `.env` are stored in `$HOME/.dria/dkn-compute-launcher` folder, so you can remove that folder as well. -->
+
+> [!CAUTION]
+>
+> Make sure you backup your private key within `.env` before removing these files, so that you do not lose your hard-earned steps!
 
 ## License
 
