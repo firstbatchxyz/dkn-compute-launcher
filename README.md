@@ -52,7 +52,7 @@ curl -fsSL https://dria.co/launcher | bash
 Open a terminal in Administrator mode, and run the following command:
 
 ```sh
-powershell -c "irm dria.co/launcher.ps1 | iex"
+powershell -c "irm https://dria.co/launcher.ps1 | iex"
 ```
 
 You may need to allow network access to the launcher if Windows prompts you to do so.
@@ -151,7 +151,7 @@ Within a menu, you can go back by selecting <kbd>← Go Back</kbd>. Within the m
 
 > [!TIP]
 >
-> You can always exit the process (ungracefully) with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS).
+> You can always exit the process (ungracefully) with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS), or <kbd>ESC</kbd> on both systems.
 
 ### Choosing Models
 

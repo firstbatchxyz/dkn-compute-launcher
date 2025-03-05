@@ -6,7 +6,7 @@
 # use with command:
 #
 # ```bash
-# curl -fsSL https://dria.co/install | bash
+# curl -fsSL https://dria.co/launcher | bash
 #
 # # or the direct link
 # curl -fsSL https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-launcher/refs/heads/master/install.ps1 | bash
