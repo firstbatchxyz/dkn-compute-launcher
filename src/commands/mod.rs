@@ -25,6 +25,9 @@ pub use setup::setup_environment;
 mod info;
 pub use info::show_info;
 
+mod referrals;
+pub use referrals::handle_referrals;
+
 /// Launcher commands.
 #[derive(Subcommand)]
 pub enum Commands {
@@ -34,6 +37,8 @@ pub enum Commands {
     Setup,
     /// Start the latest compute node
     Start,
+    /// Generate or enter a referral code.
+    Referrals,
     /// Show information about the current environment.
     Info,
     /// Measure performance (TPS) of Ollama models on your machine.
