@@ -7,9 +7,20 @@ pub fn show_info() {
         "Wallet: {}",
         dria_env.get("DKN_WALLET_SECRET_KEY").unwrap_or("<none>")
     );
+    // TODO: add public key and address here
     log::info!(
         "Log Levels: {}",
         dria_env.get("RUST_LOG").unwrap_or("<none>")
     );
-    log::info!("Models: {}", dria_env.get("DKN_MODELS").unwrap_or("<none>"));
+
+    log::info!(
+        "Models: {}",
+        dria_env
+            .get_model_config()
+            .models
+            .iter()
+            .map(|(_, m)| m.to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
 }

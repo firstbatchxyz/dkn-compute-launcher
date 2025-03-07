@@ -46,9 +46,17 @@ eyre = "0.6.12"
 indicatif = "0.17.11"
 colored = "2.2.0"
 
+# requests and LLMs
 ollama-rs = { version = "0.2.5", features = ["rustls", "stream"] }
 dkn-workflows = { git = "https://github.com/firstbatchxyz/dkn-compute-node" }
-reqwest = { version = "0.12.12", features = ["rustls-tls"] }
+reqwest = { version = "0.12.12", features = ["rustls-tls", "json"] }
+
+# crypto stuff
+sha2 = "0.10.8"
+sha3 = "0.10.8"
+libsecp256k1 = "0.7.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 
 # vendor OpenSSL so that its easier to build cross-platform packages
 [dependencies.openssl]
