@@ -10,6 +10,9 @@ use crate::utils::{
 /// Updates the compute node and launcher to the latest version.
 ///
 /// See [`update_compute`] and [`update_launcher`] for more details.
+///
+/// ### Arguments
+/// - `exe_dir`: directory where the binary is located
 #[inline]
 pub async fn update(exe_dir: &Path) {
     log::debug!("Checking compute node version.");

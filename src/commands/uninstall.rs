@@ -5,6 +5,22 @@ use inquire::Confirm;
 use crate::utils::DKN_VERSION_TRACKER_FILE;
 
 /// Uninstalls the launcher and its environment file, along with the compute node binaries & its version tracker.
+///
+/// ### Arguments
+/// - `env_dir`: directory where the compute node binaries are located
+/// - `env_path`: path to the environment file
+///
+/// We normally expect `env_path` to be a continuation of `env_dir`, but it is passed separately because we may not know
+/// which particular environment file is used within that directory.
+///
+/// ### Errors
+/// - If the environment file could not be removed
+/// - If the compute node binaries could not be removed
+/// - If the version tracker could not be removed
+/// - If the launcher itself could not be removed
+///
+/// ### Notes
+/// - The user is asked for confirmation before uninstalling.
 pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result<()> {
     // get the launcher path
     let launcher_path = std::env::current_exe()?;

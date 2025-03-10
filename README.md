@@ -116,6 +116,19 @@ dkn-compute-launcher start
 
 You can stop the node with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS)
 
+### Referrals Program
+
+You can earn steps if you refer other users! When you refer a user, for each step they earn you earn a portion of those steps as well.
+To get a referral code, enter someone's referral code and such, use the following command:
+
+```sh
+dkn-compute-launcher referrals
+```
+
+> [!CAUTION]
+>
+> Each referral code only has 5 uses! Once you have referred 5 users, your code will no longer work.
+
 ### Changing Settings
 
 You can use the `settings` command to change anything about your node:
@@ -191,7 +204,7 @@ When you are done selecting models for all providers, you can go back to the mai
 You can test your machine's performance on locally served Ollama models using the `measure` command:
 
 ```sh
-./dkn-compute-launcher measure
+dkn-compute-launcher measure
 ```
 
 Within Dria Knowledge Network, local models require you to reach a certain level of TPS. This command will measure your selected models, and then print a table of the results. We are particularly interested in **Eval TPS** and **Total (ms)** for our model performance.
