@@ -64,6 +64,27 @@ pub async fn handle_referrals() -> eyre::Result<()> {
 
                 if referrals.len() >= MAX_USES {
                     log::warn!("You have reached the maximum number of referrals!");
+                } else {
+                    let tweet_text = format!(
+                        r#"The edges are waking up.
+
+Dria is building a decentralized AI network, and you can be part of it.
+
+Run a node, contribute to AI inference, and earn $DRIA Points along the way.
+
+Use my referral code {} to get started: https://dria.co/join"#,
+                        code
+                    );
+
+                    let tweet_url = format!(
+                        "https://x.com/intent/tweet?text={}&related=driaforall",
+                        urlencoding::encode(&tweet_text)
+                    );
+
+                    log::info!(
+                        "Share on Twitter by clicking the link below!\n{}",
+                        tweet_url
+                    );
                 }
             }
             ReferralCommands::EnterReferralCode => {
