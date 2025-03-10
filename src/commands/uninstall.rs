@@ -1,0 +1,63 @@
+use std::path::Path;
+
+use inquire::Confirm;
+
+use crate::utils::DKN_VERSION_TRACKER_FILE;
+
+/// Uninstalls the launcher and its environment file, along with the compute node binaries & its version tracker.
+pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result<()> {
+    // get the launcher path
+    let launcher_path = std::env::current_exe()?;
+
+    // ask for confirmation
+    let answer =
+        Confirm::new(&format!(
+          "Are you sure you want to uninstall the launcher \"{}\", env \"{}\" and all related files within \"{}\"? (y/n)",
+          launcher_path.display(),
+          env_path.display(),
+          env_dir.display(),
+        ))
+            .with_help_message(
+                "Make sure you have backed up your secret key within the environment file!",
+            )
+            .prompt()?;
+
+    if !answer {
+        log::info!("Aborting, you can still use the launcher :)");
+        return Ok(());
+    } else {
+        log::info!("Uninstalling the launcher");
+    }
+
+    // remove .env file within the directory
+    log::info!("Removing environment file: {}", env_path.display());
+    std::fs::remove_file(&env_path)?;
+
+    // remove the compute node binaries within the directory
+    log::info!(
+        "Removing compute node binaries within: {}",
+        env_dir.display()
+    );
+    for entry in std::fs::read_dir(&env_dir)? {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                if name.starts_with("dkn-compute-node") {
+                    log::info!("Removing: {}", path.display());
+                    std::fs::remove_file(&path)?;
+                }
+            }
+        }
+    }
+
+    // remove version tracker
+    let version_tracker = env_dir.join(DKN_VERSION_TRACKER_FILE);
+    log::info!("Removing version tracker: {}", version_tracker.display());
+    std::fs::remove_file(&version_tracker)?;
+
+    // remove the executable with `self_replace`
+    log::info!("Removing the launcher itself: {}", launcher_path.display());
+    self_update::self_replace::self_delete()?;
+
+    Ok(())
+}

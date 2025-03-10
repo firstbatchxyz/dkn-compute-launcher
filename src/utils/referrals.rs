@@ -53,7 +53,7 @@ pub async fn get_referred_by(address: &str) -> Result<Option<String>, reqwest::E
 
 /// Requests a challenge from the referral API, and completes it to get a referral code.
 ///
-/// If a code has been generated before, this will return the same code.
+/// If a code has been generated before, this will return that same code from before.
 pub async fn get_referral_code(
     secret_key: &SecretKey,
     address: &str,
@@ -70,8 +70,7 @@ pub async fn get_referral_code(
             .to_string(),
         )
         .send()
-        .await?
-        .error_for_status()?;
+        .await?;
     let challenge = req.text().await?;
     log::debug!("Got challenge: {}", challenge);
 
@@ -92,8 +91,7 @@ pub async fn get_referral_code(
             .to_string(),
         )
         .send()
-        .await?
-        .error_for_status()?;
+        .await?;
     let code = req.text().await?;
 
     Ok(code)
@@ -118,8 +116,7 @@ pub async fn enter_referral_code(secret_key: &SecretKey, code: &str) -> Result<(
             .to_string(),
         )
         .send()
-        .await?
-        .error_for_status()?;
+        .await?;
 
     Ok(())
 }
@@ -138,7 +135,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_referrals() {
-        let response = get_referrals("3b64855e6f0cacca01089387c628e6540619ce07")
+        let _response = get_referrals("3b64855e6f0cacca01089387c628e6540619ce07")
             .await
             .unwrap();
         // TODO: !!!
@@ -146,7 +143,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_referred_by() {
-        let response = get_referred_by("3b64855e6f0cacca01089387c628e6540619ce07")
+        let _response = get_referred_by("3b64855e6f0cacca01089387c628e6540619ce07")
             .await
             .unwrap();
         // TODO: !!!

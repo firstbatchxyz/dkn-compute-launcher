@@ -17,9 +17,13 @@ pub async fn update(exe_dir: &Path) {
         log::error!("Error updating compute node: {}", e);
     }
 
-    log::debug!("Checking launcher version.");
-    if let Err(e) = update_launcher(exe_dir).await {
-        log::error!("Error updating launcher: {}", e);
+    // update the launcher only in release mode, otherwise this will try to update
+    // when you are running with `cargo run` etc.
+    if cfg!(debug_assertions) {
+        log::debug!("Checking launcher version.");
+        if let Err(e) = update_launcher(exe_dir).await {
+            log::error!("Error updating launcher: {}", e);
+        }
     }
 }
 

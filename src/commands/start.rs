@@ -61,13 +61,15 @@ pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<Compute
         const DEFAULT_SOFT_LIMIT: u64 = 4 * 1024 * 1024;
         const DEFAULT_HARD_LIMIT: u64 = 40 * 1024 * 1024;
 
-        log::debug!("Resource limits before: {:?}", Resource::NOFILE.get());
         if let Err(e) = setrlimit(Resource::NOFILE, DEFAULT_SOFT_LIMIT, DEFAULT_HARD_LIMIT) {
-            log::error!("Failed to set file-descriptor limits: {}", e);
-            log::warn!("Resource limits: {:?}", Resource::NOFILE.get());
-        } else {
-            log::debug!("Resource limits after: {:?}", Resource::NOFILE.get());
+            log::error!(
+                "Failed to set file-descriptor limits: {}, you may need to run as administrator!",
+                e
+            );
         }
+
+        let (soft, hard) = Resource::NOFILE.get().unwrap_or_default();
+        log::warn!("Using resource limits (soft / hard): {} / {}", soft, hard);
     }
 
     // spawn compute node
