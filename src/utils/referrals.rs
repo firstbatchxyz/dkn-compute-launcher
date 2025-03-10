@@ -3,8 +3,8 @@ use libsecp256k1::{Message, SecretKey};
 use reqwest::Client;
 use sha2::{Digest, Sha256};
 
-// const REFERRALS_API_BASE_URL: &str = "https://dkn.dria.co/referral/v0";
-const REFERRALS_API_BASE_URL: &str = "http://localhost:8080/referral/v0";
+const REFERRALS_API_BASE_URL: &str = "https://dkn.dria.co/referral/v0";
+// const REFERRALS_API_BASE_URL: &str = "http://localhost:8080/referral/v0";
 
 pub struct ReferralsClient {
     base_url: String,
