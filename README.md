@@ -21,6 +21,9 @@
     <a href="https://github.com/firstbatchxyz/dkn-compute-launcher/releases" target="_blank">
         <img alt="Downloads" src="https://img.shields.io/github/downloads/firstbatchxyz/dkn-compute-launcher/total?logo=github&logoColor=%23F2FFEE&color=%2332C754">
     </a>
+    <a href="https://github.com/foresterre/cargo-msrv" target="_blank">
+        <img alt="MSRV" src="https://img.shields.io/badge/1.81.0-F74B01?logo=rust&logoColor=white&label=msrv"/>
+    </a>
     <a href="https://discord.gg/dria" target="_blank">
         <img alt="Discord" src="https://dcbadge.vercel.app/api/server/dria?style=flat">
     </a>
@@ -65,7 +68,7 @@ You can build from source using [Rust](https://www.rust-lang.org/) & install the
 cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher
 ```
 
-The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`.
+The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.81.0`.
 
 ## Usage
 

@@ -6,7 +6,7 @@ license = "Apache-2.0"
 readme = "README.md"
 description = "Dria Compute Node Launcher"
 authors = ["Erhan Tezcan <erhan@firstbatch.xyz>"]
-rust-version = "1.78.0"
+rust-version = "1.81.0"
 
 [dependencies]
 # runtime & process
