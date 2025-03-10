@@ -21,6 +21,9 @@
     <a href="https://github.com/firstbatchxyz/dkn-compute-launcher/releases" target="_blank">
         <img alt="Downloads" src="https://img.shields.io/github/downloads/firstbatchxyz/dkn-compute-launcher/total?logo=github&logoColor=%23F2FFEE&color=%2332C754">
     </a>
+    <a href="https://github.com/foresterre/cargo-msrv" target="_blank">
+        <img alt="MSRV" src="https://img.shields.io/badge/1.81.0-F74B01?logo=rust&logoColor=white&label=msrv"/>
+    </a>
     <a href="https://discord.gg/dria" target="_blank">
         <img alt="Discord" src="https://dcbadge.vercel.app/api/server/dria?style=flat">
     </a>
@@ -65,7 +68,7 @@ You can build from source using [Rust](https://www.rust-lang.org/) & install the
 cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher
 ```
 
-The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.78.0`.
+The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.81.0`.
 
 ## Usage
 
@@ -116,6 +119,19 @@ dkn-compute-launcher start
 
 You can stop the node with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS)
 
+### Referrals Program
+
+You can earn steps if you refer other users! When you refer a user, for each step they earn you earn a portion of those steps as well.
+To get a referral code, enter someone's referral code and such, use the following command:
+
+```sh
+dkn-compute-launcher referrals
+```
+
+> [!CAUTION]
+>
+> Each referral code only has 5 uses! Once you have referred 5 users, your code will no longer work.
+
 ### Changing Settings
 
 You can use the `settings` command to change anything about your node:
@@ -151,7 +167,7 @@ Within a menu, you can go back by selecting <kbd>← Go Back</kbd>. Within the m
 
 > [!TIP]
 >
-> You can always exit the process (ungracefully) with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS).
+> You can always exit the process (ungracefully) with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS), or <kbd>ESC</kbd> on both systems.
 
 ### Choosing Models
 
@@ -191,7 +207,7 @@ When you are done selecting models for all providers, you can go back to the mai
 You can test your machine's performance on locally served Ollama models using the `measure` command:
 
 ```sh
-./dkn-compute-launcher measure
+dkn-compute-launcher measure
 ```
 
 Within Dria Knowledge Network, local models require you to reach a certain level of TPS. This command will measure your selected models, and then print a table of the results. We are particularly interested in **Eval TPS** and **Total (ms)** for our model performance.
