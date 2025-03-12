@@ -1,6 +1,7 @@
 use eyre::{Context, Result};
 use std::path::Path;
 use tokio::process::Command;
+use tokio_util::sync::CancellationToken;
 
 use crate::{
     utils::{check_ollama, spawn_ollama, ComputeInstance},
@@ -72,6 +73,11 @@ pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<Compute
         log::warn!("Using resource limits (soft / hard): {} / {}", soft, hard);
     }
 
+    // add cancellation check, note that this must run BEFORE the compute is spawned
+    let cancellation = CancellationToken::new();
+    let cancellation_clone = cancellation.clone();
+    tokio::spawn(async move { crate::utils::wait_for_termination(cancellation_clone).await });
+
     // spawn compute node
     let compute_process = Command::new(exe_path)
         .spawn()
@@ -83,5 +89,6 @@ pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<Compute
         compute_process,
         ollama_process,
         check_updates,
+        cancellation,
     })
 }

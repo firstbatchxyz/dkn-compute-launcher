@@ -3,6 +3,7 @@ use self_update::self_replace;
 use std::path::PathBuf;
 use tokio::process::{Child, Command};
 use tokio::time;
+use tokio_util::sync::CancellationToken;
 
 use crate::utils::{DriaRelease, DKN_LATEST_COMPUTE_FILE};
 
@@ -30,6 +31,8 @@ pub struct ComputeInstance {
     ///
     /// This is `true` unless you are running a specific version for a particular reason.
     pub check_updates: bool,
+    /// Cancellation token for the main loop.
+    pub cancellation: CancellationToken,
 }
 
 impl ComputeInstance {
@@ -53,17 +56,27 @@ impl ComputeInstance {
 
         loop {
             tokio::select! {
-              // wait for compute node to exit; the node will handle signals on its own so we dont
-              // have to check for signal and call kill() explicitly here
+              // additional check in case the process is closed unexpectedly
               _ = self.compute_process.wait() => {
                   // now that compute is closed, we should kill Ollama if it was launched by us
-                  if let Some(ollama_process) = &mut self.ollama_process {
-                      if let Err(e) = ollama_process.kill().await {
-                          log::warn!("Failed to kill Ollama process: {}", e);
-                      }
-                  }
+                  self.close_ollama().await.unwrap_or_else(|e| log::warn!("Failed to close Ollama: {}", e));
                   break;
               },
+              // cancellation signal, indicates that a signal has been received to shut down
+              _ = self.cancellation.cancelled() => {
+                  log::info!("Received cancellation signal, shutting down launcher.");
+
+                  // close ollama if it was launched by us
+                  self.close_ollama().await.unwrap_or_else(|e| log::warn!("Failed to close Ollama: {}", e));
+
+                  // kill the compute process, note that the compute process may handle the signal as well on its own,
+                  // but we need to make sure that it is killed in case it doesn't (TODO: may be OS related?)
+                  if let Err(e) = self.compute_process.kill().await {
+                    log::warn!("Failed to kill compute process: {}", e);
+                  }
+
+                  break;
+              }
               // compute node update checks
                _ = compute_node_update_interval.tick() => {
                   if !self.check_updates { continue; }
@@ -118,6 +131,16 @@ impl ComputeInstance {
 
             // update version tracker
             DriaRelease::set_compute_version(&self.compute_dir, latest_release.version())?;
+        }
+
+        Ok(())
+    }
+
+    async fn close_ollama(&mut self) -> Result<()> {
+        if let Some(ollama_process) = &mut self.ollama_process {
+            if let Err(e) = ollama_process.kill().await {
+                log::warn!("Failed to kill Ollama process: {}", e);
+            }
         }
 
         Ok(())
