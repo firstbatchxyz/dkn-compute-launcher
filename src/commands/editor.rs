@@ -1,7 +1,7 @@
 use eyre::{eyre, Result};
 use inquire::Editor;
 use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
 
 /// Edit the environment file at the given path.
 ///
@@ -11,7 +11,7 @@ use std::path::PathBuf;
 /// ### Errors
 /// - If the environment file does not exist
 /// - If the file could not be read
-pub fn edit_environment_file(env_path: &PathBuf) -> Result<()> {
+pub fn edit_environment_file(env_path: &Path) -> Result<()> {
     if !env_path.exists() {
         return Err(eyre!(
             "Environment file does not exist: {}",

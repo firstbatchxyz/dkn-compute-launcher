@@ -16,6 +16,13 @@ pub use updates::*;
 mod selectable;
 pub use selectable::*;
 
+pub mod referrals;
+
+pub mod crypto;
+
+mod signal;
+pub use signal::*;
+
 /// The launcher version, taken from the `Cargo.toml` file of the running binary.
 pub const DKN_LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 
