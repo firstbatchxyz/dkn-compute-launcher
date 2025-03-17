@@ -4,7 +4,7 @@ use tokio::process::Command;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-    utils::{check_ollama, spawn_ollama, ComputeInstance},
+    utils::{check_ollama, configure_rlimit, spawn_ollama, ComputeInstance},
     DriaEnv, DKN_LAUNCHER_VERSION,
 };
 
@@ -55,23 +55,7 @@ pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<Compute
     };
 
     // set file-descriptor limits in Unix, not needed in Windows
-    #[cfg(unix)]
-    {
-        use rlimit::{setrlimit, Resource};
-
-        const DEFAULT_SOFT_LIMIT: u64 = 4 * 1024 * 1024;
-        const DEFAULT_HARD_LIMIT: u64 = 40 * 1024 * 1024;
-
-        if let Err(e) = setrlimit(Resource::NOFILE, DEFAULT_SOFT_LIMIT, DEFAULT_HARD_LIMIT) {
-            log::error!(
-                "Failed to set file-descriptor limits: {}, you may need to run as administrator!",
-                e
-            );
-        }
-
-        let (soft, hard) = Resource::NOFILE.get().unwrap_or_default();
-        log::warn!("Using resource limits (soft / hard): {} / {}", soft, hard);
-    }
+    configure_rlimit();
 
     // add cancellation check, note that this must run BEFORE the compute is spawned
     let cancellation = CancellationToken::new();

@@ -262,9 +262,26 @@ This is completely optional, and should mostly be used for debugging and testing
 >
 > The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore, if the latest is `0.3.x` and you decide to run a smaller version like `0.2.x` you will most likely kept out of network due to protocol mismatch.
 
-## Documentation
+## Contribution
 
-To see the launcher's internal documentation clone the repo and run:
+Contributions are welcome! You can start by cloning the repo:
+
+```sh
+git clone https://github.com/firstbatchxyz/dkn-compute-launcher
+```
+
+### Development
+
+The code is pretty laid-out, all commands are under [`commands`](./src/commands/) and settings-related code is under [`settings`](./src/settings/).
+
+> [!NOTE]
+>
+> When the code is not `--release` mode, the used `.env` file will default to the local file, instead of the one under home directory, and launcher updates
+> will be disabled so that you can work on your launcher without version mismatches.
+
+### Documentation
+
+To see the launcher's internal documentation you can run:
 
 ```sh
 cargo doc --open --no-deps
