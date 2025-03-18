@@ -256,11 +256,13 @@ dkn-compute-launcher specific --run
 dkn-compute-launcher specific --run --tag 0.3.4
 ```
 
-This is completely optional, and should mostly be used for debugging and testing on the live network. When you run a specific release your node & launcher will **not** be automatically updated!
+This is completely optional, and should mostly be used for debugging and testing on the live network. 
+When you run a specific release your node & launcher will **not** be automatically updated!
 
 > [!CAUTION]
 >
-> The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore, if the latest is `0.3.x` and you decide to run a smaller version like `0.2.x` you will most likely kept out of network due to protocol mismatch.
+> The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore, 
+> if the latest is `0.3.x` and you decide to run a smaller version like `0.2.x` you will most likely kept out of network due to protocol mismatch.
 
 ## Contribution
 
@@ -284,8 +286,20 @@ The code is pretty laid-out, all commands are under [`commands`](./src/commands/
 To see the launcher's internal documentation you can run:
 
 ```sh
-cargo doc --open --no-deps
+cargo doc --open --no-deps --document-private-items
 ```
+
+## Uninstallation
+
+You can uninstall the launcher binary along with the environment files and compute node binaries with the `uninstall` command:
+
+```sh
+dkn-compute-launcher uninstall
+```
+
+> [!CAUTION]
+>
+> Make sure you backup your private key within `.env` before removing these files, so that you do not lose your hard-earned steps!
 
 ## License
 
