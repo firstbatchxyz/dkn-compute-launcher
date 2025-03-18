@@ -4,7 +4,8 @@ use inquire::{Select, Text};
 
 use crate::utils::{crypto::*, referrals::*, DriaEnv, Selectable};
 
-const MAX_USES: usize = 5;
+/// Maximum number of referrals allowed.
+const MAX_USES: usize = 10;
 
 /// Referrals-related commands.
 ///
