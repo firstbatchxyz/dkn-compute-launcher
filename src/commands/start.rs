@@ -1,9 +1,10 @@
 use eyre::{Context, Result};
 use std::path::Path;
 use tokio::process::Command;
+use tokio_util::sync::CancellationToken;
 
 use crate::{
-    utils::{check_ollama, spawn_ollama, ComputeInstance},
+    utils::{check_ollama, configure_rlimit, spawn_ollama, ComputeInstance},
     DriaEnv, DKN_LAUNCHER_VERSION,
 };
 
@@ -27,6 +28,7 @@ use crate::{
 /// - If the Ollama process is required but could not be spawned
 /// - If the file-descriptor limits could not be set
 pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<ComputeInstance> {
+    // get the executables directory back from the path
     let exe_dir = exe_path.parent().expect("must be a file");
 
     // check the update if requested, similar to calling `update` command
@@ -53,21 +55,12 @@ pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<Compute
     };
 
     // set file-descriptor limits in Unix, not needed in Windows
-    #[cfg(unix)]
-    {
-        use rlimit::{setrlimit, Resource};
+    configure_rlimit();
 
-        const DEFAULT_SOFT_LIMIT: u64 = 4 * 1024 * 1024;
-        const DEFAULT_HARD_LIMIT: u64 = 40 * 1024 * 1024;
-
-        log::debug!("Resource limits before: {:?}", Resource::NOFILE.get());
-        if let Err(e) = setrlimit(Resource::NOFILE, DEFAULT_SOFT_LIMIT, DEFAULT_HARD_LIMIT) {
-            log::error!("Failed to set file-descriptor limits: {}", e);
-            log::warn!("Resource limits: {:?}", Resource::NOFILE.get());
-        } else {
-            log::debug!("Resource limits after: {:?}", Resource::NOFILE.get());
-        }
-    }
+    // add cancellation check, note that this must run BEFORE the compute is spawned
+    let cancellation = CancellationToken::new();
+    let cancellation_clone = cancellation.clone();
+    tokio::spawn(async move { crate::utils::wait_for_termination(cancellation_clone).await });
 
     // spawn compute node
     let compute_process = Command::new(exe_path)
@@ -80,5 +73,6 @@ pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<Compute
         compute_process,
         ollama_process,
         check_updates,
+        cancellation,
     })
 }

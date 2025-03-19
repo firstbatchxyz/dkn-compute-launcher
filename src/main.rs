@@ -30,7 +30,7 @@ async fn main() -> eyre::Result<()> {
     // default commands such as version and help exit at this point
     let cli = Cli::parse();
 
-    // read env w.r.t cli argument, defaults to `.env`
+    // read env w.r.t cli argument
     let dotenv_result = dotenvy::from_path(&cli.env);
 
     // init env logger
@@ -67,15 +67,21 @@ async fn main() -> eyre::Result<()> {
     }
 
     // get the directory w.r.t env file, which will be used for the executable's directory
-    let exe_dir = match cli.env.parent() {
-        Some(dir) => dir.to_owned(),
-        None => std::env::current_dir().expect("could not get env dir or current dir"),
-    };
+    // when a given path is relative, the parent may be empty; this is handled by checking
+    // if the underlying `OsStr` is empty or not, in which case the fallback is given by
+    // the `std::env::current_dir` function.
+    let exe_dir = cli
+        .env
+        .parent()
+        .map(|dir| dir.to_owned())
+        .filter(|dir| !dir.as_os_str().is_empty())
+        .unwrap_or_else(|| std::env::current_dir().expect("could not get current directory"));
 
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,
         Commands::Setup => commands::setup_environment(&cli.env)?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
+        Commands::Uninstall => commands::uninstall_launcher(&exe_dir, &cli.env).await?,
         Commands::Info => commands::show_info(),
         Commands::Measure => commands::measure_tps().await?,
         Commands::Update => commands::update(&exe_dir).await,
@@ -104,6 +110,7 @@ async fn main() -> eyre::Result<()> {
                 .monitor_process()
                 .await;
         }
+        Commands::Referrals => commands::handle_referrals().await?,
     };
 
     Ok(())

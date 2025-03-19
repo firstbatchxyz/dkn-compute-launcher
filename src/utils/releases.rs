@@ -323,7 +323,6 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "until we have a new launcher release"]
     async fn test_download_latest_launcher_release() {
         let final_release = super::get_latest_release(DriaRepository::Launcher)
             .await
