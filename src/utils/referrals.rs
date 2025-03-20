@@ -4,8 +4,8 @@ use reqwest::Client;
 
 use crate::utils::crypto::eip191_hash;
 
-// const REFERRALS_API_BASE_URL: &str = "https://dkn.dria.co/referral/v0";
-const REFERRALS_API_BASE_URL: &str = "http://localhost:8080/referral/v0";
+const REFERRALS_API_BASE_URL: &str = "https://dkn.dria.co/referral/v0";
+// const REFERRALS_API_BASE_URL: &str = "http://localhost:8080/referral/v0";
 
 pub struct ReferralsClient {
     base_url: String,
