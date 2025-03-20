@@ -637,7 +637,7 @@ dependencies = [
 
 [[package]]
 name = "dkn-compute-launcher"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "clap",
  "colored",
@@ -660,7 +660,6 @@ dependencies = [
  "self_update",
  "serde",
  "serde_json",
- "sha2 0.10.8",
  "sha3",
  "tokio 1.44.0",
  "tokio-util 0.7.13",

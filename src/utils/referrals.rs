@@ -1,7 +1,8 @@
 use eyre::Result;
-use libsecp256k1::{Message, SecretKey};
+use libsecp256k1::SecretKey;
 use reqwest::Client;
-use sha2::{Digest, Sha256};
+
+use crate::utils::crypto::eip191_hash;
 
 const REFERRALS_API_BASE_URL: &str = "https://dkn.dria.co/referral/v0";
 // const REFERRALS_API_BASE_URL: &str = "http://localhost:8080/referral/v0";
@@ -111,7 +112,7 @@ impl ReferralsClient {
         log::debug!("Got challenge: {}", challenge);
 
         // alice signs the challenge and calls `get_code`
-        let digest = Message::parse(&Sha256::digest(&challenge).into());
+        let digest = eip191_hash(&challenge);
         let (sig, rec_id) = libsecp256k1::sign(&digest, &secret_key);
         let res = self
             .client
@@ -137,7 +138,7 @@ impl ReferralsClient {
 
     /// Signs a code with the user's wallet secret key and sends it to the referral API.
     pub async fn enter_referral_code(&self, secret_key: &SecretKey, code: &str) -> Result<()> {
-        let digest = Message::parse(&Sha256::digest(code).into());
+        let digest = eip191_hash(&code);
         let (sig, rec_id) = libsecp256k1::sign(&digest, &secret_key);
 
         let _ = self

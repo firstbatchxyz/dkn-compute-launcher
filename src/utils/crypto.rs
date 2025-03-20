@@ -30,3 +30,14 @@ pub fn parse_key_to_account(key: &str) -> eyre::Result<(SecretKey, PublicKey, St
 
     Ok((secret_key, public_key, address))
 }
+
+/// Hash a `message` compatible with [EIP-191](https://eips.ethereum.org/EIPS/eip-191),
+/// which prepends `\x19Ethereum Signed Message:\n${message.length}` and hashes it with KECCAK256.
+///
+/// All wallets & libraries comply with this within their signature functions, as well as Solidity's `ecrecover`.
+#[inline]
+pub fn eip191_hash(message: impl AsRef<str>) -> Message {
+    let message = message.as_ref();
+    let data = format!("\x19Ethereum Signed Message:\n{}{}", message.len(), message);
+    Message::parse(&Keccak256::digest(data.as_bytes()).into())
+}
