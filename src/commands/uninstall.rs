@@ -47,21 +47,19 @@ pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result
 
     // remove .env file within the directory
     log::info!("Removing environment file: {}", env_path.display());
-    std::fs::remove_file(&env_path)?;
+    std::fs::remove_file(env_path)?;
 
     // remove the compute node binaries within the directory
     log::info!(
         "Removing compute node binaries within: {}",
         env_dir.display()
     );
-    for entry in std::fs::read_dir(&env_dir)? {
-        if let Ok(entry) = entry {
-            let path = entry.path();
-            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                if name.starts_with("dkn-compute-node") {
-                    log::info!("Removing: {}", path.display());
-                    std::fs::remove_file(&path)?;
-                }
+    for entry in std::fs::read_dir(env_dir)?.flatten() {
+        let path = entry.path();
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            if name.starts_with("dkn-compute-node") {
+                log::info!("Removing: {}", path.display());
+                std::fs::remove_file(&path)?;
             }
         }
     }

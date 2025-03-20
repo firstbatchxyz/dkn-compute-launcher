@@ -113,7 +113,7 @@ impl ReferralsClient {
 
         // alice signs the challenge and calls `get_code`
         let digest = eip191_hash(&challenge);
-        let (sig, rec_id) = libsecp256k1::sign(&digest, &secret_key);
+        let (sig, rec_id) = libsecp256k1::sign(&digest, secret_key);
         let res = self
             .client
             .post(format!("{}/get_code", self.base_url))
@@ -138,8 +138,8 @@ impl ReferralsClient {
 
     /// Signs a code with the user's wallet secret key and sends it to the referral API.
     pub async fn enter_referral_code(&self, secret_key: &SecretKey, code: &str) -> Result<()> {
-        let digest = eip191_hash(&code);
-        let (sig, rec_id) = libsecp256k1::sign(&digest, &secret_key);
+        let digest = eip191_hash(code);
+        let (sig, rec_id) = libsecp256k1::sign(&digest, secret_key);
 
         let _ = self
             .client

@@ -16,7 +16,7 @@ pub fn public_key_to_address(public_key: &libsecp256k1::PublicKey) -> String {
     addr.copy_from_slice(&digest.serialize()[12..32]);
 
     // we dont expect to panic here at all
-    hex::encode(&addr)
+    hex::encode(addr)
 }
 
 /// Given a hexadecimal string representing a secp256k1 secret key, returns the corresponding secret key, public key, and address.
