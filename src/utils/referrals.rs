@@ -1,11 +1,11 @@
-use eyre::Result;
+use eyre::{eyre, Result};
 use libsecp256k1::SecretKey;
 use reqwest::Client;
 
 use crate::utils::crypto::eip191_hash;
 
-const REFERRALS_API_BASE_URL: &str = "https://dkn.dria.co/referral/v0";
-// const REFERRALS_API_BASE_URL: &str = "http://localhost:8080/referral/v0";
+// const REFERRALS_API_BASE_URL: &str = "https://dkn.dria.co/referral/v0";
+const REFERRALS_API_BASE_URL: &str = "http://localhost:8080/referral/v0";
 
 pub struct ReferralsClient {
     base_url: String,
@@ -105,10 +105,12 @@ impl ReferralsClient {
                 .to_string(),
             )
             .send()
-            .await?
-            .error_for_status()?;
-
-        let challenge = res.text().await?;
+            .await?;
+        let challenge = if res.status().is_success() {
+            res.text().await?
+        } else {
+            return Err(eyre!("Failed to get challenge: {}", res.text().await?));
+        };
         log::debug!("Got challenge: {}", challenge);
 
         // alice signs the challenge and calls `get_code`
@@ -129,9 +131,12 @@ impl ReferralsClient {
                 .to_string(),
             )
             .send()
-            .await?
-            .error_for_status()?;
-        let code = res.text().await?;
+            .await?;
+        let code = if res.status().is_success() {
+            res.text().await?
+        } else {
+            return Err(eyre!("Failed to get code: {}", res.text().await?));
+        };
 
         Ok(code)
     }
@@ -141,7 +146,7 @@ impl ReferralsClient {
         let digest = eip191_hash(code);
         let (sig, rec_id) = libsecp256k1::sign(&digest, secret_key);
 
-        let _ = self
+        let res = self
             .client
             .post(format!("{}/refer", self.base_url))
             .header("Content-Type", "application/json")
@@ -156,8 +161,15 @@ impl ReferralsClient {
                 .to_string(),
             )
             .send()
-            .await?
-            .error_for_status()?;
+            .await?;
+        if res.status().is_success() {
+            log::info!("Successfully entered referral code");
+        } else {
+            return Err(eyre!(
+                "Failed to enter referral code: {}",
+                res.text().await?
+            ));
+        }
 
         Ok(())
     }
