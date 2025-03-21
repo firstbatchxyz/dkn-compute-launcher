@@ -11,8 +11,6 @@ pub fn configure_rlimit() {
     // set file-descriptor limits in Unix, not needed in Windows
     #[cfg(unix)]
     {
-        use rlimit::{setrlimit, Resource};
-
         // default hard limits, in case `getrlimit` fails
         #[cfg(target_os = "macos")]
         const DEFAULT_HARD_LIMIT: u64 = 40 * 1024 * 1024; // usually unlimited, but this is a good default
@@ -25,7 +23,7 @@ pub fn configure_rlimit() {
         #[cfg(not(target_os = "macos"))]
         const DEFAULT_SOFT_LIMIT: u64 = 1024;
 
-        let (soft, hard) = Resource::NOFILE
+        let (soft, hard) = rlimit::Resource::NOFILE
             .get()
             .unwrap_or((DEFAULT_SOFT_LIMIT, DEFAULT_HARD_LIMIT));
 
@@ -34,7 +32,7 @@ pub fn configure_rlimit() {
 
         // only do this if soft-limit is below the target
         if soft < target_soft {
-            if let Err(e) = setrlimit(Resource::NOFILE, DEFAULT_SOFT_LIMIT, DEFAULT_HARD_LIMIT) {
+            if let Err(e) = rlimit::Resource::NOFILE.set(target_soft, hard) {
                 log::error!(
                 "Failed to set file-descriptor limits: {}, you may need to run as administrator!",
                 e
@@ -42,7 +40,7 @@ pub fn configure_rlimit() {
             } else {
                 log::warn!(
                     "Using new resource limits (soft / hard): {} / {}",
-                    soft,
+                    target_soft,
                     hard
                 );
             }
