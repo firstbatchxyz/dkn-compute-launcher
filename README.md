@@ -221,6 +221,14 @@ driaforall/tiny-agent-a:1.5b         22.5653      842          47.1771      2586
 
 Measurements the fail to meet the Compute Node requirements will be colored in red.
 
+### Displaying $DRIA Points
+
+Use the `points` command to display how much you have earned!
+
+```sh
+dkn-compute-launcher points
+```
+
 ### Update Manually
 
 Using the `update` command you can check for updates & automatically update your compute node and launcher.

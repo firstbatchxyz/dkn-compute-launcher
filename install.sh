@@ -97,6 +97,7 @@ download_binary() {
 }
 
 # move launcher binary to /usr/local/bin for global access
+# TODO: this should install at $HOME/.dria/bin instead
 install_binary() {
     print_step "Extracting binary to /usr/local/bin (will ask for password)"
     sudo mkdir -p /usr/local/bin

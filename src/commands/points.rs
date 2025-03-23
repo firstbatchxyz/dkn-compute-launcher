@@ -51,12 +51,11 @@ pub async fn show_points() -> eyre::Result<()> {
         .wrap_err("could not parse body")?;
 
     if points.score == 0 {
-        log::info!("You have not accumulated any $DRIA points yet.");
+        eprintln!("You have not accumulated any $DRIA points yet.");
     } else {
-        log::info!(
+        eprintln!(
             "You have accumulated {} $DRIA points, which puts you in the top {}%.",
-            points.score,
-            points.percentile
+            points.score, points.percentile
         );
     }
 
