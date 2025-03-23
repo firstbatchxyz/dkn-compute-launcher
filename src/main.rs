@@ -80,6 +80,7 @@ async fn main() -> eyre::Result<()> {
     match &cli.command {
         Commands::Settings => commands::change_settings(&cli.env)?,
         Commands::Setup => commands::setup_environment(&cli.env)?,
+        Commands::Points => commands::show_points().await?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
         Commands::Uninstall => commands::uninstall_launcher(&exe_dir, &cli.env).await?,
         Commands::Info => commands::show_info(),

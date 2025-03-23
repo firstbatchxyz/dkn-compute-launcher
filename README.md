@@ -121,7 +121,7 @@ You can stop the node with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C<
 
 ### Referrals Program
 
-You can earn steps if you refer other users! When you refer a user, for each step they earn you earn a portion of those steps as well.
+You can earn $DRIA points if you refer other users! When you refer a user, for each point they earn you earn a portion of those points as well.
 To get a referral code, enter someone's referral code and such, use the following command:
 
 ```sh
@@ -256,12 +256,12 @@ dkn-compute-launcher specific --run
 dkn-compute-launcher specific --run --tag 0.3.4
 ```
 
-This is completely optional, and should mostly be used for debugging and testing on the live network. 
+This is completely optional, and should mostly be used for debugging and testing on the live network.
 When you run a specific release your node & launcher will **not** be automatically updated!
 
 > [!CAUTION]
 >
-> The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore, 
+> The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore,
 > if the latest is `0.3.x` and you decide to run a smaller version like `0.2.x` you will most likely kept out of network due to protocol mismatch.
 
 ## Contribution
@@ -299,7 +299,7 @@ dkn-compute-launcher uninstall
 
 > [!CAUTION]
 >
-> Make sure you backup your private key within `.env` before removing these files, so that you do not lose your hard-earned steps!
+> Make sure you backup your private key within `.env` before removing these files, so that you do not lose your hard-earned $DRIA points!
 
 ## License
 

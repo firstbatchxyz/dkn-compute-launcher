@@ -2,7 +2,7 @@ use colored::Colorize;
 use eyre::eyre;
 use inquire::{Select, Text};
 
-use crate::utils::{crypto::*, referrals::*, DriaEnv, Selectable};
+use crate::utils::{referrals::*, DriaEnv, Selectable};
 
 /// Maximum number of referrals allowed.
 const MAX_USES: usize = 10;
@@ -21,12 +21,7 @@ pub async fn handle_referrals() -> eyre::Result<()> {
 
     // get wallet secret from env
     let dria_env = DriaEnv::new_from_env();
-    let Some(secret_key) = dria_env.get("DKN_WALLET_SECRET_KEY") else {
-        return Err(eyre!("No wallet secret key found."));
-    };
-
-    // convert to address
-    let (sk, _, addr) = parse_key_to_account(secret_key)?;
+    let (sk, _, addr) = dria_env.get_account()?;
 
     loop {
         let Selectable::Some(choice) = Select::new(

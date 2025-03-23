@@ -31,6 +31,9 @@ pub use referrals::handle_referrals;
 mod uninstall;
 pub use uninstall::uninstall_launcher;
 
+mod points;
+pub use points::show_points;
+
 /// Launcher commands.
 #[derive(Subcommand)]
 pub enum Commands {
@@ -42,6 +45,8 @@ pub enum Commands {
     Start,
     /// Generate or enter a referral code.
     Referrals,
+    /// Show your $DRIA points.
+    Points,
     /// Uninstall the launcher & its files.
     Uninstall,
     /// Show information about the current environment.

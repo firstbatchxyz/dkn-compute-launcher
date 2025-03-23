@@ -23,7 +23,9 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
     let (host, port) = dria_env.get_ollama_config();
 
     // find the path to binary
-    let exe_path = which("ollama").wrap_err("could not find Ollama executable")?;
+    let exe_path = which("ollama").wrap_err(
+        "could not find Ollama executable, please install it from https://ollama.com/download",
+    )?;
 
     log::debug!("Using Ollama executable at {:?}", exe_path);
 
@@ -82,11 +84,11 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    #[ignore = "require Ollama"]
+    #[ignore = "requires Ollama"]
     async fn test_ollama_spawn_and_check() {
         let mut dria_env = DriaEnv::new_from_env();
         dria_env.set("OLLAMA_HOST", "http://127.0.0.1");
-        dria_env.set("OLLAMA_PORT", "11438"); // not default!
+        dria_env.set("OLLAMA_PORT", "11438"); // not the default port!
         let mut child = spawn_ollama(&dria_env).await.unwrap();
 
         // check for healthiness

@@ -1,6 +1,9 @@
 use std::{collections::HashMap, io, path::Path};
 
 use dkn_workflows::DriaWorkflowsConfig;
+use eyre::OptionExt;
+
+use super::crypto::parse_key_to_account;
 
 #[derive(Debug, Clone)]
 pub struct DriaEnv {
@@ -144,6 +147,19 @@ impl DriaEnv {
     pub fn get_model_config(&self) -> DriaWorkflowsConfig {
         // TODO: can remove models_config perhaps?
         DriaWorkflowsConfig::new_from_csv(self.get("DKN_MODELS").unwrap_or_default())
+    }
+
+    /// Parses the wallet secret key to a [`libsecp256k1::SecretKey`], and returns it
+    /// along with the [`libsecp256k1::PublicKey`] and its address.
+    #[inline]
+    pub fn get_account(
+        &self,
+    ) -> eyre::Result<(libsecp256k1::SecretKey, libsecp256k1::PublicKey, String)> {
+        let secret_key = self
+            .get("DKN_WALLET_SECRET_KEY")
+            .ok_or_eyre("No wallet secret key found.")?;
+
+        parse_key_to_account(secret_key)
     }
 }
 
