@@ -105,6 +105,17 @@ install_binary() {
     rm -rf "$TMP_DIR"
 }
 
+# WSL has some issues, we prefer that users run the Windows build instead
+detect_wsl() {
+    if [ -f "/proc/version" ] && grep -qi microsoft /proc/version; then
+        print_error "WSL detected; please use Windows terminal (cmd.exe) instead and follow the steps below:"
+        print_error "  (1) Install the launcher: powershell -c \"irm https://dria.co/launcher.ps1 | iex\""
+        print_error "  (2) Restart your terminal"
+        print_error "  (3) Start the node: dkn-compute-launcher.exe start"
+        exit 1
+    fi
+}
+
 main() {
     print_step "Installing Dria Compute Launcher to $(pwd)"
     if ! command -v curl >/dev/null 2>&1; then
@@ -112,6 +123,7 @@ main() {
         exit 1
     fi
     
+    detect_wsl
     get_release_name
     get_latest_version
     download_binary
@@ -119,8 +131,8 @@ main() {
 
     print_success "DKN Compute Launcher ${VERSION} has been installed successfully!"
     print_success "Restart your terminal, and then:"
-    print_success "  'dkn-compute-launcher help' to see available commands,"
-    print_success "  'dkn-compute-launcher start' to start a node!"
+    print_success "  \"dkn-compute-launcher help\" to see available commands,"
+    print_success "  \"dkn-compute-launcher start\" to start a node!"
 }
 
 main
