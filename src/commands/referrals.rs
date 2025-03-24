@@ -4,9 +4,6 @@ use inquire::{Select, Text};
 
 use crate::utils::{referrals::*, DriaEnv, Selectable};
 
-/// Maximum number of referrals allowed.
-const MAX_USES: usize = 10;
-
 /// Referrals-related commands.
 ///
 /// If you are referred by a user, it is shown on the logs. Otherwise, a command is shown.
@@ -41,14 +38,17 @@ pub async fn handle_referrals() -> eyre::Result<()> {
 
         match choice {
             ReferralCommands::GetReferralCode => {
+                // get max uses
+                let max_uses = client.get_max_uses(&addr).await?;
+
                 // get the users that you have referred
                 let referrals = client.get_referrals(&addr).await?.unwrap_or_default();
                 if !referrals.is_empty() {
                     log::info!(
-                        "You have referred the following users:\n{} ({}/{})",
-                        referrals.join("\n"),
+                        "You have referred the following users ({} of {} codes):\n{}",
                         referrals.len(),
-                        MAX_USES
+                        max_uses,
+                        referrals.join("\n"),
                     );
                 } else {
                     log::info!("You have not referred anyone yet.");
@@ -58,8 +58,8 @@ pub async fn handle_referrals() -> eyre::Result<()> {
                 let code = client.get_referral_code(&sk, &addr).await?;
                 log::info!("Your referral code is: {}", code.bold().blue());
 
-                if referrals.len() >= MAX_USES {
-                    log::warn!("You have reached the maximum number of referrals!");
+                if referrals.len() >= max_uses {
+                    log::warn!("You have reached the maximum number of referrals! You cannot refer more users.");
                 } else {
                     let tweet_text = format!(
                         r#"The edges are waking up.

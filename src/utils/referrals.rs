@@ -1,4 +1,4 @@
-use eyre::{eyre, Result};
+use eyre::{eyre, Context, Result};
 use libsecp256k1::SecretKey;
 use reqwest::Client;
 
@@ -91,6 +91,20 @@ impl ReferralsClient {
         }
     }
 
+    /// Returns the number of referral code uses for this address.
+    pub async fn get_max_uses(&self, address: &str) -> Result<usize> {
+        let res = self
+            .client
+            .get(format!("{}/get_max_uses/{}", self.base_url, address))
+            .send()
+            .await?
+            .error_for_status()?;
+
+        res.text()
+            .await?
+            .parse()
+            .wrap_err("could not parse returned value")
+    }
     /// Requests a challenge from the referral API, and completes it to get a referral code.
     pub async fn get_referral_code(&self, secret_key: &SecretKey, address: &str) -> Result<String> {
         log::debug!("Getting referral code for {}", address);
