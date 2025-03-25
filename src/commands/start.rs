@@ -4,7 +4,7 @@ use tokio::process::Command;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-    utils::{check_ollama, configure_rlimit, spawn_ollama, ComputeInstance},
+    utils::{check_ollama, configure_fdlimit, spawn_ollama, ComputeInstance},
     DriaEnv, DKN_LAUNCHER_VERSION,
 };
 
@@ -55,7 +55,7 @@ pub async fn run_compute(exe_path: &Path, check_updates: bool) -> Result<Compute
     };
 
     // set file-descriptor limits in Unix, not needed in Windows
-    configure_rlimit();
+    configure_fdlimit();
 
     // add cancellation check, note that this must run BEFORE the compute is spawned
     let cancellation = CancellationToken::new();

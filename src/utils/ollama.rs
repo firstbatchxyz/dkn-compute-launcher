@@ -1,10 +1,15 @@
 use eyre::{Context, Result};
+use futures::StreamExt;
+use indicatif::{ProgressBar, ProgressStyle};
+use ollama_rs::{error::OllamaError, Ollama};
 use std::env;
 use std::process::Stdio;
 use tokio::process::{Child, Command};
 use which::which;
 
 use crate::DriaEnv;
+
+use super::{PROGRESS_BAR_CHARS, PROGRESS_BAR_TEMPLATE};
 
 const OLLAMA_RETRY_COUNT: usize = 10;
 const OLLAMA_RETRY_INTERVAL_MILLIS: u64 = 500;
@@ -77,6 +82,49 @@ pub async fn check_ollama(dria_env: &DriaEnv) -> bool {
         Ok(response) => response.status().is_success(),
         Err(_) => false,
     }
+}
+
+pub async fn pull_model_with_progress(ollama: &Ollama, model_name: String) -> Result<()> {
+    let mut pull_stream = ollama.pull_model_stream(model_name.clone(), false).await?;
+    let mut pull_error: Option<OllamaError> = None;
+    let mut pull_bar: Option<ProgressBar> = None;
+    while let Some(status) = pull_stream.next().await {
+        match status {
+            Ok(status) => {
+                // if there is a bar & status, log it
+                if let Some(ref pb) = pull_bar {
+                    if let Some(completed) = status.completed {
+                        pb.set_position(completed);
+                    }
+                } else
+                // otherwise try to create bar
+                if let Some(total) = status.total {
+                    pull_bar = Some(
+                        ProgressBar::new(total)
+                            .with_message(format!("Pulling {}", model_name))
+                            .with_style(
+                                ProgressStyle::default_bar()
+                                    .template(PROGRESS_BAR_TEMPLATE)?
+                                    .progress_chars(PROGRESS_BAR_CHARS),
+                            ),
+                    );
+                }
+            }
+            Err(err) => {
+                pull_error = Some(err);
+                break;
+            }
+        }
+    }
+
+    if let Some(err) = pull_error {
+        log::error!("Failed to pull model {}: {:?}", model_name, err);
+        // no need to care about `pull_bar` here, it will be dropped
+    } else if let Some(pb) = pull_bar {
+        pb.finish_with_message(format!("{} pull complete.", model_name));
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

@@ -24,7 +24,7 @@ mod signal;
 pub use signal::*;
 
 mod rlimit;
-pub use rlimit::configure_rlimit;
+pub use rlimit::configure_fdlimit;
 
 /// The launcher version, taken from the `Cargo.toml` file of the running binary.
 pub const DKN_LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");

@@ -1,11 +1,8 @@
 use colored::Colorize;
 use dkn_workflows::{Model, ModelProvider};
 use eyre::eyre;
-use futures::stream::StreamExt;
-use indicatif::{ProgressBar, ProgressStyle};
 use inquire::MultiSelect;
 use ollama_rs::{
-    error::OllamaError,
     generation::{
         completion::{request::GenerationRequest, GenerationResponse},
         embeddings::request::{EmbeddingsInput, GenerateEmbeddingsRequest},
@@ -13,7 +10,7 @@ use ollama_rs::{
     Ollama,
 };
 
-use crate::utils::{check_ollama, DriaEnv, PROGRESS_BAR_CHARS, PROGRESS_BAR_TEMPLATE};
+use crate::utils::{check_ollama, pull_model_with_progress, DriaEnv};
 
 const MINIMUM_EVAL_TPS: f64 = 15.0;
 const MINIMUM_DURATION_MS: u64 = 80_000;
@@ -113,44 +110,7 @@ pub async fn measure_tps() -> eyre::Result<()> {
             );
 
             // pull the model with nice logs
-            let mut pull_stream = ollama.pull_model_stream(model_name.clone(), false).await?;
-            let mut pull_error: Option<OllamaError> = None;
-            let mut pull_bar: Option<ProgressBar> = None;
-            while let Some(status) = pull_stream.next().await {
-                match status {
-                    Ok(status) => {
-                        // if there is a bar & status, log it
-                        if let Some(ref pb) = pull_bar {
-                            if let Some(completed) = status.completed {
-                                pb.set_position(completed);
-                            }
-                        } else
-                        // otherwise try to create bar
-                        if let Some(total) = status.total {
-                            let pb = ProgressBar::new(total);
-                            pb.set_message(format!("Pulling {}", model_name));
-
-                            // styles taken from `self_update` to be coherent with the rest of the app
-                            pb.set_style(
-                                ProgressStyle::default_bar()
-                                    .template(PROGRESS_BAR_TEMPLATE)?
-                                    .progress_chars(PROGRESS_BAR_CHARS),
-                            );
-                            pull_bar = Some(pb);
-                        }
-                    }
-                    Err(err) => {
-                        pull_error = Some(err);
-                        break;
-                    }
-                }
-            }
-            if let Some(err) = pull_error {
-                log::error!("Failed to pull model {}: {:?}", model, err);
-                continue;
-            } else if let Some(pb) = pull_bar {
-                pb.finish_with_message(format!("{} pull complete.", model_name));
-            }
+            pull_model_with_progress(&ollama, model_name).await?;
         }
 
         // do an embedding request to warm stuff up
