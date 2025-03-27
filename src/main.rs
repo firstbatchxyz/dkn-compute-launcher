@@ -49,15 +49,17 @@ async fn main() -> eyre::Result<()> {
     match dotenv_result {
         Ok(_) => log::info!("Loaded env file at: {}", cli.env.display()),
         Err(_) => {
-            // some commands do not need to be setup apriori
-            if !matches!(cli.command, Commands::Setup | Commands::Uninstall) {
-                log::warn!("No env file found at {}", cli.env.display());
-                log::info!(
-                    "Creating a new environment to be saved at {}",
-                    cli.env.display()
-                );
-                commands::setup_environment(&cli.env)?;
+            log::warn!("No env file found at {}", cli.env.display());
+            log::info!(
+                "Creating a new environment to be saved at {}",
+                cli.env.display()
+            );
+            commands::setup_environment(&cli.env)?;
 
+            // early-exit if the user wanted to setup anyways
+            if let Commands::Setup = cli.command {
+                return Ok(());
+            } else {
                 // override the env file with the new one
                 dotenvy::from_path_override(&cli.env)?;
             }
