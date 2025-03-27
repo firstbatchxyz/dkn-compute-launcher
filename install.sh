@@ -80,9 +80,16 @@ get_latest_version() {
 }
 
 download_binary() {
-    print_step "Downloading Dria Compute Launcher ${VERSION} for ${OS}-${ARCH}..."
+    # FIXME: for some reason sometimes the `get_latest_version` sets VERSION to `:`, still not sure how
+    if [ "$VERSION" = ":" ]; then
+        print_step "Downloading Dria Compute Launcher (latest) for ${OS}-${ARCH}..."
+        DOWNLOAD_URL="https://github.com/firstbatchxyz/dkn-compute-launcher/releases/latest/download/${RELEASE_NAME}"
+    else
+        print_step "Downloading Dria Compute Launcher ${VERSION} for ${OS}-${ARCH}..."
+        DOWNLOAD_URL="https://github.com/firstbatchxyz/dkn-compute-launcher/releases/download/${VERSION}/${RELEASE_NAME}"
+    fi
     
-    DOWNLOAD_URL="https://github.com/firstbatchxyz/dkn-compute-launcher/releases/download/${VERSION}/${RELEASE_NAME}"
+    
     print_step "Downloading from $DOWNLOAD_URL"
     TMP_DIR=$(mktemp -d)
     curl -f -L "$DOWNLOAD_URL" -o "${TMP_DIR}/dkn-compute-launcher"
@@ -93,17 +100,51 @@ download_binary() {
         exit 1
     fi
 
-    print_success "Downloaded launcher to ${TMP_DIR}"zxx
+    print_success "Downloaded launcher to ${TMP_DIR}"
 }
 
-# move launcher binary to /usr/local/bin for global access
-# TODO: this should install at $HOME/.dria/bin instead
+# move launcher binary to $HOME/.dria/bin for global access
 install_binary() {
-    print_step "Extracting binary to /usr/local/bin (will ask for password)"
-    sudo mkdir -p /usr/local/bin
-    sudo chmod +x "${TMP_DIR}/dkn-compute-launcher"
-    sudo mv "${TMP_DIR}/dkn-compute-launcher" /usr/local/bin/
+    DRIA_INSTALL_DIR="$HOME/.dria/bin"
+    
+    # extract to target path, and make it executable
+    print_step "Extracting binary to ${DRIA_INSTALL_DIR}"
+    mkdir -p "$DRIA_INSTALL_DIR"
+    mv "${TMP_DIR}/dkn-compute-launcher" "${DRIA_INSTALL_DIR}/"
     rm -rf "$TMP_DIR"
+    chmod +x "${DRIA_INSTALL_DIR}/dkn-compute-launcher"
+
+    # fish additions
+    if [ -f "$HOME/.config/fish/config.fish" ]; then
+        if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$HOME/.config/fish/config.fish"; then
+            return
+        fi
+        print_step "Adding Dria Compute Launcher path to $HOME/.config/fish/config.fish"
+        echo "" >> "$HOME/.config/fish/config.fish"
+        echo '# Dria Compute Launcher' >> "$HOME/.config/fish/config.fish"
+      echo "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" >> "$HOME/.config/fish/config.fish"
+    # .zshrc additions
+    elif [ -f "$HOME/.zshrc" ]; then
+        if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$HOME/.zshrc"; then
+            return
+        fi
+        print_step "Adding Dria Compute Launcher path to $HOME/.zshrc"
+        echo "" >> "$HOME/.zshrc"
+        echo '# Dria Compute Launcher' >> "$HOME/.zshrc"
+        echo "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" >> "$HOME/.zshrc"
+    # .bashrc additions
+    elif [ -f "$HOME/.bashrc" ]; then
+        if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$HOME/.bashrc"; then
+            return
+        fi
+        print_step "Adding Dria Compute Launcher path to $HOME/.bashrc"
+        echo "" >> "$HOME/.bashrc"
+        echo '# Dria Compute Launcher' >> "$HOME/.bashrc"
+        echo "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" >> "$HOME/.bashrc"
+    else
+        print_step "Manually add the directory to ${HOME}/.bashrc (or similar):"
+        print_step "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\""
+    fi
 }
 
 # WSL has some issues, we prefer that users run the Windows build instead
@@ -130,8 +171,8 @@ main() {
     download_binary
     install_binary
 
-    print_success "DKN Compute Launcher ${VERSION} has been installed successfully!"
-    print_success "Restart your terminal, and then:"
+    print_success "Dria Compute Launcher has been installed successfully!"
+    print_success "Please RESTART your terminal, and then:"
     print_success "  \"dkn-compute-launcher help\" to see available commands,"
     print_success "  \"dkn-compute-launcher start\" to start a node!"
 }
