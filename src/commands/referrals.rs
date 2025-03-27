@@ -44,22 +44,22 @@ pub async fn handle_referrals() -> eyre::Result<()> {
                 // get the users that you have referred
                 let referrals = client.get_referrals(&addr).await?.unwrap_or_default();
                 if !referrals.is_empty() {
-                    log::info!(
+                    eprintln!(
                         "You have referred the following users ({} of {} codes):\n{}",
                         referrals.len(),
                         max_uses,
                         referrals.join("\n"),
                     );
                 } else {
-                    log::info!("You have not referred anyone yet.");
+                    eprintln!("You have not referred anyone yet.");
                 }
 
                 // get the referral code
                 let code = client.get_referral_code(&sk, &addr).await?;
-                log::info!("Your referral code is: {}", code.bold().blue());
+                eprintln!("\nYour referral code is: {}", code.bold().blue());
 
                 if referrals.len() >= max_uses {
-                    log::warn!("You have reached the maximum number of referrals! You cannot refer more users.");
+                    eprintln!("You have reached the maximum number of referrals! You cannot refer more users.");
                 } else {
                     let tweet_text = format!(
                         r#"The edges are waking up.
@@ -77,7 +77,7 @@ Use my referral code {} to get started: https://dria.co/join"#,
                         urlencoding::encode(&tweet_text)
                     );
 
-                    log::info!(
+                    eprintln!(
                         "Share on Twitter by clicking the link below!\n{}",
                         tweet_url
                     );
@@ -86,7 +86,7 @@ Use my referral code {} to get started: https://dria.co/join"#,
             ReferralCommands::EnterReferralCode => {
                 // get the user that referred you
                 if let Some(referred_by) = client.get_referred_by(&addr).await? {
-                    log::info!("You are already referred by 0x{}", referred_by);
+                    eprintln!("You are already referred by 0x{}", referred_by);
                 } else {
                     let code = Text::new("Enter the referral code:")
                         .with_validator(|code: &str| {
@@ -106,19 +106,19 @@ Use my referral code {} to get started: https://dria.co/join"#,
             ReferralCommands::ShowReferrals => {
                 let referrals = client.get_referrals(&addr).await?.unwrap_or_default();
                 if !referrals.is_empty() {
-                    log::info!(
+                    eprintln!(
                         "You have referred the following users:\n{}",
                         referrals.join("\n")
                     );
                 } else {
-                    log::info!("You have not referred anyone yet.");
+                    eprintln!("You have not referred anyone yet.");
                 }
             }
             ReferralCommands::ShowReferredBy => {
                 if let Some(referred_by) = client.get_referred_by(&addr).await? {
-                    log::info!("You are referred by 0x{}", referred_by);
+                    eprintln!("You are referred by 0x{}", referred_by);
                 } else {
-                    log::info!("You are not referred by anyone.");
+                    eprintln!("You are not referred by anyone.");
                 }
             }
         }

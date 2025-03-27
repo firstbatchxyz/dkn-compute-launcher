@@ -78,13 +78,12 @@ async fn main() -> eyre::Result<()> {
         .unwrap_or_else(|| std::env::current_dir().expect("could not get current directory"));
 
     match &cli.command {
-        Commands::Settings => commands::change_settings(&cli.env)?,
+        Commands::Settings => commands::change_settings(&cli.env).await?,
         Commands::Setup => commands::setup_environment(&cli.env)?,
         Commands::Points => commands::show_points().await?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
         Commands::Uninstall => commands::uninstall_launcher(&exe_dir, &cli.env).await?,
         Commands::Info => commands::show_info(),
-        Commands::Measure => commands::measure_tps().await?,
         Commands::Update => commands::update(&exe_dir).await,
         Commands::Specific { run, tag } => {
             // downloads the specific version under the `exedir`, with the filename including the version tag
