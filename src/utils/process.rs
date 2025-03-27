@@ -1,8 +1,9 @@
 use eyre::{Context, Result};
 use self_update::self_replace;
 use std::path::PathBuf;
+use std::time::Duration;
 use tokio::process::{Child, Command};
-use tokio::time;
+use tokio::time::interval;
 use tokio_util::sync::CancellationToken;
 
 use crate::utils::{DriaRelease, DKN_LATEST_COMPUTE_FILE};
@@ -10,9 +11,9 @@ use crate::utils::{DriaRelease, DKN_LATEST_COMPUTE_FILE};
 use super::{check_for_compute_node_update, check_for_launcher_update};
 
 /// Number of seconds between refreshing for compute node updates.
-const COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS: u64 = 60 * 60; // every few hours
+const COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS: Duration = Duration::from_secs(60 * 60); // every few hours
 /// Number of seconds between refreshing for launcher updates.
-const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: u64 = 3 * 60 * 60; // every few hours
+const LAUNCHER_UPDATE_CHECK_INTERVAL_SECS: Duration = Duration::from_secs(3 * 60 * 60); // every few hours
 
 /// A launched compute node.
 pub struct ComputeInstance {
@@ -22,7 +23,7 @@ pub struct ComputeInstance {
     pub compute_process: Child,
     /// Executed launcher version.
     pub launcher_version: String,
-    /// Optionally launched Ollama process.
+    /// Optionally launched Ollama process [`Child`].
     ///
     /// This is only used when the compute node is started with Ollama models
     /// and an Ollama instance is NOT running at that time.
@@ -31,7 +32,7 @@ pub struct ComputeInstance {
     ///
     /// This is `true` unless you are running a specific version for a particular reason.
     pub check_updates: bool,
-    /// Cancellation token for the main loop.
+    /// [`CancellationToken`] for the main loop.
     pub cancellation: CancellationToken,
 }
 
@@ -41,23 +42,22 @@ impl ComputeInstance {
     /// - Monitors compute node process, exits on error.
     /// - Keeps a handle on Ollama process as well if needed, to shut it down when compute node is stopped.
     /// - Handles signals to gracefully shut down the compute node.
-    /// - Every now and then checks for the latest compute node release, and restarts it if there is an update.
-    /// - EVery now and then checks for the latest launcher release, and replaces the binary "in-place" if there is an update.
+    /// - Every [`COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS`] checks for the latest compute node release, and restarts it if there is an update.
+    /// - EVery [`LAUNCHER_UPDATE_CHECK_INTERVAL_SECS`] checks for the latest launcher release, and replaces the binary "in-place" if there is an update.
     pub async fn monitor_process(&mut self) {
-        let mut compute_node_update_interval = time::interval(time::Duration::from_secs(
-            COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS,
-        ));
-        compute_node_update_interval.tick().await; // move one tick
+        let mut compute_node_update_interval = interval(COMPUTE_NODE_UPDATE_CHECK_INTERVAL_SECS);
+        let mut launcher_update_interval = interval(LAUNCHER_UPDATE_CHECK_INTERVAL_SECS);
 
-        let mut launcher_update_interval = time::interval(time::Duration::from_secs(
-            LAUNCHER_UPDATE_CHECK_INTERVAL_SECS,
-        ));
-        launcher_update_interval.tick().await; // move one tick
+        // move one tick
+        launcher_update_interval.tick().await;
+        compute_node_update_interval.tick().await;
 
         loop {
             tokio::select! {
               // additional check in case the process is closed unexpectedly
               _ = self.compute_process.wait() => {
+                log::info!("Compute node was closed, terminating.");
+
                   // now that compute is closed, we should kill Ollama if it was launched by us
                   self.close_ollama().await.unwrap_or_else(|e| log::warn!("Failed to close Ollama: {}", e));
                   break;

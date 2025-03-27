@@ -1,6 +1,5 @@
-use std::path::Path;
-
 use inquire::Confirm;
+use std::path::Path;
 
 use crate::utils::DKN_VERSION_TRACKER_FILE;
 
@@ -16,7 +15,7 @@ use crate::utils::DKN_VERSION_TRACKER_FILE;
 /// ### Errors
 /// - If the environment file could not be removed
 /// - If the compute node binaries could not be removed
-/// - If the version tracker could not be removed
+/// - If the version tracker exists but could not be removed
 /// - If the launcher itself could not be removed
 ///
 /// ### Notes
@@ -45,17 +44,12 @@ pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result
         log::info!("Uninstalling the launcher");
     }
 
-    // remove .env file within the directory
-    log::info!("Removing environment file: {}", env_path.display());
-    std::fs::remove_file(env_path)?;
-
     // remove the compute node binaries within the directory
     log::info!(
         "Removing compute node binaries within: {}",
         env_dir.display()
     );
-    for entry in std::fs::read_dir(env_dir)?.flatten() {
-        let path = entry.path();
+    for path in std::fs::read_dir(env_dir)?.flatten().map(|e| e.path()) {
         if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
             if name.starts_with("dkn-compute-node") {
                 log::info!("Removing: {}", path.display());
@@ -66,12 +60,18 @@ pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result
 
     // remove version tracker
     let version_tracker = env_dir.join(DKN_VERSION_TRACKER_FILE);
-    log::info!("Removing version tracker: {}", version_tracker.display());
-    std::fs::remove_file(&version_tracker)?;
+    if version_tracker.exists() {
+        log::info!("Removing version tracker: {}", version_tracker.display());
+        std::fs::remove_file(&version_tracker)?;
+    }
 
     // remove the executable with `self_replace`
     log::info!("Removing the launcher itself: {}", launcher_path.display());
     self_update::self_replace::self_delete()?;
+
+    // remove .env file within the directory
+    log::info!("Removing environment file: {}", env_path.display());
+    std::fs::remove_file(env_path)?;
 
     Ok(())
 }

@@ -49,6 +49,7 @@ async fn main() -> eyre::Result<()> {
     match dotenv_result {
         Ok(_) => log::info!("Loaded env file at: {}", cli.env.display()),
         Err(_) => {
+            // TODO: this should not effect some commands like "Uninstall" etc.
             log::warn!("No env file found at {}", cli.env.display());
             log::info!(
                 "Creating a new environment to be saved at {}",

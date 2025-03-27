@@ -62,7 +62,8 @@ pub fn edit_wallet(dria_env: &mut DriaEnv, skippable: bool) -> eyre::Result<()> 
         .with_display_mode(inquire::PasswordDisplayMode::Masked)
         .with_help_message(&match existing_secret_opt {
             Some(secret) => format!("ENTER without typing to keep using {}", mask(secret)),
-            None => "You can get your secret from a wallet like MetaMask.".to_string(),
+            None => "You can get it from a wallet like MetaMask".to_string(),
+            // Error: Operation was interrupted by the user
         })
         .prompt()?;
 
