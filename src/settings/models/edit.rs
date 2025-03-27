@@ -1,10 +1,9 @@
 use dkn_workflows::{Model, ModelProvider};
 use inquire::{MultiSelect, Select};
 
-use crate::{utils::Selectable, DriaEnv};
+use crate::{settings::models::MODELS_KEY, utils::Selectable, DriaEnv};
 
-const MODELS_KEY: &str = "DKN_MODELS";
-
+/// Edit the chosen models.
 pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     let mut is_changed = false;
 
@@ -52,14 +51,14 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
             .collect::<Vec<_>>();
 
         let  selected_prov_models = MultiSelect::new(
-            "Choose your models with SPACE, then press ENTER:",
-            all_prov_models.clone(),
-        )
-        .with_default(&default_selected_idxs)
-        .with_help_message(
-            "↑↓ to move, SPACE to select one, ←/→ to select all/none, type to filter models, ENTER to confirm"
-        )
-        .prompt()?;
+          "Choose your models with SPACE, then press ENTER:",
+          all_prov_models.clone(),
+      )
+      .with_default(&default_selected_idxs)
+      .with_help_message(
+          "↑↓ to move, SPACE to select one, ←/→ to select all/none, type to filter models, ENTER to confirm"
+      )
+      .prompt()?;
 
         is_changed = true;
 

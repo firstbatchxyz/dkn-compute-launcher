@@ -49,18 +49,15 @@ async fn main() -> eyre::Result<()> {
     match dotenv_result {
         Ok(_) => log::info!("Loaded env file at: {}", cli.env.display()),
         Err(_) => {
-            // TODO: this should not effect some commands like "Uninstall" etc.
-            log::warn!("No env file found at {}", cli.env.display());
-            log::info!(
-                "Creating a new environment to be saved at {}",
-                cli.env.display()
-            );
-            commands::setup_environment(&cli.env)?;
+            // some commands do not need to be setup apriori
+            if !matches!(cli.command, Commands::Setup | Commands::Uninstall) {
+                log::warn!("No env file found at {}", cli.env.display());
+                log::info!(
+                    "Creating a new environment to be saved at {}",
+                    cli.env.display()
+                );
+                commands::setup_environment(&cli.env)?;
 
-            // early-exit if the user wanted to setup anyways
-            if let Commands::Setup = cli.command {
-                return Ok(());
-            } else {
                 // override the env file with the new one
                 dotenvy::from_path_override(&cli.env)?;
             }
@@ -79,13 +76,12 @@ async fn main() -> eyre::Result<()> {
         .unwrap_or_else(|| std::env::current_dir().expect("could not get current directory"));
 
     match &cli.command {
-        Commands::Settings => commands::change_settings(&cli.env)?,
+        Commands::Settings => commands::change_settings(&cli.env).await?,
         Commands::Setup => commands::setup_environment(&cli.env)?,
         Commands::Points => commands::show_points().await?,
         Commands::EnvEditor => commands::edit_environment_file(&cli.env)?,
         Commands::Uninstall => commands::uninstall_launcher(&exe_dir, &cli.env).await?,
         Commands::Info => commands::show_info(),
-        Commands::Measure => commands::measure_tps().await?,
         Commands::Update => commands::update(&exe_dir).await,
         Commands::Specific { run, tag } => {
             // downloads the specific version under the `exedir`, with the filename including the version tag

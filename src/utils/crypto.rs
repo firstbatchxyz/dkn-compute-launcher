@@ -15,13 +15,13 @@ pub fn public_key_to_address(public_key: &libsecp256k1::PublicKey) -> String {
     let mut addr = [0u8; 20];
     addr.copy_from_slice(&digest.serialize()[12..32]);
 
-    // we dont expect to panic here at all
     hex::encode(addr)
 }
 
 /// Given a hexadecimal string representing a secp256k1 secret key, returns the corresponding secret key, public key, and address.
 #[inline]
-pub fn parse_key_to_account(key: &str) -> eyre::Result<(SecretKey, PublicKey, String)> {
+pub fn secret_key_to_account(key: &str) -> eyre::Result<(SecretKey, PublicKey, String)> {
+    let key = key.trim_start_matches("0x");
     let parsed_secret = hex::decode(key).wrap_err("could not parse secret key")?;
     let secret_key = libsecp256k1::SecretKey::parse_slice(&parsed_secret)
         .wrap_err("could not parse secret key")?;

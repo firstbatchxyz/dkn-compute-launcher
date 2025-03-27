@@ -3,7 +3,7 @@ use std::{collections::HashMap, io, path::Path};
 use dkn_workflows::DriaWorkflowsConfig;
 use eyre::OptionExt;
 
-use super::crypto::parse_key_to_account;
+use super::crypto::secret_key_to_account;
 
 #[derive(Debug, Clone)]
 pub struct DriaEnv {
@@ -159,7 +159,7 @@ impl DriaEnv {
             .get("DKN_WALLET_SECRET_KEY")
             .ok_or_eyre("No wallet secret key found.")?;
 
-        parse_key_to_account(secret_key)
+        secret_key_to_account(secret_key)
     }
 }
 

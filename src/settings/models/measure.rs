@@ -18,11 +18,10 @@ const MINIMUM_DURATION_MS: u64 = 80_000;
 /// Prompts the user to select Ollama models, and measures the TPS for each one.
 /// The user can select multiple models to be benchmarked.
 ///
+///
 /// ### Errors
 /// - If Ollama is not available / something is wrong about the chosen model.
-pub async fn measure_tps() -> eyre::Result<()> {
-    let dria_env = DriaEnv::new_from_env();
-
+pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
     // ensure Ollama is available
     if !check_ollama(&dria_env).await {
         return Err(eyre!("Ollama is not available, please run Ollama server."));

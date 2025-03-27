@@ -11,7 +11,7 @@ use crate::{settings::*, DriaEnv};
 ///
 /// ### Errors
 /// - If the environment file is not a file
-pub fn change_settings(env_path: &Path) -> Result<()> {
+pub async fn change_settings(env_path: &Path) -> Result<()> {
     if !env_path.exists() {
         return Err(eyre!(
             "Environment file does not exist: {}",
@@ -57,7 +57,7 @@ pub fn change_settings(env_path: &Path) -> Result<()> {
                 crate::settings::edit_port(&mut dria_env)?;
             }
             Settings::Models => {
-                crate::settings::edit_models(&mut dria_env)?;
+                crate::settings::show_model_settings_menu(&mut dria_env).await?;
             }
             Settings::Ollama => {
                 crate::settings::edit_ollama(&mut dria_env)?;

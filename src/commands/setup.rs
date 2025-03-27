@@ -8,7 +8,7 @@ use crate::{
 
 /// Creates & sets up a new environment. It specifically asks for the following:
 ///
-/// 1. A wallet
+/// 1. Secret key (Wallet)
 /// 2. Models
 /// 3. API Keys for respective model providers
 /// 4. Optional API Keys for Jina and Serper

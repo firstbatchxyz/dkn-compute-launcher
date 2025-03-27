@@ -1,6 +1,3 @@
-use clap::Subcommand;
-use colored::Colorize;
-
 mod start;
 pub use start::run_compute;
 
@@ -15,9 +12,6 @@ pub use specific::download_specific_release;
 
 mod update;
 pub use update::update;
-
-mod measure;
-pub use measure::measure_tps;
 
 mod setup;
 pub use setup::setup_environment;
@@ -35,7 +29,7 @@ mod points;
 pub use points::show_points;
 
 /// Launcher commands.
-#[derive(Subcommand)]
+#[derive(clap::Subcommand)]
 pub enum Commands {
     /// Change node settings: models, api keys, network settings.
     Settings,
@@ -51,8 +45,6 @@ pub enum Commands {
     Uninstall,
     /// Show information about the current environment.
     Info,
-    /// Measure performance (TPS) of Ollama models on your machine.
-    Measure,
     /// Manually update the compute node & launcher.
     Update,
     /// Run a specific compute node version.
@@ -61,35 +53,11 @@ pub enum Commands {
         #[arg(long, default_value_t = false)]
         run: bool,
         /// Tag of the version to download, bypasses the prompt if provided.
-        #[arg(long, value_parser = parse_version_tag)]
+        #[arg(long)]
         tag: Option<String>,
     },
     /// Open a command-line text editor for your environment file (advanced).
     EnvEditor,
-}
-
-/// Parses a version tag in the format `major.minor.patch`.
-fn parse_version_tag(s: &str) -> Result<String, String> {
-    let parts: Vec<&str> = s.split('.').collect();
-    if parts.len() != 3 {
-        return Err("Version must be in format 'major.minor.patch'".to_string());
-    }
-
-    for (idx, part) in parts.iter().enumerate() {
-        if part.parse::<u32>().is_err() {
-            return Err(format!(
-                "{} version must be a non-negative integer",
-                match idx {
-                    0 => "Major".bold(),
-                    1 => "Minor".bold(),
-                    2 => "Patch".bold(),
-                    _ => unreachable!(),
-                }
-            ));
-        }
-    }
-
-    Ok(s.to_string())
 }
 
 /// Returns the default targeted environment file.

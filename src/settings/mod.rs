@@ -1,6 +1,8 @@
-mod models;
 use colored::Colorize;
+
+mod models;
 pub use models::edit_models;
+pub use models::show_model_settings_menu;
 
 mod apikey;
 pub use apikey::{edit_api_keys, DriaApiKeyKind};

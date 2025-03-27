@@ -30,6 +30,7 @@ pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     let new_port = Text::new("Enter compute node port:")
         .with_validator(validator)
         .with_default(&existing_port_str)
+        .with_help_message("Enter 0 to use a random port everytime")
         .prompt()?;
 
     if new_port != existing_port_str {

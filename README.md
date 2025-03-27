@@ -169,9 +169,21 @@ Within a menu, you can go back by selecting <kbd>← Go Back</kbd>. Within the m
 >
 > You can always exit the process (ungracefully) with <kbd>CTRL+C</kbd> (on Linux / Windows) or <kbd>CMD+C</kbd> (on macOS), or <kbd>ESC</kbd> on both systems.
 
-### Choosing Models
+### Models Menu
 
-When you select <kbd>Model</kbd> option in the Settings menu, you will be greeted with a list of model providers:
+When you select <kbd>Model</kbd> option in the Settings menu, you will be greeted with another menu:
+
+```py
+? Choose model settings:
+> Edit model selection
+  List chosen models
+  Remove local models
+  Measure local models
+```
+
+#### Selecting Models
+
+Click on `Edit model selection` to select models for your node.
 
 ```sh
 ? Select a model provider:
@@ -202,13 +214,27 @@ Within this menu you can navigate by using the arrow keys <kbd>↑</kbd> <kbd>�
 
 When you are done selecting models for all providers, you can go back to the main menu by selecting <kbd>← Go Back</kbd>.
 
-### Measuring Local Models
+> [!TIP]
+>
+> You can pick `List chosen models` to show the list of models that you have picked for all providers.
 
-You can test your machine's performance on locally served Ollama models using the `measure` command:
+#### Removing Local Models
+
+When you run a node with local models, they are pulled to your machine and are stored within Ollama's files. You can remove them using Ollama commands, like:
 
 ```sh
-dkn-compute-launcher measure
+# show downloaded models
+ollama ls
+
+# remove a model
+ollama rm "model-name-here"
 ```
+
+However, our launcher also provides a shortcut for that, you can pick the `Remove local models` option to choose models and remove them from your machine.
+
+#### Measuring Local Models
+
+You can test your machine's performance on locally served Ollama models by picking the `Measure local models` option.
 
 Within Dria Knowledge Network, local models require you to reach a certain level of TPS. This command will measure your selected models, and then print a table of the results. We are particularly interested in **Eval TPS** and **Total (ms)** for our model performance.
 
@@ -229,7 +255,7 @@ Use the `points` command to display how much you have earned!
 dkn-compute-launcher points
 ```
 
-### Update Manually
+### Updating Manually
 
 Using the `update` command you can check for updates & automatically update your compute node and launcher.
 
@@ -239,7 +265,7 @@ dkn-compute-launcher update
 
 You don't need to do this usually, as the launcher will always check for updates when you run the `start` command.
 
-### Environment Editor
+### Editing Environment File
 
 For more advanced users that would like to view the environment file in more detail & plain-text, we provide the `env-editor` command:
 
@@ -272,7 +298,7 @@ When you run a specific release your node & launcher will **not** be automatical
 > The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore,
 > if the latest is `0.3.x` and you decide to run a smaller version like `0.2.x` you will most likely kept out of network due to protocol mismatch.
 
-## Contribution
+## Contributions
 
 Contributions are welcome! You can start by cloning the repo:
 
