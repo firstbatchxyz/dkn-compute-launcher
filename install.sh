@@ -117,6 +117,7 @@ install_binary() {
     # fish additions
     if [ -f "$HOME/.config/fish/config.fish" ]; then
         if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$HOME/.config/fish/config.fish"; then
+            print_step "Dria Compute Launcher path exists in $HOME/.config/fish/config.fish"
             return
         fi
         print_step "Adding Dria Compute Launcher path to $HOME/.config/fish/config.fish"
@@ -126,6 +127,7 @@ install_binary() {
     # .zshrc additions
     elif [ -f "$HOME/.zshrc" ]; then
         if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$HOME/.zshrc"; then
+            print_step "Dria Compute Launcher path exists in $HOME/.zshrc"
             return
         fi
         print_step "Adding Dria Compute Launcher path to $HOME/.zshrc"
@@ -135,6 +137,7 @@ install_binary() {
     # .bashrc additions
     elif [ -f "$HOME/.bashrc" ]; then
         if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$HOME/.bashrc"; then
+            print_step "Dria Compute Launcher path exists in $HOME/.bashrc"
             return
         fi
         print_step "Adding Dria Compute Launcher path to $HOME/.bashrc"

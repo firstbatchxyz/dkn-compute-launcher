@@ -44,7 +44,7 @@ It is packed with many features:
 
 **Linux / MacOS**
 
-Open a terminal and run the following command, it will ask for your user password:
+Open a terminal and run the following command:
 
 ```sh
 curl -fsSL https://dria.co/launcher | bash
@@ -52,7 +52,7 @@ curl -fsSL https://dria.co/launcher | bash
 
 **Windows**
 
-Open a terminal in Administrator mode, and run the following command:
+Open the Windows terminal [cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe) in Administrator mode, and run the following command:
 
 ```sh
 powershell -c "irm https://dria.co/launcher.ps1 | iex"

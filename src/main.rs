@@ -9,7 +9,7 @@ mod settings;
 mod utils;
 use utils::*;
 
-/// [Clap CLI](https://docs.rs/clap/latest/clap/_derive/)
+// https://docs.rs/clap/latest/clap/_derive/
 #[derive(Parser)]
 #[command(name = env!("CARGO_PKG_NAME"), version, about)]
 struct Cli {
