@@ -1,7 +1,7 @@
 use colored::Colorize;
 
 mod models;
-pub use models::edit_models;
+pub use models::edit_models; // used by `setup` command
 pub use models::show_model_settings_menu;
 
 mod apikey;

@@ -80,10 +80,9 @@ pub fn edit_log_level(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     Ok(())
 }
 
-/// An enum to represent modules that we care about logging as a w
+/// An enum to represent modules that we care about logging
 #[derive(Debug, Clone, enum_iterator::Sequence)]
 enum LogModules {
-    DknComputeLauncher,
     DknComputeNode,
     DknP2P,
     DknWorkflows,
@@ -99,7 +98,6 @@ impl LogModules {
 
     pub fn as_rust_log(&self) -> &'static str {
         match self {
-            Self::DknComputeLauncher => "dkn_compute_launcher",
             Self::DknComputeNode => "dkn_compute",
             Self::DknP2P => "dkn_p2p",
             Self::DknWorkflows => "dkn_workflows",
@@ -113,7 +111,6 @@ impl LogModules {
 impl std::fmt::Display for LogModules {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::DknComputeLauncher => write!(f, "Dria Compute Launcher"),
             Self::DknComputeNode => write!(f, "Dria Compute Node: Core"),
             Self::DknP2P => write!(f, "Dria Compute Node: P2P"),
             Self::DknWorkflows => write!(f, "Dria Compute Node: Workflows"),

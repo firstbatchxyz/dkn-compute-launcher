@@ -2,10 +2,8 @@ use inquire::{validator::Validation, Password};
 
 use crate::DriaEnv;
 
-const WALLET_KEY: &str = "DKN_WALLET_SECRET_KEY";
-
 pub fn edit_wallet(dria_env: &mut DriaEnv, skippable: bool) -> eyre::Result<()> {
-    let existing_secret_opt = dria_env.get(WALLET_KEY);
+    let existing_secret_opt = dria_env.get(DriaEnv::DKN_WALLET_KEY);
 
     // masks a string "abcdefgh" to something like "ab****gh"
     // also ignores the 0x at the start
@@ -68,7 +66,7 @@ pub fn edit_wallet(dria_env: &mut DriaEnv, skippable: bool) -> eyre::Result<()> 
         .prompt()?;
 
     if !new_secret.is_empty() {
-        dria_env.set(WALLET_KEY, new_secret);
+        dria_env.set(DriaEnv::DKN_WALLET_KEY, new_secret);
     }
 
     Ok(())

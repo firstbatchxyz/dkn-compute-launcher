@@ -2,12 +2,13 @@ use inquire::{validator::Validation, Text};
 
 use crate::DriaEnv;
 
-const LISTEN_ADDR_KEY: &str = "DKN_P2P_LISTEN_ADDR";
 const DEFAULT_LISTEN_ADDR: &str = "/ip4/0.0.0.0/tcp/4001";
 
 pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     // get existing address
-    let addr = &dria_env.get(LISTEN_ADDR_KEY).unwrap_or(DEFAULT_LISTEN_ADDR);
+    let addr = &dria_env
+        .get(DriaEnv::DKN_P2P_LISTEN_ADDR_KEY)
+        .unwrap_or(DEFAULT_LISTEN_ADDR);
 
     // ensure the address starts with `/ip4/0.0.0.0/tcp/` and ends with a number
     let mut parts = addr.split('/').collect::<Vec<_>>();
@@ -38,7 +39,7 @@ pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         parts[4] = &new_port;
         let new_listen_addr = parts.join("/");
         log::info!("New listen address: {:?}", new_listen_addr);
-        dria_env.set(LISTEN_ADDR_KEY, new_listen_addr);
+        dria_env.set(DriaEnv::DKN_P2P_LISTEN_ADDR_KEY, new_listen_addr);
     }
 
     Ok(())

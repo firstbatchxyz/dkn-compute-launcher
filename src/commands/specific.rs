@@ -25,6 +25,21 @@ pub async fn download_specific_release(exe_dir: &Path, tag: Option<&String>) -> 
 
     let releases = get_releases(DriaRepository::ComputeNode).await?;
 
+    // filter out non-well formed releases, all release should be like `vX.Y.Z`,
+    // this is done so that launcher doesnt clutter the prompt with non-release versions
+    let releases = releases
+        .into_iter()
+        .filter(|release| {
+            // check if the version is well form
+            let parts = release.version().split('.').collect::<Vec<_>>();
+
+            parts.len() == 3
+                && parts[0].parse::<u32>().is_ok()
+                && parts[1].parse::<u32>().is_ok()
+                && parts[2].parse::<u32>().is_ok()
+        })
+        .collect::<Vec<_>>();
+
     let chosen_release = match tag {
         // choose the tag directly
         Some(tag) => releases

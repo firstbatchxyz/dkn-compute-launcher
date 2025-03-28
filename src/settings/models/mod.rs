@@ -15,8 +15,6 @@ use measure::measure_tps;
 mod remove;
 use remove::remove_local_models;
 
-const MODELS_KEY: &str = "DKN_MODELS";
-
 #[derive(Debug, Clone, enum_iterator::Sequence)]
 enum ModelSettings {
     Edit,

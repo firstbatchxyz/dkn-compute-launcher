@@ -20,6 +20,11 @@ struct Cli {
     #[arg(short, long, default_value = commands::default_env())]
     pub env: PathBuf,
 
+    /// Profile name to run multiple compute nodes with different settings.
+    /// TODO: !!!
+    #[arg(short, long)]
+    pub profile: Option<String>,
+
     /// Enable debug-level logs
     #[arg(short, long)]
     pub debug: bool,
@@ -49,20 +54,11 @@ async fn main() -> eyre::Result<()> {
     match dotenv_result {
         Ok(_) => log::info!("Loaded env file at: {}", cli.env.display()),
         Err(_) => {
-            log::warn!("No env file found at {}", cli.env.display());
-            log::info!(
-                "Creating a new environment to be saved at {}",
+            log::warn!(
+                "No env file found at {}, creating a new one",
                 cli.env.display()
             );
-            commands::setup_environment(&cli.env)?;
-
-            // early-exit if the user wanted to setup anyways
-            if let Commands::Setup = cli.command {
-                return Ok(());
-            } else {
-                // override the env file with the new one
-                dotenvy::from_path_override(&cli.env)?;
-            }
+            DriaEnv::new_default_file(&cli.env)?;
         }
     }
 
@@ -92,7 +88,7 @@ async fn main() -> eyre::Result<()> {
 
             // if `run` is true, the binary is executed immediately
             if *run {
-                commands::run_compute(&exe_path, false)
+                commands::run_compute_node(&exe_path, &cli.env, false)
                     .await?
                     .monitor_process()
                     .await;
@@ -103,9 +99,9 @@ async fn main() -> eyre::Result<()> {
         Commands::Start => {
             // downloads the latest version under the `exedir`, with the filename including "latest"
             // e.g. `./my/dir/dkn-compute-node_latest`
-            let exe = exe_dir.join(DKN_LATEST_COMPUTE_FILE);
+            let exe_path = exe_dir.join(DKN_LATEST_COMPUTE_FILE);
 
-            commands::run_compute(&exe, true)
+            commands::run_compute_node(&exe_path, &cli.env, true)
                 .await?
                 .monitor_process()
                 .await;
