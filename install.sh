@@ -118,7 +118,7 @@ install_binary() {
     SHELL_NAME=$(basename "$SHELL")
     print_step "Detected shell: $SHELL_NAME"
 
-    # Check shell and corresponding config files
+    # check shell and corresponding config files
     case "$SHELL_NAME" in
       "fish")
         CONFIG_FILE="$HOME/.config/fish/config.fish"
@@ -127,7 +127,7 @@ install_binary() {
         CONFIG_FILE="$HOME/.zshrc"
         ;;
       "bash")
-        # Check for both .bash_profile and .bashrc
+        # check for both .bash_profile and .bashrc
         if [ -f "$HOME/.bash_profile" ]; then
           CONFIG_FILE="$HOME/.bash_profile"
         else
@@ -142,7 +142,7 @@ install_binary() {
         ;;
     esac
 
-    # If config file exists, add PATH if not already present
+    # if config file exists, add PATH if not already present
     if [ -f "$CONFIG_FILE" ]; then
       if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$CONFIG_FILE"; then
         print_step "Dria Compute Launcher path exists in $CONFIG_FILE"
@@ -153,9 +153,10 @@ install_binary() {
       echo '# added by Dria Compute Launcher' >> "$CONFIG_FILE"
       echo "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" >> "$CONFIG_FILE"
     else
-      print_step "Config file $CONFIG_FILE not found"
-      print_step "Manually add the directory to your shell config:"
-      print_step "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\""
+      print_step "Creating config file for your shell: $CONFIG_FILE"
+      touch "$CONFIG_FILE"
+      echo '# added by Dria Compute Launcher' >> "$CONFIG_FILE"
+      echo "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" >> "$CONFIG_FILE"
     fi
 }
 
