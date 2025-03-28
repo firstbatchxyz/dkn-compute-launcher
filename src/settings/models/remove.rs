@@ -7,13 +7,13 @@ use crate::{utils::check_ollama, DriaEnv};
 /// Remove local models (same as `ollama rm`).
 pub async fn remove_local_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     // ensure Ollama is available
-    if !check_ollama(&dria_env).await {
+    if !check_ollama(dria_env).await {
         return Err(eyre!("Ollama is not available, please run Ollama server."));
     }
 
     // create ollama instance
     let (host, port) = dria_env.get_ollama_config();
-    let ollama = Ollama::new(host, port.parse().unwrap_or(11434));
+    let ollama = Ollama::new(host, port);
 
     // get local models
     let local_models = ollama

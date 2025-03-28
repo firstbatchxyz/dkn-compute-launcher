@@ -23,7 +23,7 @@ const MINIMUM_DURATION_MS: u64 = 80_000;
 /// - If Ollama is not available / something is wrong about the chosen model.
 pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
     // ensure Ollama is available
-    if !check_ollama(&dria_env).await {
+    if !check_ollama(dria_env).await {
         return Err(eyre!("Ollama is not available, please run Ollama server."));
     }
 
@@ -32,17 +32,7 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
 
     // get users ollama models
     let models_config = dria_env.get_model_config();
-    let my_ollama_models = models_config
-        .models
-        .iter()
-        .filter_map(|(p, m)| {
-            if *p == ModelProvider::Ollama {
-                Some(m.clone())
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<_>>();
+    let my_ollama_models = models_config.get_models_for_provider(ModelProvider::Ollama);
 
     // find indexes of existing chosen ollama models on the user
     let default_selected_idxs = all_ollama_models
@@ -78,7 +68,7 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
 
     // create ollama instance
     let (host, port) = dria_env.get_ollama_config();
-    let ollama = Ollama::new(host, port.parse().unwrap_or(11434));
+    let ollama = Ollama::new(host, port);
 
     // get local models
     let local_model_names = ollama

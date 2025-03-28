@@ -6,7 +6,7 @@ use crate::{
     utils::DriaEnv,
 };
 
-/// Creates & sets up a new environment. It specifically asks for the following:
+/// Asks for the following information for the env:
 ///
 /// 1. Secret key (Wallet)
 /// 2. Models

@@ -3,6 +3,8 @@ use std::{collections::HashMap, io, path::Path};
 use dkn_workflows::DriaWorkflowsConfig;
 use eyre::OptionExt;
 
+use crate::settings;
+
 use super::crypto::secret_key_to_account;
 
 #[derive(Debug, Clone)]
@@ -12,25 +14,46 @@ pub struct DriaEnv {
 }
 
 impl DriaEnv {
+    // log-level key
+    pub const LOG_LEVEL_KEY: &'static str = "RUST_LOG";
+
+    // dkn stuff
+    pub const DKN_WALLET_KEY: &'static str = "DKN_WALLET_SECRET_KEY";
+    pub const DKN_MODELS_KEY: &'static str = "DKN_MODELS";
+    pub const DKN_P2P_LISTEN_ADDR_KEY: &'static str = "DKN_P2P_LISTEN_ADDR";
+    pub const DKN_BATCH_SIZE_KEY: &'static str = "DKN_BATCH_SIZE";
+
+    // ollama stuff
+    pub const OLLAMA_HOST_KEY: &str = "OLLAMA_HOST";
+    pub const OLLAMA_PORT_KEY: &str = "OLLAMA_PORT";
+    pub const OLLAMA_AUTO_PULL_KEY: &str = "OLLAMA_AUTO_PULL";
+
+    // api keys
+    pub const OPENAI_APIKEY_KEY: &'static str = "OPENAI_API_KEY";
+    pub const GEMINI_APIKEY_KEY: &'static str = "GEMINI_API_KEY";
+    pub const OPENROUTER_APIKEY_KEY: &'static str = "OPENROUTER_API_KEY";
+    pub const SERPER_APIKEY_KEY: &'static str = "SERPER_API_KEY";
+    pub const JINA_APIKEY_KEY: &'static str = "JINA_API_KEY";
+
     /// All environment keys that we are interested in.
     pub const KEY_NAMES: [&str; 13] = [
         // log level
-        "RUST_LOG",
+        Self::LOG_LEVEL_KEY,
         // DKN
-        "DKN_WALLET_SECRET_KEY",
-        "DKN_MODELS",
-        "DKN_P2P_LISTEN_ADDR",
-        "DKN_BATCH_SIZE", // TODO: not configured yet
+        Self::DKN_WALLET_KEY,
+        Self::DKN_MODELS_KEY,
+        Self::DKN_P2P_LISTEN_ADDR_KEY,
+        Self::DKN_BATCH_SIZE_KEY,
         // API keys
-        "OPENAI_API_KEY",
-        "GEMINI_API_KEY",
-        "OPENROUTER_API_KEY",
-        "SERPER_API_KEY",
-        "JINA_API_KEY",
+        Self::OPENAI_APIKEY_KEY,
+        Self::GEMINI_APIKEY_KEY,
+        Self::OPENROUTER_APIKEY_KEY,
+        Self::SERPER_APIKEY_KEY,
+        Self::JINA_APIKEY_KEY,
         // Ollama
-        "OLLAMA_HOST",
-        "OLLAMA_PORT",
-        "OLLAMA_AUTO_PULL",
+        Self::OLLAMA_HOST_KEY,
+        Self::OLLAMA_PORT_KEY,
+        Self::OLLAMA_AUTO_PULL_KEY,
     ];
 
     /// Check if the environment has been changed.
@@ -120,7 +143,7 @@ impl DriaEnv {
     }
 
     pub fn new_default_file(env_path: &Path) -> io::Result<()> {
-        /// Example env file content, used for creating a new env file.
+        // example env file content, used for creating a new env file.
         const BASE_ENV_FILE_CONTENT: &str = include_str!("../../.env.example");
 
         // create directories if they dont exist
@@ -133,20 +156,37 @@ impl DriaEnv {
         std::fs::write(env_path, BASE_ENV_FILE_CONTENT)
     }
 
+    /// Asks for a secret key for the wallet if it does not exist in the environment.
+    pub fn ask_for_key_if_required(&mut self) -> eyre::Result<()> {
+        if self.get(DriaEnv::DKN_WALLET_KEY).is_none() {
+            log::info!("Provide a secret key of your wallet.");
+            settings::edit_wallet(self, false)?;
+        }
+
+        Ok(())
+    }
+
     /// Returns the `host` and `port` values for the Ollama server w.r.t Dria environment.
     #[inline]
-    pub fn get_ollama_config(&self) -> (&str, &str) {
-        let host = self.get("OLLAMA_HOST").unwrap_or("http://127.0.0.1");
-        let port = self.get("OLLAMA_PORT").unwrap_or("11434");
+    pub fn get_ollama_config(&self) -> (&str, u16) {
+        const DEFAULT_OLLAMA_HOST: &str = "http://127.0.0.1";
+        const DEFAULT_OLLAMA_PORT: &str = "11434";
 
-        (host, port)
+        let host = self
+            .get(Self::OLLAMA_HOST_KEY)
+            .unwrap_or(DEFAULT_OLLAMA_HOST);
+
+        let port = self
+            .get(Self::OLLAMA_PORT_KEY)
+            .unwrap_or(DEFAULT_OLLAMA_PORT);
+
+        (host, port.parse().expect("invalid port"))
     }
 
     /// Returns the model config with the chosen models.
     #[inline]
     pub fn get_model_config(&self) -> DriaWorkflowsConfig {
-        // TODO: can remove models_config perhaps?
-        DriaWorkflowsConfig::new_from_csv(self.get("DKN_MODELS").unwrap_or_default())
+        DriaWorkflowsConfig::new_from_csv(self.get(Self::DKN_MODELS_KEY).unwrap_or_default())
     }
 
     /// Parses the wallet secret key to a [`libsecp256k1::SecretKey`], and returns it
@@ -156,7 +196,7 @@ impl DriaEnv {
         &self,
     ) -> eyre::Result<(libsecp256k1::SecretKey, libsecp256k1::PublicKey, String)> {
         let secret_key = self
-            .get("DKN_WALLET_SECRET_KEY")
+            .get(DriaEnv::DKN_WALLET_KEY)
             .ok_or_eyre("No wallet secret key found.")?;
 
         secret_key_to_account(secret_key)

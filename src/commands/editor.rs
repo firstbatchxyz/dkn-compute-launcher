@@ -26,7 +26,7 @@ pub fn edit_environment_file(env_path: &Path) -> Result<()> {
     let Some(new_env_content) =
         Editor::new(&format!("Edit environment file at {}:", env_path.display()))
             .with_predefined_text(&existing_env_content)
-            .with_help_message("ESC to go back") // TODO: !!!
+            .with_help_message("ESC to go back")
             .prompt_skippable()?
     else {
         return Ok(());

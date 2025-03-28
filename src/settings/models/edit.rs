@@ -1,7 +1,7 @@
 use dkn_workflows::{Model, ModelProvider};
 use inquire::{MultiSelect, Select};
 
-use crate::{settings::models::MODELS_KEY, utils::Selectable, DriaEnv};
+use crate::{utils::Selectable, DriaEnv};
 
 /// Edit the chosen models.
 pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
@@ -80,7 +80,7 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         new_models.sort();
 
         log::info!("Chosen models:\n - {}", new_models.join("\n - "));
-        dria_env.set(MODELS_KEY, new_models.join(","));
+        dria_env.set(DriaEnv::DKN_MODELS_KEY, new_models.join(","));
     } else {
         log::info!("No changes made.");
     }
