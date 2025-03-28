@@ -114,39 +114,48 @@ install_binary() {
     rm -rf "$TMP_DIR"
     chmod +x "${DRIA_INSTALL_DIR}/dkn-compute-launcher"
 
-    # fish additions
-    if [ -f "$HOME/.config/fish/config.fish" ]; then
-        if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$HOME/.config/fish/config.fish"; then
-            print_step "Dria Compute Launcher path exists in $HOME/.config/fish/config.fish"
-            return
+    # detect current shell
+    SHELL_NAME=$(basename "$SHELL")
+    print_step "Detected shell: $SHELL_NAME"
+
+    # Check shell and corresponding config files
+    case "$SHELL_NAME" in
+      "fish")
+        CONFIG_FILE="$HOME/.config/fish/config.fish"
+        ;;
+      "zsh")
+        CONFIG_FILE="$HOME/.zshrc"
+        ;;
+      "bash")
+        # Check for both .bash_profile and .bashrc
+        if [ -f "$HOME/.bash_profile" ]; then
+          CONFIG_FILE="$HOME/.bash_profile"
+        else
+          CONFIG_FILE="$HOME/.bashrc"
         fi
-        print_step "Adding Dria Compute Launcher path to $HOME/.config/fish/config.fish"
-        echo "" >> "$HOME/.config/fish/config.fish"
-        echo '# Dria Compute Launcher' >> "$HOME/.config/fish/config.fish"
-      echo "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" >> "$HOME/.config/fish/config.fish"
-    # .zshrc additions
-    elif [ -f "$HOME/.zshrc" ]; then
-        if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$HOME/.zshrc"; then
-            print_step "Dria Compute Launcher path exists in $HOME/.zshrc"
-            return
-        fi
-        print_step "Adding Dria Compute Launcher path to $HOME/.zshrc"
-        echo "" >> "$HOME/.zshrc"
-        echo '# Dria Compute Launcher' >> "$HOME/.zshrc"
-        echo "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" >> "$HOME/.zshrc"
-    # .bashrc additions
-    elif [ -f "$HOME/.bashrc" ]; then
-        if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$HOME/.bashrc"; then
-            print_step "Dria Compute Launcher path exists in $HOME/.bashrc"
-            return
-        fi
-        print_step "Adding Dria Compute Launcher path to $HOME/.bashrc"
-        echo "" >> "$HOME/.bashrc"
-        echo '# Dria Compute Launcher' >> "$HOME/.bashrc"
-        echo "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" >> "$HOME/.bashrc"
-    else
-        print_step "Manually add the directory to ${HOME}/.bashrc (or similar):"
+        ;;
+      *)
+        print_step "You are using $SHELL_NAME shell."
+        print_step "Please manually add this line to your shell config file:"
         print_step "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\""
+        return
+        ;;
+    esac
+
+    # If config file exists, add PATH if not already present
+    if [ -f "$CONFIG_FILE" ]; then
+      if grep -q "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" "$CONFIG_FILE"; then
+        print_step "Dria Compute Launcher path exists in $CONFIG_FILE"
+        return
+      fi
+      print_step "Adding Dria Compute Launcher path to $CONFIG_FILE"
+      echo "" >> "$CONFIG_FILE"
+      echo '# added by Dria Compute Launcher' >> "$CONFIG_FILE"
+      echo "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\"" >> "$CONFIG_FILE"
+    else
+      print_step "Config file $CONFIG_FILE not found"
+      print_step "Manually add the directory to your shell config:"
+      print_step "export PATH=\"${DRIA_INSTALL_DIR}:\$PATH\""
     fi
 }
 
