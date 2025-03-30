@@ -12,7 +12,6 @@ jobs:
   # Builds the releases for all platforms
   ########################################
   build:
-    needs: check_release
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
