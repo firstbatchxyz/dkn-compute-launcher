@@ -23,7 +23,7 @@ const MINIMUM_DURATION_MS: u64 = 80_000;
 /// - If Ollama is not available / something is wrong about the chosen model.
 pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
     // ensure Ollama is available
-    if !check_ollama(&dria_env).await {
+    if !check_ollama(dria_env).await {
         return Err(eyre!("Ollama is not available, please run Ollama server."));
     }
 
@@ -32,17 +32,7 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
 
     // get users ollama models
     let models_config = dria_env.get_model_config();
-    let my_ollama_models = models_config
-        .models
-        .iter()
-        .filter_map(|(p, m)| {
-            if *p == ModelProvider::Ollama {
-                Some(m.clone())
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<_>>();
+    let my_ollama_models = models_config.get_models_for_provider(ModelProvider::Ollama);
 
     // find indexes of existing chosen ollama models on the user
     let default_selected_idxs = all_ollama_models
@@ -78,7 +68,7 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
 
     // create ollama instance
     let (host, port) = dria_env.get_ollama_config();
-    let ollama = Ollama::new(host, port.parse().unwrap_or(11434));
+    let ollama = Ollama::new(host, port);
 
     // get local models
     let local_model_names = ollama
@@ -100,9 +90,7 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
     {
         let model_name = model.to_string();
 
-        if local_model_names.contains(&model_name) {
-            log::debug!("Model {} exists locally.", model_name);
-        } else {
+        if !local_model_names.contains(&model_name) {
             log::info!(
                 "Model {} does not exist locally, pulling it from Ollama.",
                 model_name
@@ -113,7 +101,6 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
         }
 
         // do an embedding request to warm stuff up
-        log::debug!("Warming up model {} with an embedding generation.", model);
         let request = GenerateEmbeddingsRequest::new(
             model.to_string(),
             EmbeddingsInput::Single("and the bird you cannot change".into()),
@@ -133,7 +120,6 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
             .await
         {
             Ok(response) => {
-                log::debug!("Got response for model {}", model);
                 table.add_row(response.into());
             }
             Err(e) => {

@@ -58,6 +58,17 @@ impl DriaApiKeyKind {
         }
     }
 
+    /// Returns a help message for the API key, e.g. where to get it from.
+    pub fn help_message(&self) -> &'static str {
+        match self {
+            Self::OpenAI => "Get yours at https://platform.openai.com/api-keys",
+            Self::Gemini => "Get yours at https://aistudio.google.com/app/apikey",
+            Self::OpenRouter => "Get yours at https://openrouter.ai/keys",
+            Self::Serper => "Get yours at https://serper.dev/",
+            Self::Jina => "API key for Jina API",
+        }
+    }
+
     /// Given a list of providers (can contain duplicates) returns the unique set of API key kinds.
     pub fn from_providers(providers: &[ModelProvider]) -> Vec<DriaApiKeyKind> {
         let set: HashSet<DriaApiKeyKind> =
@@ -65,13 +76,13 @@ impl DriaApiKeyKind {
                 ModelProvider::OpenAI => Some(DriaApiKeyKind::OpenAI),
                 ModelProvider::Gemini => Some(DriaApiKeyKind::Gemini),
                 ModelProvider::OpenRouter => Some(DriaApiKeyKind::OpenRouter),
-                ModelProvider::Ollama => None,
-                ModelProvider::VLLM => None,
+                _ => None,
             }));
 
         set.into_iter().collect()
     }
 
+    #[inline]
     pub fn optional_apis() -> Vec<DriaApiKeyKind> {
         vec![DriaApiKeyKind::Jina, DriaApiKeyKind::Serper]
     }
@@ -81,7 +92,7 @@ impl DriaApiKeyKind {
     pub fn prompt_api(&self, dria_env: &DriaEnv) -> InquireResult<String> {
         inquire::Text::new(&format!("Enter your {}:", self.name()))
             .with_default(dria_env.get(self.name()).unwrap_or_default())
-            .with_help_message("ENTER without typing anything to keep using the existing value")
+            .with_help_message(self.help_message())
             .prompt()
     }
 }

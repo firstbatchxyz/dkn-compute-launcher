@@ -8,6 +8,7 @@ on:
       - "src/**"
       - "tests/**"
       - "Cargo.lock"
+      - "Cargo.toml"
       - ".github/workflows/tests.yml"
   workflow_dispatch:
 

@@ -53,7 +53,5 @@ pub async fn wait_for_termination(cancellation: CancellationToken) -> std::io::R
         cancellation.cancel();
     }
 
-    log::info!("Terminating the application...");
-
     Ok(())
 }

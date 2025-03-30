@@ -6,12 +6,11 @@
 /// See more info about this [here](https://www.gnu.org/software/libc/manual/html_node/Limits-on-Resources.html).
 ///
 /// - Note that if `soft` limit is greater than `hard` limit it will require admin privileges to set the limits,
-///  so we only set the limits if the `soft` limit is less than the `hard` limit.
+///   so we only set the limits if the `soft` limit is less than the `hard` limit.
 ///
 /// - Has no effect on Windows.
 #[inline]
 pub fn configure_fdlimit() {
-    // set file-descriptor limits in Unix, not needed in Windows
     #[cfg(unix)]
     {
         // default hard limits, in case `getrlimit` fails
@@ -36,23 +35,12 @@ pub fn configure_fdlimit() {
         // only do this if soft-limit is below the target
         if soft < target_soft {
             if let Err(e) = rlimit::Resource::NOFILE.set(target_soft, hard) {
-                log::error!(
-                "Failed to set file-descriptor limits: {}, you may need to run as administrator!",
-                e
-            );
+                log::error!("Failed to set file-descriptor limits: {}, you may need to run as administrator!", e);
             } else {
-                log::warn!(
-                    "Using new resource limits (soft / hard): {} / {}",
-                    target_soft,
-                    hard
-                );
+                log::warn!("Using new resource limits (soft / hard): {target_soft} / {hard}");
             }
         } else {
-            log::info!(
-                "Using existing resource limits (soft / hard): {} / {}",
-                soft,
-                hard
-            );
+            log::info!("Using existing resource limits (soft / hard): {soft} / {hard}");
         }
     }
 }

@@ -6,18 +6,17 @@ use crate::utils::{referrals::*, DriaEnv, Selectable};
 
 /// Referrals-related commands.
 ///
-/// If you are referred by a user, it is shown on the logs. Otherwise, a command is shown.
-/// If you have referred users, they are shown on the logs. Otherwise, a command is shown.
+/// - Will ask for user to enter their secret key if it is not set.
 pub async fn handle_referrals() -> eyre::Result<()> {
-    let client = ReferralsClient::default();
-
     // ensure system is healthy
+    let client = ReferralsClient::default();
     if !client.healthcheck().await {
         return Err(eyre!("Referrals API is offline."));
     }
 
     // get wallet secret from env
-    let dria_env = DriaEnv::new_from_env();
+    let mut dria_env = DriaEnv::new_from_env();
+    dria_env.ask_for_key_if_required()?;
     let (sk, _, addr) = dria_env.get_account()?;
 
     loop {

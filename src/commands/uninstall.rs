@@ -21,7 +21,6 @@ use crate::utils::DKN_VERSION_TRACKER_FILE;
 /// ### Notes
 /// - The user is asked for confirmation before uninstalling.
 pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result<()> {
-    // get the launcher path
     let launcher_path = std::env::current_exe()?;
 
     // ask for confirmation
@@ -70,8 +69,10 @@ pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result
     self_update::self_replace::self_delete()?;
 
     // remove .env file within the directory
-    log::info!("Removing environment file: {}", env_path.display());
-    std::fs::remove_file(env_path)?;
+    if env_path.exists() {
+        log::info!("Removing environment file: {}", env_path.display());
+        std::fs::remove_file(env_path)?;
+    }
 
     Ok(())
 }

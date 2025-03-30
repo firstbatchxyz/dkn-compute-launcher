@@ -32,11 +32,9 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
         "could not find Ollama executable, please install it from https://ollama.com/download",
     )?;
 
-    log::debug!("Using Ollama executable at {:?}", exe_path);
-
     // ollama requires the OLLAMA_HOST environment variable to be set before launching
-    let old_var = env::var("OLLAMA_HOST").ok();
-    env::set_var("OLLAMA_HOST", format!("{}:{}", host, port));
+    let old_var = env::var(DriaEnv::OLLAMA_HOST_KEY).ok();
+    env::set_var(DriaEnv::OLLAMA_HOST_KEY, format!("{}:{}", host, port));
     let command = Command::new(exe_path)
         .arg("serve")
         .stdout(Stdio::null()) // ignored
@@ -46,9 +44,9 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
 
     // restore old variable
     if let Some(val) = old_var {
-        env::set_var("OLLAMA_HOST", val);
+        env::set_var(DriaEnv::OLLAMA_HOST_KEY, val);
     } else {
-        env::remove_var("OLLAMA_HOST");
+        env::remove_var(DriaEnv::OLLAMA_HOST_KEY);
     }
 
     // check ollama to see if its running
@@ -84,6 +82,7 @@ pub async fn check_ollama(dria_env: &DriaEnv) -> bool {
     }
 }
 
+/// Pulls a model from the Ollama server with progress indication.
 pub async fn pull_model_with_progress(ollama: &Ollama, model_name: String) -> Result<()> {
     let mut pull_stream = ollama.pull_model_stream(model_name.clone(), false).await?;
     let mut pull_error: Option<OllamaError> = None;
@@ -135,8 +134,8 @@ mod tests {
     #[ignore = "requires Ollama"]
     async fn test_ollama_spawn_and_check() {
         let mut dria_env = DriaEnv::new_from_env();
-        dria_env.set("OLLAMA_HOST", "http://127.0.0.1");
-        dria_env.set("OLLAMA_PORT", "11438"); // not the default port!
+        dria_env.set(DriaEnv::OLLAMA_HOST_KEY, "http://127.0.0.1");
+        dria_env.set(DriaEnv::OLLAMA_PORT_KEY, "11438"); // not the default port!
         let mut child = spawn_ollama(&dria_env).await.unwrap();
 
         // check for healthiness

@@ -1,5 +1,5 @@
 mod start;
-pub use start::run_compute;
+pub use start::run_compute_node;
 
 mod editor;
 pub use editor::edit_environment_file;

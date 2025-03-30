@@ -32,11 +32,14 @@ where
 }
 
 /// Returns the $DRIA points for the users address.
+///
+/// - Will ask for user to enter their secret key if it is not set.
 pub async fn show_points() -> eyre::Result<()> {
-    let dria_env = DriaEnv::new_from_env();
+    let mut dria_env = DriaEnv::new_from_env();
+    dria_env.ask_for_key_if_required()?;
     let (_, _, address) = dria_env.get_account()?;
 
-    // the address can have 0x or not, we add it ourselves here
+    // the address can have 0x or not, we enforce it ourselves here
     let url = format!(
         "{}?address=0x{}",
         POINTS_API_BASE_URL,
