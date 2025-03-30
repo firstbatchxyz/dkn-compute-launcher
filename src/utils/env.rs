@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io, path::Path};
+use std::{collections::HashMap, fs, io, path::Path};
 
 use dkn_workflows::DriaWorkflowsConfig;
 use eyre::OptionExt;
@@ -134,10 +134,10 @@ impl DriaEnv {
     pub fn save_to_file(&self, env_path: &Path) -> io::Result<()> {
         log::info!("Saving changes to {}", env_path.display());
 
-        let content = std::fs::read_to_string(env_path)?;
+        let content = fs::read_to_string(env_path)?;
         let new_content = self.save_to_content(&content);
 
-        std::fs::write(env_path, new_content)?;
+        fs::write(env_path, new_content)?;
         log::info!("Changes saved successfully.");
         Ok(())
     }
@@ -149,11 +149,11 @@ impl DriaEnv {
         // create directories if they dont exist
         if !env_path.exists() {
             if let Some(dir) = env_path.parent() {
-                std::fs::create_dir_all(dir)?;
+                fs::create_dir_all(dir)?;
             }
         }
 
-        std::fs::write(env_path, BASE_ENV_FILE_CONTENT)
+        fs::write(env_path, BASE_ENV_FILE_CONTENT)
     }
 
     /// Asks for a secret key for the wallet if it does not exist in the environment.

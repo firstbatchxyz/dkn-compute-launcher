@@ -69,8 +69,10 @@ pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result
     self_update::self_replace::self_delete()?;
 
     // remove .env file within the directory
-    log::info!("Removing environment file: {}", env_path.display());
-    std::fs::remove_file(env_path)?;
+    if env_path.exists() {
+        log::info!("Removing environment file: {}", env_path.display());
+        std::fs::remove_file(env_path)?;
+    }
 
     Ok(())
 }

@@ -32,8 +32,6 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
         "could not find Ollama executable, please install it from https://ollama.com/download",
     )?;
 
-    log::debug!("Using Ollama executable at {:?}", exe_path);
-
     // ollama requires the OLLAMA_HOST environment variable to be set before launching
     let old_var = env::var(DriaEnv::OLLAMA_HOST_KEY).ok();
     env::set_var(DriaEnv::OLLAMA_HOST_KEY, format!("{}:{}", host, port));

@@ -15,7 +15,7 @@ use crate::utils::{
 /// - `exe_dir`: directory where the binary is located
 #[inline]
 pub async fn update(exe_dir: &Path) {
-    log::debug!("Checking compute node version.");
+    log::info!("Checking compute node updates.");
     if let Err(e) = update_compute(exe_dir).await {
         log::error!("Error updating compute node: {}", e);
     }
@@ -23,7 +23,7 @@ pub async fn update(exe_dir: &Path) {
     // update the launcher only in release mode, otherwise this will try to update
     // when you are running with `cargo run` etc.
     if !cfg!(debug_assertions) {
-        log::debug!("Checking launcher version.");
+        log::info!("Checking launcher updates.");
         if let Err(e) = update_launcher(exe_dir).await {
             log::error!("Error updating launcher: {}", e);
         }

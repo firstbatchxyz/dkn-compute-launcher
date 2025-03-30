@@ -90,9 +90,7 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
     {
         let model_name = model.to_string();
 
-        if local_model_names.contains(&model_name) {
-            log::debug!("Model {} exists locally.", model_name);
-        } else {
+        if !local_model_names.contains(&model_name) {
             log::info!(
                 "Model {} does not exist locally, pulling it from Ollama.",
                 model_name
@@ -103,7 +101,6 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
         }
 
         // do an embedding request to warm stuff up
-        log::debug!("Warming up model {} with an embedding generation.", model);
         let request = GenerateEmbeddingsRequest::new(
             model.to_string(),
             EmbeddingsInput::Single("and the bird you cannot change".into()),
@@ -123,7 +120,6 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
             .await
         {
             Ok(response) => {
-                log::debug!("Got response for model {}", model);
                 table.add_row(response.into());
             }
             Err(e) => {

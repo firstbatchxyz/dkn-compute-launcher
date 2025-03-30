@@ -107,7 +107,6 @@ impl ReferralsClient {
     }
     /// Requests a challenge from the referral API, and completes it to get a referral code.
     pub async fn get_referral_code(&self, secret_key: &SecretKey, address: &str) -> Result<String> {
-        log::debug!("Getting referral code for {}", address);
         let res = self
             .client
             .post(format!("{}/get_challenge", self.base_url))
@@ -125,7 +124,6 @@ impl ReferralsClient {
         } else {
             return Err(eyre!("Failed to get challenge: {}", res.text().await?));
         };
-        log::debug!("Got challenge: {}", challenge);
 
         // alice signs the challenge and calls `get_code`
         let digest = eip191_hash(&challenge);
