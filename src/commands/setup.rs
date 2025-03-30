@@ -6,14 +6,11 @@ use crate::{
     utils::DriaEnv,
 };
 
-/// Asks for the following information for the env:
+/// Asks for the following information for the user environment:
 ///
 /// 1. Secret key (Wallet)
 /// 2. Models
-/// 3. API Keys for respective model providers
-/// 4. Optional API Keys for Jina and Serper
-///
-/// This also runs on first launch when an env file is not found.
+/// 3. Optional API Keys for Jina and Serper
 ///
 /// ### Arguments
 /// - `env_path`: path to the environment file
@@ -30,15 +27,6 @@ pub fn setup_environment(env_path: &Path) -> Result<()> {
     // ask for models
     log::info!("Choose models that you would like to run.");
     settings::edit_models(&mut dria_env)?;
-
-    // ask for API keys w.r.t models
-    let configured_providers = dria_env.get_model_config().get_providers();
-    let required_api_keys = DriaApiKeyKind::from_providers(&configured_providers);
-    for api_key in required_api_keys {
-        log::info!("Provide {} because you are using its model", api_key);
-        let new_value = api_key.prompt_api(&dria_env)?;
-        dria_env.set(api_key.name(), new_value);
-    }
 
     // ask for Jina and Serper api keys (optional)
     for optional_api_key in DriaApiKeyKind::optional_apis() {

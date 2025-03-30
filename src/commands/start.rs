@@ -122,11 +122,11 @@ pub async fn run_compute_node(
 
     // save to file if there were any changes
     if dria_env.is_changed() {
-        dria_env.save_to_file(&env_path)?;
+        dria_env.save_to_file(env_path)?;
 
         // override the env file with the new values, needed for the compute node
         // as even if it reads from env again, it will not override existing values
-        if let Err(err) = dotenvy::from_path_override(&env_path) {
+        if let Err(err) = dotenvy::from_path_override(env_path) {
             log::warn!("Failed to override with env: {}", err);
         }
     }
