@@ -44,14 +44,8 @@ async fn main() -> eyre::Result<()> {
     // default commands such as version and help exit at this point
     let cli = Cli::parse();
 
-    // env is given by the path, and must be a file
+    // env is given by the path
     let mut env_path = cli.env;
-    if !env_path.is_file() {
-        return Err(eyre::eyre!(
-            "env path must be a file: {}",
-            env_path.display()
-        ));
-    }
 
     // `.<profile>` is appended to the path if given
     if let Some(profile) = cli.profile {
