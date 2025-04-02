@@ -50,11 +50,11 @@ impl DriaApiKeyKind {
     /// Returns the name of the environment variable that stores the API key.
     pub fn name(&self) -> &'static str {
         match self {
-            Self::OpenAI => "OPENAI_API_KEY",
-            Self::Gemini => "GEMINI_API_KEY",
-            Self::OpenRouter => "OPENROUTER_API_KEY",
-            Self::Serper => "SERPER_API_KEY",
-            Self::Jina => "JINA_API_KEY",
+            Self::OpenAI => DriaEnv::OPENAI_APIKEY_KEY,
+            Self::Gemini => DriaEnv::GEMINI_APIKEY_KEY,
+            Self::OpenRouter => DriaEnv::OPENROUTER_APIKEY_KEY,
+            Self::Serper => DriaEnv::SERPER_APIKEY_KEY,
+            Self::Jina => DriaEnv::JINA_APIKEY_KEY,
         }
     }
 
@@ -70,12 +70,12 @@ impl DriaApiKeyKind {
     }
 
     /// Given a list of providers (can contain duplicates) returns the unique set of API key kinds.
-    pub fn from_providers(providers: &[ModelProvider]) -> Vec<DriaApiKeyKind> {
-        let set: HashSet<DriaApiKeyKind> =
+    pub fn from_providers(providers: &[ModelProvider]) -> Vec<Self> {
+        let set: HashSet<Self> =
             HashSet::from_iter(providers.iter().filter_map(|provider| match provider {
-                ModelProvider::OpenAI => Some(DriaApiKeyKind::OpenAI),
-                ModelProvider::Gemini => Some(DriaApiKeyKind::Gemini),
-                ModelProvider::OpenRouter => Some(DriaApiKeyKind::OpenRouter),
+                ModelProvider::OpenAI => Some(Self::OpenAI),
+                ModelProvider::Gemini => Some(Self::Gemini),
+                ModelProvider::OpenRouter => Some(Self::OpenRouter),
                 _ => None,
             }));
 

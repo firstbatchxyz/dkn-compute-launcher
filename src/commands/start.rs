@@ -64,9 +64,11 @@ pub async fn run_compute_node(
     // check API keys for the requied models
     let required_api_keys = DriaApiKeyKind::from_providers(&workflow_config.get_providers());
     for api_key in required_api_keys {
-        log::info!("Provide {} because you are using its model", api_key);
-        let new_value = api_key.prompt_api(&dria_env)?;
-        dria_env.set(api_key.name(), new_value);
+        if dria_env.get(api_key.name()).is_none() {
+            log::info!("Provide {} because you are using its model", api_key);
+            let new_value = api_key.prompt_api(&dria_env)?;
+            dria_env.set(api_key.name(), new_value);
+        }
     }
 
     // check if Ollama is required & running, and run it if not

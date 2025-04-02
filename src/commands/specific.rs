@@ -2,7 +2,10 @@ use eyre::{eyre, Result};
 use inquire::Select;
 use std::path::{Path, PathBuf};
 
-use crate::{get_releases, utils::DriaRepository};
+use crate::{
+    get_releases,
+    utils::{DriaRelease, DriaRepository},
+};
 
 /// Prompts the user to select a version to download, which is downloaded to `exe_dir` directory.
 ///
@@ -27,18 +30,7 @@ pub async fn download_specific_release(exe_dir: &Path, tag: Option<&String>) -> 
 
     // filter out non-well formed releases, all release should be like `vX.Y.Z`,
     // this is done so that launcher doesnt clutter the prompt with non-release versions
-    let releases = releases
-        .into_iter()
-        .filter(|release| {
-            // check if the version is well form
-            let parts = release.version().split('.').collect::<Vec<_>>();
-
-            parts.len() == 3
-                && parts[0].parse::<u32>().is_ok()
-                && parts[1].parse::<u32>().is_ok()
-                && parts[2].parse::<u32>().is_ok()
-        })
-        .collect::<Vec<_>>();
+    let releases = releases.into_iter().collect::<Vec<_>>();
 
     let chosen_release = match tag {
         // choose the tag directly
@@ -47,9 +39,23 @@ pub async fn download_specific_release(exe_dir: &Path, tag: Option<&String>) -> 
             .find(|release| release.version() == tag)
             .ok_or_else(|| eyre::eyre!("No release found for tag: {}", tag))?,
         // prompt the user for selection
-        None => Select::new("Choose a version and press ENTER:", releases)
-            .with_help_message("↑↓ to move, type to filter by name, ENTER to select")
-            .prompt()?,
+        None => Select::new(
+            "Choose a version and press ENTER:",
+            releases
+                .into_iter()
+                .filter(|release: &DriaRelease| {
+                    // we only want releases that are well formed
+                    let parts = release.version().split('.').collect::<Vec<_>>();
+
+                    parts.len() == 3
+                        && parts[0].parse::<u32>().is_ok()
+                        && parts[1].parse::<u32>().is_ok()
+                        && parts[2].parse::<u32>().is_ok()
+                })
+                .collect::<Vec<_>>(),
+        )
+        .with_help_message("↑↓ to move, type to filter by name, ENTER to select")
+        .prompt()?,
     };
 
     let filename = chosen_release.to_filename()?;
