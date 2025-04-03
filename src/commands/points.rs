@@ -9,9 +9,11 @@ const POINTS_API_BASE_URL: &str = "https://dkn.dria.co/dashboard/supply/v0/leade
 pub struct PointsRes {
     #[serde(deserialize_with = "deserialize_percentile")]
     /// Indicates in which top percentile your points are.
+    ///
+    /// It is serialized as stringified number in the API response, due to frontend issues.
     pub percentile: u64,
     /// The total number of points you have accumulated.
-    pub score: u64,
+    pub score: f64,
 }
 
 // the API returns a stringified number due to frontend issues, so we need to parse it
@@ -53,7 +55,7 @@ pub async fn show_points() -> eyre::Result<()> {
         .await
         .wrap_err("could not parse body")?;
 
-    if points.score == 0 {
+    if points.score == 0.0 {
         eprintln!("You have not accumulated any $DRIA points yet.");
     } else {
         eprintln!(
