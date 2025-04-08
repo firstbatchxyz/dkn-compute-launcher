@@ -11,7 +11,7 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         .get_model_config()
         .models
         .iter()
-        .map(|(_, m)| m.clone())
+        .cloned()
         .collect::<Vec<_>>();
 
     // choose a provider
