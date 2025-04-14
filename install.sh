@@ -12,7 +12,7 @@
 # curl -fsSL https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-launcher/refs/heads/master/install.ps1 | bash
 # ```
 #
-# Requires password for sudo access to install the binary to /usr/local/bin.
+# installs the binary under ~/.dria/bin and adds it to path if a known shell is detected.
 
 
 # exit on error
