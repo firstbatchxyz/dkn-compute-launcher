@@ -99,7 +99,7 @@ impl DriaApiKeyKind {
         inquire::Text::new(&format!("Enter your {}:", self.name()))
             .with_default(dria_env.get(self.name()).unwrap_or_default())
             .with_help_message(&format!(
-                "{}, type 'delete' to delete the API key",
+                "{} | type 'delete' to remove the API key",
                 self.help_message()
             ))
             .prompt()
