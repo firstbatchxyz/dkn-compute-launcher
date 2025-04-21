@@ -26,6 +26,12 @@ pub fn edit_api_keys(dria_env: &mut DriaEnv) -> eyre::Result<()> {
             continue;
         };
 
+        // delete the API key
+        if new_value.eq_ignore_ascii_case("delete") {
+            dria_env.set(chosen_api_key.name(), "");
+            continue;
+        }
+
         dria_env.set(chosen_api_key.name(), new_value);
     }
 
@@ -92,7 +98,10 @@ impl DriaApiKeyKind {
     pub fn prompt_api(&self, dria_env: &DriaEnv) -> InquireResult<String> {
         inquire::Text::new(&format!("Enter your {}:", self.name()))
             .with_default(dria_env.get(self.name()).unwrap_or_default())
-            .with_help_message(self.help_message())
+            .with_help_message(&format!(
+                "{} | type 'delete' to remove the API key",
+                self.help_message()
+            ))
             .prompt()
     }
 }
