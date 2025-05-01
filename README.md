@@ -65,10 +65,10 @@ You may need to allow network access to the launcher if Windows prompts you to d
 You can build from source using [Rust](https://www.rust-lang.org/) & install the launcher globally using the command below:
 
 ```sh
-cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher
+cargo install --git https://github.com/firstbatchxyz/dkn-compute-launcher --locked
 ```
 
-The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.81.0`.
+The [minimum supported rust version](https://github.com/foresterre/cargo-msrv) (MSRV) for the launcher is `1.81.0`. We use the `--locked` option to ensure you use the existing lockfile that is guaranteed to build.
 
 ## Usage
 
