@@ -198,15 +198,15 @@ Click on `Edit model selection` to select models for your node.
 Here, you can select a provider to choose models served by them, where you will be greeted with the following menu:
 
 ```sh
-> Select a model provider: openai
+> Select a model provider: ollama
 ? Choose your models with SPACE, then press ENTER:
-  [ ] gpt-4-turbo
-  [x] gpt-4o
-> [ ] gpt-4o-mini
-  [ ] o1-mini
-  [ ] o1-preview
-  [ ] o1
-  [ ] o3-mini
+  [ ] llama3.1:8b-instruct-q4_K_M
+  [ ] llama3.2:1b-instruct-q4_K_M
+  [ ] llama3.3:70b-instruct-q4_K_M
+> [ ] mistral-nemo:12b
+  [ ] gemma3:4b
+  [ ] gemma3:12b
+  [ ] gemma3:27b
 # ...
 ```
 
@@ -220,17 +220,19 @@ When you are done selecting models for all providers, you can go back to the mai
 
 #### Removing Local Models
 
-When you run a node with local models, they are pulled to your machine and are stored within Ollama's files. You can remove them using Ollama commands, like:
+When you run a node with local models, they are pulled to your machine and are stored within Ollama's files. Our launcher also provides a shortcut for that, you can pick the `Remove local models` option to choose models and remove them from your machine.
 
-```sh
-# show downloaded models
-ollama ls
-
-# remove a model
-ollama rm "model-name-here"
-```
-
-However, our launcher also provides a shortcut for that, you can pick the `Remove local models` option to choose models and remove them from your machine.
+> [!TIP]
+>
+> You can also remove them using Ollama commands:
+>
+> ```sh
+> # show downloaded models
+> ollama ls
+>
+> # remove a model
+> ollama rm "model-name-here"
+> ```
 
 #### Measuring Local Models
 
@@ -312,7 +314,7 @@ The code is pretty laid-out, all commands are under [`commands`](./src/commands/
 
 > [!NOTE]
 >
-> When the code is not `--release` mode, the used `.env` file will default to the local file, instead of the one under home directory, and launcher updates
+> When the code is not `--release` mode (e.g. with `cargo run`), the used `.env` file will default to the local file, instead of the one under home directory, and launcher updates
 > will be disabled so that you can work on your launcher without version mismatches.
 
 ### Documentation

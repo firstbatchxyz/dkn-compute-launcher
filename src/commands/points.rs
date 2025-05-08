@@ -1,36 +1,16 @@
 use eyre::Context;
-use serde::Deserialize;
 
 use crate::utils::DriaEnv;
 
-const POINTS_API_BASE_URL: &str = "https://dkn.dria.co/dashboard/supply/v0/leaderboard/steps";
+const POINTS_API_BASE_URL: &str =
+    "https://mainnet.dkn.dria.co/dashboard/supply/v0/leaderboard/steps";
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, serde::Deserialize)]
 pub struct PointsRes {
-    #[serde(deserialize_with = "deserialize_percentile")]
     /// Indicates in which top percentile your points are.
-    ///
-    /// It is serialized as stringified number in the API response, due to frontend issues.
-    pub percentile: u64,
+    pub percentile: u32,
     /// The total number of points you have accumulated.
     pub score: f64,
-}
-
-// the API returns a stringified number due to frontend issues, so we need to parse it
-fn deserialize_percentile<'de, D>(deserializer: D) -> Result<u64, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let s: String = String::deserialize(deserializer)?;
-    let parsed = s.parse().map_err(serde::de::Error::custom)?;
-
-    if parsed > 100 {
-        return Err(serde::de::Error::custom(
-            "percentile must be between 0 and 100",
-        ));
-    }
-
-    Ok(parsed)
 }
 
 /// Returns the $DRIA points for the users address.
