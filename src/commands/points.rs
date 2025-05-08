@@ -8,7 +8,9 @@ const POINTS_API_BASE_URL: &str =
 #[derive(Debug, serde::Deserialize)]
 pub struct PointsRes {
     /// Indicates in which top percentile your points are.
-    pub percentile: u32,
+    ///
+    /// TODO: fix this in new API
+    pub percentile: String,
     /// The total number of points you have accumulated.
     pub score: f64,
 }
