@@ -3,7 +3,8 @@ use serde::Deserialize;
 
 use crate::utils::DriaEnv;
 
-const POINTS_API_BASE_URL: &str = "https://dkn.dria.co/dashboard/supply/v0/leaderboard/steps";
+const POINTS_API_BASE_URL: &str =
+    "https://mainnet.dkn.dria.co/dashboard/supply/v0/leaderboard/steps";
 
 #[derive(Debug, Deserialize)]
 pub struct PointsRes {
