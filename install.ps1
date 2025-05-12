@@ -11,12 +11,8 @@
 # ```
 #
 # `irm` does `Invoke-RestMethod` and the piped `iex` does `Invoke-Expression`, allowing it to run the downloaded script.
-#
-# requires Administrator privileges to install globally
 
 ################# LOGGERS #################
-
-# the methods here are compatible with older Powershell versions
 
 function Write-Step {
   param([string]$message)
@@ -34,6 +30,38 @@ function Write-Error {
   param([string]$message)
   Write-Host "==> " -ForegroundColor Red -NoNewline
   Write-Host $message
+}
+
+################## HELPER FUNCTIONS ##################
+
+function Write-Env {
+  param([String]$Key, [String]$Value)
+  
+  $RegisterKey = Get-Item -Path 'HKCU:'
+  $EnvRegisterKey = $RegisterKey.OpenSubKey('Environment', $true)
+  
+  if ($null -eq $Value) {
+    $EnvRegisterKey.DeleteValue($Key)
+  } else {
+    $RegistryValueKind = if ($Value.Contains('%')) {
+      [Microsoft.Win32.RegistryValueKind]::ExpandString
+    } elseif ($EnvRegisterKey.GetValue($Key)) {
+      $EnvRegisterKey.GetValueKind($Key)
+    } else {
+      [Microsoft.Win32.RegistryValueKind]::String
+    }
+    $EnvRegisterKey.SetValue($Key, $Value, $RegistryValueKind)
+  }
+  
+  # notify system of environment change
+  [System.Environment]::SetEnvironmentVariable($Key, $Value, 'User')
+}
+
+function Get-Env {
+  param([String] $Key)
+  $RegisterKey = Get-Item -Path 'HKCU:'
+  $EnvRegisterKey = $RegisterKey.OpenSubKey('Environment')
+  $EnvRegisterKey.GetValue($Key, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
 }
 
 ################## LOGIC ##################
@@ -85,43 +113,50 @@ function Download-Binary {
   }
   catch {
     Write-Error "Failed to download launcher"
-    Remove-Item -Path $TMP_DIR -Recurse -Force
+    Remove-Item -Path $TMP_DIR -Recurse -Force -ErrorAction SilentlyContinue
     exit 1
   }
 }
 
-# Globally installs the Launcher binary
 function Install-Binary {
-  # Create Program Files directory if it doesn't exist
-  $installPath = "$env:ProgramFiles\Dria"
+  # create .dria directory in user's home folder
+  # we use this instead of $LOCALAPPDATA to keep cross-platform locations similar
+  $installPath = "$HOME\.dria\bin"
   New-Item -ItemType Directory -Force -Path $installPath | Out-Null
 
   try {
-    # Move the binary to Program Files
-    Move-Item "$TMP_DIR\dkn-compute-launcher.exe" "$installPath\dkn-compute-launcher.exe" -Force
-
-    # Add to PATH if not already present
-    $currentPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-    if ($currentPath -notlike "*$installPath*") {
-      [Environment]::SetEnvironmentVariable(
-        "Path",
-        "$currentPath;$installPath",
-        "Machine"
-      )
+    # check if binary is in use
+    $runningProcesses = Get-Process | Where-Object { $_.Path -eq "$installPath\dkn-compute-launcher.exe" }
+    if ($runningProcesses.Count -gt 0) {
+      Write-Error "Install Failed - The launcher is currently running. Please close it and try again."
+      exit 1
     }
 
-    # Cleanup temp directory
-    Remove-Item -Path $TMP_DIR -Recurse -Force
-    Write-Success "Installed globally to $installPath"
+    # move the binary to .dria/bin directory
+    Move-Item "$TMP_DIR\dkn-compute-launcher.exe" "$installPath\dkn-compute-launcher.exe" -Force
+
+    # add to user PATH if not already present
+    $currentPath = (Get-Env -Key "Path") -split ';'
+    if ($currentPath -notcontains $installPath) {
+      $newPath = ($currentPath + $installPath) -join ';'
+      Write-Env -Key 'Path' -Value $newPath
+      $env:PATH += ";$installPath"
+    }
+    Write-Success "Added $installPath to your PATH"
+
+    # cleanup temp directory
+    Remove-Item -Path $TMP_DIR -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Success "Installed to $installPath"
   }
   catch {
-    Write-Error "Failed to install globally. Try running as administrator."
+    Write-Error "Failed to install: $_"
+    Remove-Item -Path $TMP_DIR -Recurse -Force -ErrorAction SilentlyContinue
     exit 1
   }
 }
 
 function Main {
-  Write-Step "Installing Dria Compute Launcher to $(Get-Location)"
+  Write-Step "Installing Dria Compute Launcher"
   
   if (-not (Get-Command "Invoke-WebRequest" -ErrorAction SilentlyContinue)) {
     Write-Error "PowerShell Web Cmdlets are not available"
@@ -133,7 +168,7 @@ function Main {
   Download-Binary
   Install-Binary
   
-  Write-Success "DKN Compute Launcher $VERSION has been installed successfully!"
+  Write-Success "dkn-compute-launcher $VERSION has been installed successfully!"
   Write-Success "Restart your terminal, and then:"
   Write-Success "  'dkn-compute-launcher.exe help' to see available commands,"
   Write-Success "  'dkn-compute-launcher.exe start' to start a node!"

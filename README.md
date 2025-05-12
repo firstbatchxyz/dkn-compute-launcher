@@ -52,7 +52,7 @@ curl -fsSL https://dria.co/launcher | bash
 
 **Windows**
 
-Open the Windows terminal [cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe) in Administrator mode, and run the following command:
+Open a Windows terminal ([cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe)) and run the following command:
 
 ```sh
 powershell -c "irm https://dria.co/launcher.ps1 | iex"
