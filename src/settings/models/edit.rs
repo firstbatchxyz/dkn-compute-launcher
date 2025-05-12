@@ -7,14 +7,8 @@ use crate::{utils::Selectable, DriaEnv};
 pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     let mut is_changed = false;
 
-    let mut chosen_models = dria_env
-        .get_model_config()
-        .models
-        .iter()
-        .cloned()
-        .collect::<Vec<_>>();
-
     // choose a provider
+    let mut chosen_models = dria_env.get_model_config().models.to_vec();
     loop {
         let Selectable::Some(provider) = Select::new(
             "Select a model provider:",

@@ -3,10 +3,7 @@ use dkn_workflows::{Model, ModelProvider};
 use eyre::eyre;
 use inquire::MultiSelect;
 use ollama_rs::{
-    generation::{
-        completion::{request::GenerationRequest, GenerationResponse},
-        embeddings::request::{EmbeddingsInput, GenerateEmbeddingsRequest},
-    },
+    generation::completion::{request::GenerationRequest, GenerationResponse},
     Ollama,
 };
 
@@ -100,22 +97,25 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
             pull_model_with_progress(&ollama, model_name).await?;
         }
 
-        // do an embedding request to warm stuff up
-        let request = GenerateEmbeddingsRequest::new(
-            model.to_string(),
-            EmbeddingsInput::Single("and the bird you cannot change".into()),
-        );
-        if let Err(err) = ollama.generate_embeddings(request).await {
-            log::error!("Failed to generate embedding for model {}: {}", model, err);
+        // run a dummy generation for warm-up
+        log::debug!("Warming up Ollama for model {}", model);
+        if let Err(e) = ollama
+            .generate(GenerationRequest::new(
+                model.to_string(),
+                "Write a short poem about hedgehogs and squirrels.".to_string(),
+            ))
+            .await
+        {
+            log::warn!("Ignoring model {}: Workflow failed with error {}", model, e);
             continue;
-        };
+        }
 
         // generate a prompt
         log::info!("Measuring {}", model.to_string().bold());
         match ollama
             .generate(GenerationRequest::new(
                 model.to_string(),
-                "Write a poem about hedgehogs and squirrels.".to_string(),
+                "Write a poem about Kapadokya.".to_string(),
             ))
             .await
         {

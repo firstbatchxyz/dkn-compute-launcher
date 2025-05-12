@@ -10,7 +10,8 @@ pub struct PointsRes {
     /// Indicates in which top percentile your points are.
     ///
     /// TODO: fix this in new API
-    pub percentile: String,
+    /// TODO: sometimes returned as `null``
+    pub percentile: Option<String>,
     /// The total number of points you have accumulated.
     pub score: f64,
 }
@@ -30,9 +31,12 @@ pub async fn show_points() -> eyre::Result<()> {
         address.trim_start_matches("0x")
     );
 
-    let points = reqwest::get(&url)
+    let res = reqwest::get(&url)
         .await
-        .wrap_err("could not make request")?
+        .wrap_err("could not make request")?;
+    // println!("Response: {:?}", res.text().await);
+
+    let points = res
         .json::<PointsRes>()
         .await
         .wrap_err("could not parse body")?;
@@ -42,7 +46,8 @@ pub async fn show_points() -> eyre::Result<()> {
     } else {
         eprintln!(
             "You have accumulated {} $DRIA points, which puts you in the top {}%.",
-            points.score, points.percentile
+            points.score,
+            points.percentile.unwrap_or_else(|| "100".to_string())
         );
     }
 
