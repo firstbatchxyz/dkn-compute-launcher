@@ -4,7 +4,7 @@
 # use with command:
 #
 # ```bash
-# powershell -c "irm dria.co/launcher.ps1 | iex"
+# powershell -c "irm https://dria.co/launcher.ps1 | iex"
 #
 # # or the direct link
 # powershell -c "irm https://raw.githubusercontent.com/firstbatchxyz/dkn-compute-launcher/refs/heads/master/install.ps1 | iex"
