@@ -44,3 +44,7 @@ pub const PROGRESS_BAR_TEMPLATE: &str =
 
 /// Progress bar characters for download progress.
 pub const PROGRESS_BAR_CHARS: &str = "=>-";
+
+/// `UserAgent` header value for the launcher, used for HTTP requests.
+pub const LAUNCHER_USER_AGENT: &str =
+    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));

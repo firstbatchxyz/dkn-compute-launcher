@@ -1,11 +1,11 @@
 use eyre::{eyre, Context, Result};
 use libsecp256k1::SecretKey;
-use reqwest::Client;
 
 use crate::utils::crypto::eip191_hash;
 
-const REFERRALS_API_BASE_URL: &str = "https://dkn.dria.co/referral/v0";
-// const REFERRALS_API_BASE_URL: &str = "http://localhost:8080/referral/v0";
+use super::LAUNCHER_USER_AGENT;
+
+const REFERRALS_API_BASE_URL: &str = "https://mainnet.dkn.dria.co/referrals/v0/";
 
 pub struct ReferralsClient {
     base_url: String,
@@ -20,9 +20,14 @@ impl Default for ReferralsClient {
 
 impl ReferralsClient {
     pub fn new(base_url: &str) -> Self {
+        let client = reqwest::Client::builder()
+            .user_agent(LAUNCHER_USER_AGENT)
+            .build()
+            .expect("could not create reqwest client");
+
         Self {
             base_url: base_url.to_string(),
-            client: Client::new(),
+            client,
         }
     }
 

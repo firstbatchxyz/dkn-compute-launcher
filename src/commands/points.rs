@@ -1,6 +1,6 @@
 use eyre::Context;
 
-use crate::utils::DriaEnv;
+use crate::utils::{DriaEnv, LAUNCHER_USER_AGENT};
 
 const POINTS_API_BASE_URL: &str =
     "https://mainnet.dkn.dria.co/dashboard/supply/v0/leaderboard/steps";
@@ -31,10 +31,16 @@ pub async fn show_points() -> eyre::Result<()> {
         address.trim_start_matches("0x")
     );
 
-    let res = reqwest::get(&url)
+    let client = reqwest::Client::builder()
+        .user_agent(LAUNCHER_USER_AGENT)
+        .build()
+        .wrap_err("could not create reqwest client")?;
+
+    let res = client
+        .get(&url)
+        .send()
         .await
         .wrap_err("could not make request")?;
-    // println!("Response: {:?}", res.text().await);
 
     let points = res
         .json::<PointsRes>()
