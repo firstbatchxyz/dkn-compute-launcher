@@ -197,21 +197,23 @@ mod tests {
     use super::*;
 
     #[tokio::test]
+    #[ignore]
     async fn test_health() {
         let ok = ReferralsClient::default().healthcheck().await;
         assert!(ok);
     }
 
     #[tokio::test]
+    #[ignore]
     async fn test_get_referrals() {
         let _response = ReferralsClient::default()
             .get_referrals("3b64855e6f0cacca01089387c628e6540619ce07")
             .await
             .unwrap();
-        // TODO: !!!
     }
 
     #[tokio::test]
+    #[ignore]
     async fn test_get_referred_by() {
         let _response = ReferralsClient::default()
             .get_referred_by("3b64855e6f0cacca01089387c628e6540619ce07")

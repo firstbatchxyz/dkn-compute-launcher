@@ -1,17 +1,14 @@
+use colored::Colorize;
 use eyre::Context;
 
 use crate::utils::{DriaEnv, LAUNCHER_USER_AGENT};
 
-const POINTS_API_BASE_URL: &str =
-    "https://mainnet.dkn.dria.co/dashboard/supply/v0/leaderboard/steps";
+const POINTS_API_BASE_URL: &str = "https://mainnet.dkn.dria.co/points/v0/total/node/";
 
 #[derive(Debug, serde::Deserialize)]
 pub struct PointsRes {
     /// Indicates in which top percentile your points are.
-    ///
-    /// TODO: fix this in new API
-    /// TODO: sometimes returned as `null``
-    pub percentile: Option<String>,
+    pub percentile: usize,
     /// The total number of points you have accumulated.
     pub score: f64,
 }
@@ -24,9 +21,30 @@ pub async fn show_points() -> eyre::Result<()> {
     dria_env.ask_for_key_if_required()?;
     let (_, _, address) = dria_env.get_account()?;
 
-    // the address can have 0x or not, we enforce it ourselves here
+    let points = get_points(&address)
+        .await
+        .wrap_err("could not get points")?;
+
+    if points.score == 0.0 {
+        eprintln!(
+            "You have not accumulated any {} yet.",
+            "$DRIA points".purple()
+        );
+    } else {
+        eprintln!(
+            "You have accumulated {} {}, which puts you in the top {}%.",
+            points.score,
+            "$DRIA points".purple(),
+            points.percentile
+        );
+    }
+
+    Ok(())
+}
+
+async fn get_points(address: &str) -> eyre::Result<PointsRes> {
     let url = format!(
-        "{}?address=0x{}",
+        "{}/0x{}",
         POINTS_API_BASE_URL,
         address.trim_start_matches("0x")
     );
@@ -47,15 +65,18 @@ pub async fn show_points() -> eyre::Result<()> {
         .await
         .wrap_err("could not parse body")?;
 
-    if points.score == 0.0 {
-        eprintln!("You have not accumulated any $DRIA points yet.");
-    } else {
-        eprintln!(
-            "You have accumulated {} $DRIA points, which puts you in the top {}%.",
-            points.score,
-            points.percentile.unwrap_or_else(|| "100".to_string())
-        );
-    }
+    Ok(points)
+}
 
-    Ok(())
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_get_points() {
+        let address = "0x1234567890abcdef1234567890abcdef12345678";
+        let points = get_points(address).await.unwrap();
+        assert!(points.score >= 0.0);
+        assert!(points.percentile <= 100);
+    }
 }
