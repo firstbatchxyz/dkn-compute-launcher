@@ -1,6 +1,6 @@
+use dkn_executor::{ollama_rs::Ollama, ModelProvider};
 use eyre::{Context, Result};
-use ollama_rs::Ollama;
-use std::path::Path;
+use std::{collections::HashSet, path::Path};
 use tokio::process::Command;
 use tokio_util::sync::CancellationToken;
 
@@ -52,18 +52,22 @@ pub async fn run_compute_node(
     let mut dria_env = DriaEnv::new_from_env();
 
     // ensure there are models
-    while dria_env.get_model_config().models.is_empty() {
+    let mut models = dria_env.get_models();
+    while models.is_empty() {
         log::warn!("No models configured. Please choose at least one model to run.");
         settings::edit_models(&mut dria_env)?;
+        models = dria_env.get_models();
     }
-    let workflow_config = dria_env.get_model_config();
 
     // ensure key is set
     dria_env.ask_for_key_if_required()?;
 
-    // check API keys for the requied models
-    let required_api_keys = DriaApiKeyKind::from_providers(&workflow_config.get_providers());
-    for api_key in required_api_keys {
+    // check API keys for the providers that are used with the selected models
+    let providers = models
+        .iter()
+        .map(|model| model.provider())
+        .collect::<HashSet<_>>();
+    for api_key in DriaApiKeyKind::from_providers(providers.into_iter()) {
         if dria_env.get(api_key.name()).is_none() {
             log::info!("Provide {} because you are using its model", api_key);
             let new_value = api_key.prompt_api(&dria_env)?;
@@ -72,8 +76,11 @@ pub async fn run_compute_node(
     }
 
     // check if Ollama is required & running, and run it if not
-    let ollama_models =
-        workflow_config.get_models_for_provider(dkn_workflows::ModelProvider::Ollama);
+    let ollama_models = models
+        .iter()
+        .cloned()
+        .filter(|m| m.provider() == ModelProvider::Ollama)
+        .collect::<Vec<_>>();
     let ollama_process = if !ollama_models.is_empty() {
         // spawn Ollama if needed
         let ollama_process_opt = if check_ollama(&dria_env).await {

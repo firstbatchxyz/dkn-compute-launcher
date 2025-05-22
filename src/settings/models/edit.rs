@@ -1,4 +1,4 @@
-use dkn_workflows::{Model, ModelProvider};
+use dkn_executor::{Model, ModelProvider};
 use inquire::{MultiSelect, Select};
 
 use crate::{utils::Selectable, DriaEnv};
@@ -8,7 +8,7 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     let mut is_changed = false;
 
     // choose a provider
-    let mut chosen_models = dria_env.get_model_config().models.to_vec();
+    let mut chosen_models = dria_env.get_models().into_iter().collect::<Vec<_>>();
     loop {
         let Selectable::Some(provider) = Select::new(
             "Select a model provider:",
@@ -28,7 +28,7 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         // then choose models that belong to this provider
         let my_prov_models = chosen_models
             .iter()
-            .filter(|m| ModelProvider::from(*m) == provider)
+            .filter(|m| m.provider() == provider)
             .cloned()
             .collect::<Vec<_>>();
         let all_prov_models = Model::all_with_provider(&provider).collect::<Vec<_>>();
@@ -57,7 +57,7 @@ pub fn edit_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
         is_changed = true;
 
         // remove all provider models from the chosen models
-        chosen_models.retain(|m| ModelProvider::from(m) != provider);
+        chosen_models.retain(|m| m.provider() != provider);
 
         // and then extend the chosen models with the selected models
         chosen_models.extend(selected_prov_models);

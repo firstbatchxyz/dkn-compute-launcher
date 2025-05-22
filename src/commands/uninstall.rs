@@ -8,6 +8,7 @@ use crate::utils::DKN_VERSION_TRACKER_FILE;
 /// ### Arguments
 /// - `env_dir`: directory where the compute node binaries are located
 /// - `env_path`: path to the environment file
+/// - `backup_path`: optional path to the backup the env file
 ///
 /// We normally expect `env_path` to be a continuation of `env_dir`, but it is passed separately because we may not know
 /// which particular environment file is used within that directory.
@@ -20,8 +21,24 @@ use crate::utils::DKN_VERSION_TRACKER_FILE;
 ///
 /// ### Notes
 /// - The user is asked for confirmation before uninstalling.
-pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result<()> {
+pub async fn uninstall_launcher(
+    env_dir: &Path,
+    env_path: &Path,
+    backup_path: Option<&Path>,
+) -> eyre::Result<()> {
     let launcher_path = std::env::current_exe()?;
+
+    // provide a help message to prompt the user to backup their env file
+    // if the backup path is not given
+    let help_message = if let Some(backup_path) = backup_path {
+        format!(
+            "{} will be saved to {}",
+            env_path.display(),
+            backup_path.display()
+        )
+    } else {
+        "Make sure you have backed up your secret key within the environment file!".to_string()
+    };
 
     // ask for confirmation
     let answer =
@@ -31,9 +48,7 @@ pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result
           env_path.display(),
           env_dir.display(),
         ))
-            .with_help_message(
-                "Make sure you have backed up your secret key within the environment file!",
-            )
+            .with_help_message(help_message.as_str())
             .prompt()?;
 
     if !answer {
@@ -70,6 +85,14 @@ pub async fn uninstall_launcher(env_dir: &Path, env_path: &Path) -> eyre::Result
 
     // remove .env file within the directory
     if env_path.exists() {
+        // if there is a backup path, copy the env file to it
+        if let Some(backup_path) = backup_path {
+            log::info!(
+                "Backing up the environment file to: {}",
+                backup_path.display()
+            );
+            std::fs::copy(env_path, backup_path)?;
+        }
         log::info!("Removing environment file: {}", env_path.display());
         std::fs::remove_file(env_path)?;
     }

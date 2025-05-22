@@ -1,4 +1,4 @@
-use eyre::{eyre, Context, Result};
+use eyre::{Context, Result};
 use libsecp256k1::SecretKey;
 
 use crate::utils::crypto::eip191_hash;
@@ -127,7 +127,7 @@ impl ReferralsClient {
         let challenge = if res.status().is_success() {
             res.text().await?
         } else {
-            return Err(eyre!("Failed to get challenge: {}", res.text().await?));
+            eyre::bail!("Failed to get challenge: {}", res.text().await?);
         };
 
         // alice signs the challenge and calls `get_code`
@@ -152,7 +152,7 @@ impl ReferralsClient {
         let code = if res.status().is_success() {
             res.text().await?
         } else {
-            return Err(eyre!("Failed to get code: {}", res.text().await?));
+            eyre::bail!("Failed to get code: {}", res.text().await?);
         };
 
         Ok(code)
@@ -182,10 +182,7 @@ impl ReferralsClient {
         if res.status().is_success() {
             log::info!("Successfully entered referral code");
         } else {
-            return Err(eyre!(
-                "Failed to enter referral code: {}",
-                res.text().await?
-            ));
+            eyre::bail!("Failed to enter referral code: {}", res.text().await?);
         }
 
         Ok(())

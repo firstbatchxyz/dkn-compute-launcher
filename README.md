@@ -50,12 +50,24 @@ Open a terminal and run the following command:
 curl -fsSL https://dria.co/launcher | bash
 ```
 
+You can verify the installation later with:
+
+```sh
+which dkn-compute-launcher
+```
+
 **Windows**
 
 Open a Windows terminal ([cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe)) and run the following command:
 
 ```sh
 powershell -c "irm https://dria.co/launcher.ps1 | iex"
+```
+
+You can verify the installation later with:
+
+```sh
+where.exe dkn-compute-launcher
 ```
 
 You may need to allow network access to the launcher if Windows prompts you to do so.
@@ -191,7 +203,6 @@ Click on `Edit model selection` to select models for your node.
   openai
   gemini
   openrouter
-  VLLM
   ← Go Back
 ```
 
@@ -257,6 +268,8 @@ Use the `points` command to display how much you have earned!
 dkn-compute-launcher points
 ```
 
+You can also check out your [node dashboard](https://dria.co/edge-ai) for this information.
+
 ### Updating Manually
 
 Using the `update` command you can check for updates & automatically update your compute node and launcher.
@@ -300,6 +313,62 @@ When you run a specific release your node & launcher will **not** be automatical
 > The Dria Knowledge Network always considers the latest `minor` version as the active version; therefore,
 > if the latest is `0.3.x` and you decide to run a smaller version like `0.2.x` you will most likely kept out of network due to protocol mismatch.
 
+### Running in Background
+
+#### Linux/MacOS
+
+In Linux/MacOS systems you can use [`screen`](https://gist.github.com/jctosta/af918e1618682638aa82) command to run the launcher in the background.
+
+First, create a screen with a given name (here we name it `dkn-compute-node`):
+
+```sh
+screen -S dkn-compute-node
+```
+
+Within the newly opened screen, start the node:
+
+```sh
+dkn-compute-launcher start
+```
+
+Now we will _detach_ from this screen and let it run in the background. For this, press <kbd>CTRL + A</kbd> and then press the <kbd>D</kbd> letter. You should now exit the screen, and see a `[detached]` log in the terminal that you have returned to.
+
+At a later time, you can list your screens with:
+
+```sh
+screen -list
+```
+
+You can connect to a screen via its name directly:
+
+```sh
+screen -r dkn-compute-node
+```
+
+Within the screen, you can continue to use your launcher as you would normally, or stop the node with <kbd>CTRL+C</kbd>. You can `exit` within the screen to terminate it.
+
+<!--
+TODO: test these commands and then publish them here
+#### Windows
+
+In Windows systems, you can start the launcher in background using the `start` command:
+
+```cmd
+start /B dkn-compute-launcher.exe start
+```
+
+To list running processes:
+
+```cmd
+tasklist | findstr "dkn-compute"
+```
+
+To terminate the process:
+
+```cmd
+taskkill /IM dkn-compute-launcher.exe /F
+``` -->
+
 ## Contributions
 
 Contributions are welcome! You can start by cloning the repo:
@@ -327,15 +396,16 @@ cargo doc --open --no-deps --document-private-items
 
 ## Uninstallation
 
-You can uninstall the launcher binary along with the environment files and compute node binaries with the `uninstall` command:
+You can uninstall the launcher binary along with the environment files and compute node binaries with the `uninstall` command.
+
+Make sure you backup your private key within `.env` before removing these files, so that you do not lose your hard-earned $DRIA points. We have a `--backup` option for this purpose!
 
 ```sh
 dkn-compute-launcher uninstall
-```
 
-> [!CAUTION]
->
-> Make sure you backup your private key within `.env` before removing these files, so that you do not lose your hard-earned $DRIA points!
+# will save the removed .env file to the given path
+dkn-compute-launcher uninstall --backup ./my-backup.txt
+```
 
 ## License
 

@@ -3,8 +3,7 @@ use inquire::Select;
 use crate::{utils::Selectable, DriaEnv};
 
 mod edit;
-// also used by `setup` command
-pub use edit::edit_models;
+pub use edit::edit_models; // also used by `setup` command
 
 mod list;
 use list::list_models;

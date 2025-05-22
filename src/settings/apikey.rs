@@ -1,7 +1,6 @@
-use std::collections::HashSet;
-
-use dkn_workflows::ModelProvider;
+use dkn_executor::ModelProvider;
 use inquire::{error::InquireResult, Select};
+use std::collections::HashSet;
 
 use crate::{utils::Selectable, DriaEnv};
 
@@ -43,8 +42,6 @@ pub enum DriaApiKeyKind {
     OpenAI,
     Gemini,
     OpenRouter,
-    Serper,
-    Jina,
 }
 
 impl DriaApiKeyKind {
@@ -59,8 +56,6 @@ impl DriaApiKeyKind {
             Self::OpenAI => DriaEnv::OPENAI_APIKEY_KEY,
             Self::Gemini => DriaEnv::GEMINI_APIKEY_KEY,
             Self::OpenRouter => DriaEnv::OPENROUTER_APIKEY_KEY,
-            Self::Serper => DriaEnv::SERPER_APIKEY_KEY,
-            Self::Jina => DriaEnv::JINA_APIKEY_KEY,
         }
     }
 
@@ -70,27 +65,22 @@ impl DriaApiKeyKind {
             Self::OpenAI => "Get yours at https://platform.openai.com/api-keys",
             Self::Gemini => "Get yours at https://aistudio.google.com/app/apikey",
             Self::OpenRouter => "Get yours at https://openrouter.ai/keys",
-            Self::Serper => "Get yours at https://serper.dev/",
-            Self::Jina => "API key for Jina API",
         }
     }
 
     /// Given a list of providers (can contain duplicates) returns the unique set of API key kinds.
-    pub fn from_providers(providers: &[ModelProvider]) -> Vec<Self> {
+    pub fn from_providers(
+        providers: impl Iterator<Item = ModelProvider>,
+    ) -> impl Iterator<Item = Self> {
         let set: HashSet<Self> =
-            HashSet::from_iter(providers.iter().filter_map(|provider| match provider {
+            HashSet::from_iter(providers.filter_map(|provider| match provider {
                 ModelProvider::OpenAI => Some(Self::OpenAI),
                 ModelProvider::Gemini => Some(Self::Gemini),
                 ModelProvider::OpenRouter => Some(Self::OpenRouter),
                 _ => None,
             }));
 
-        set.into_iter().collect()
-    }
-
-    #[inline]
-    pub fn optional_apis() -> Vec<DriaApiKeyKind> {
-        vec![DriaApiKeyKind::Jina, DriaApiKeyKind::Serper]
+        set.into_iter()
     }
 
     /// A wrapper for `inquire::Text` for prompting the user to enter the API key.

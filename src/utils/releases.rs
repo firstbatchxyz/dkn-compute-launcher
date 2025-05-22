@@ -122,7 +122,7 @@ impl DriaRelease {
     /// - If an asset could not be found for the current OS and ARCH.
     pub fn asset(&self) -> Result<ReleaseAsset> {
         let Some((os, arch, ext)) = Self::get_labels() else {
-            return Err(eyre!("unsupported platform: {}-{}", ARCH, OS));
+            eyre::bail!("unsupported platform: {}-{}", ARCH, OS);
         };
 
         self.0
@@ -164,10 +164,10 @@ impl DriaRelease {
         show_progress: bool,
     ) -> Result<PathBuf> {
         if !dest_dir.is_dir() {
-            return Err(eyre!(
+            eyre::bail!(
                 "destination directory {} does not exist / not a directory",
                 dest_dir.display()
-            ));
+            );
         }
 
         let dest_path = dest_dir.join(dest_name);
@@ -291,7 +291,7 @@ pub(crate) async fn get_latest_release(repo: DriaRepository) -> Result<DriaRelea
     // check if the launcher version is at least 0.1.0
     if let DriaRepository::Launcher = repo {
         if result.version().starts_with("0.0.") {
-            return Err(eyre!("latest launcher must be at least 0.1.0"));
+            eyre::bail!("latest launcher must be at least 0.1.0");
         }
     }
 

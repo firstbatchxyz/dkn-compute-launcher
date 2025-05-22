@@ -1,4 +1,3 @@
-use eyre::{eyre, Result};
 use inquire::Select;
 use std::path::{Path, PathBuf};
 
@@ -21,9 +20,12 @@ use crate::{
 /// - If the release could not be downloaded
 /// - If the release could not be found for the given tag
 /// - If the user cancels the prompt
-pub async fn download_specific_release(exe_dir: &Path, tag: Option<&String>) -> Result<PathBuf> {
+pub async fn download_specific_release(
+    exe_dir: &Path,
+    tag: Option<&String>,
+) -> eyre::Result<PathBuf> {
     if !exe_dir.is_dir() {
-        return Err(eyre!("{} must be a directory", exe_dir.display()));
+        eyre::bail!("{} must be a directory", exe_dir.display());
     }
 
     let releases = get_releases(DriaRepository::ComputeNode).await?;

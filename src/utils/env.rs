@@ -1,6 +1,10 @@
-use std::{collections::HashMap, fs, io, path::Path};
+use std::{
+    collections::{HashMap, HashSet},
+    fs, io,
+    path::Path,
+};
 
-use dkn_workflows::DriaWorkflowsConfig;
+use dkn_executor::Model;
 use eyre::OptionExt;
 
 use crate::settings;
@@ -183,10 +187,10 @@ impl DriaEnv {
         (host, port.parse().expect("invalid port"))
     }
 
-    /// Returns the model config with the chosen models.
+    /// Returns the models as they appear in the environment.
     #[inline]
-    pub fn get_model_config(&self) -> DriaWorkflowsConfig {
-        DriaWorkflowsConfig::new_from_csv(self.get(Self::DKN_MODELS_KEY).unwrap_or_default())
+    pub fn get_models(&self) -> HashSet<Model> {
+        Model::from_csv(self.get(Self::DKN_MODELS_KEY).unwrap_or_default())
     }
 
     /// Parses the wallet secret key to a [`libsecp256k1::SecretKey`], and returns it
