@@ -18,11 +18,18 @@ pub fn show_info() {
     );
 
     // models
-    let model_names = dria_env.get_model_config().get_model_names();
-    if model_names.is_empty() {
+    let models = dria_env.get_models();
+    if models.is_empty() {
         eprintln!("Models: no models configured!");
     } else {
-        eprintln!("Models:\n - {}", model_names.join("\n - "));
+        eprintln!(
+            "Models:\n - {}",
+            models
+                .iter()
+                .map(|m| m.to_string())
+                .collect::<Vec<String>>()
+                .join("\n - ")
+        );
     }
 
     eprintln!("Version: {}", env!("CARGO_PKG_VERSION"));

@@ -31,9 +31,7 @@ fn parse_profile(profile: &str) -> eyre::Result<String> {
         .chars()
         .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
     {
-        return Err(eyre::eyre!(
-            "Profile name must contain only alphanumeric characters, '-', or '_'"
-        ));
+        eyre::bail!("Profile name must contain only alphanumeric characters, '-', or '_'");
     }
 
     Ok(profile.to_string())
@@ -92,7 +90,10 @@ async fn main() -> eyre::Result<()> {
         Commands::Setup => commands::setup_environment(&env_path)?,
         Commands::Points => commands::show_points().await?,
         Commands::EnvEditor => commands::edit_environment_file(&env_path)?,
-        Commands::Uninstall => commands::uninstall_launcher(&exe_dir, &env_path).await?,
+        Commands::Uninstall { backup } => {
+            let backup_path = backup.as_ref().map(|p| p.as_path());
+            commands::uninstall_launcher(&exe_dir, &env_path, backup_path).await?
+        }
         Commands::Info => commands::show_info(),
         Commands::Update => commands::update(&exe_dir).await,
         Commands::Specific { run, tag } => {

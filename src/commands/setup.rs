@@ -1,10 +1,7 @@
 use eyre::Result;
 use std::path::Path;
 
-use crate::{
-    settings::{self, DriaApiKeyKind},
-    utils::DriaEnv,
-};
+use crate::{settings, utils::DriaEnv};
 
 /// Asks for the following information for the user environment:
 ///
@@ -27,21 +24,6 @@ pub fn setup_environment(env_path: &Path) -> Result<()> {
     // ask for models
     log::info!("Choose models that you would like to run.");
     settings::edit_models(&mut dria_env)?;
-
-    // ask for Jina and Serper api keys (optional)
-    for optional_api_key in DriaApiKeyKind::optional_apis() {
-        log::info!(
-            "Optionally provide {} for better performance",
-            optional_api_key
-        );
-
-        let new_value = optional_api_key.prompt_api(&dria_env)?;
-        if new_value.is_empty() {
-            continue;
-        } else {
-            dria_env.set(optional_api_key.name(), new_value);
-        }
-    }
 
     // create directories if they dont exist
     DriaEnv::new_default_file(env_path)?;

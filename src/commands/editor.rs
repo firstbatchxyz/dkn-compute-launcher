@@ -1,4 +1,3 @@
-use eyre::{eyre, Result};
 use inquire::Editor;
 use std::fs;
 use std::path::Path;
@@ -11,16 +10,13 @@ use std::path::Path;
 /// ### Errors
 /// - If the environment file does not exist
 /// - If the file could not be read
-pub fn edit_environment_file(env_path: &Path) -> Result<()> {
+pub fn edit_environment_file(env_path: &Path) -> eyre::Result<()> {
     if !env_path.exists() {
-        return Err(eyre!(
-            "Environment file does not exist: {}",
-            env_path.display()
-        ));
+        eyre::bail!("Environment file does not exist: {}", env_path.display());
     }
 
     let Ok(existing_env_content) = fs::read_to_string(env_path) else {
-        return Err(eyre!("Could not read {}", env_path.display()));
+        eyre::bail!("Could not read {}", env_path.display());
     };
 
     let Some(new_env_content) =

@@ -1,4 +1,6 @@
 mod start;
+use std::path::PathBuf;
+
 pub use start::run_compute_node;
 
 mod editor;
@@ -42,7 +44,11 @@ pub enum Commands {
     /// Show your $DRIA points.
     Points,
     /// Uninstall the launcher & its files.
-    Uninstall,
+    Uninstall {
+        /// Backup the environment file to the given path.
+        #[arg(short, long)]
+        backup: Option<PathBuf>,
+    },
     /// Show information about the current environment.
     Info,
     /// Manually update the compute node & launcher.

@@ -1,16 +1,17 @@
+use std::collections::HashSet;
+
 use colored::Colorize;
-use dkn_workflows::{Model, ModelProvider};
-use eyre::eyre;
-use inquire::MultiSelect;
-use ollama_rs::{
+use dkn_executor::ollama_rs::{
     generation::completion::{request::GenerationRequest, GenerationResponse},
     Ollama,
 };
+use dkn_executor::{Model, ModelProvider};
+use inquire::MultiSelect;
 
 use crate::utils::{check_ollama, pull_model_with_progress, DriaEnv};
 
 const MINIMUM_EVAL_TPS: f64 = 15.0;
-const MINIMUM_DURATION_MS: u64 = 80_000;
+const MINIMUM_DURATION_MS: u64 = 120 * 1000;
 
 /// Prompts the user to select Ollama models, and measures the TPS for each one.
 /// The user can select multiple models to be benchmarked.
@@ -21,15 +22,18 @@ const MINIMUM_DURATION_MS: u64 = 80_000;
 pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
     // ensure Ollama is available
     if !check_ollama(dria_env).await {
-        return Err(eyre!("Ollama is not available, please run Ollama server."));
+        eyre::bail!("Ollama is not available, please run Ollama server.");
     }
 
     // get all Ollama models available
     let all_ollama_models = Model::all_with_provider(&ModelProvider::Ollama).collect::<Vec<_>>();
 
     // get users ollama models
-    let models_config = dria_env.get_model_config();
-    let my_ollama_models = models_config.get_models_for_provider(ModelProvider::Ollama);
+    let models = dria_env.get_models();
+    let my_ollama_models = models
+        .iter()
+        .filter(|m| m.provider() == ModelProvider::Ollama)
+        .collect::<HashSet<_>>();
 
     // find indexes of existing chosen ollama models on the user
     let default_selected_idxs = all_ollama_models
@@ -83,7 +87,7 @@ pub async fn measure_tps(dria_env: &DriaEnv) -> eyre::Result<()> {
     );
     for model in selected_ollama_models
         .into_iter()
-        .filter(|m| ModelProvider::from(m.clone()) == ModelProvider::Ollama)
+        .filter(|m| m.provider() == ModelProvider::Ollama)
     {
         let model_name = model.to_string();
 

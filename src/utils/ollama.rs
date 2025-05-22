@@ -1,7 +1,7 @@
+use dkn_executor::ollama_rs::{error::OllamaError, Ollama};
 use eyre::{Context, Result};
 use futures::StreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
-use ollama_rs::{error::OllamaError, Ollama};
 use std::env;
 use std::process::Stdio;
 use tokio::process::{Child, Command};
@@ -61,10 +61,7 @@ pub async fn spawn_ollama(dria_env: &DriaEnv) -> Result<Child> {
         .await;
     }
     if !check_ollama(dria_env).await {
-        return Err(eyre::eyre!(
-            "Ollama failed to start after {} retries",
-            OLLAMA_RETRY_COUNT
-        ));
+        eyre::bail!("Ollama failed to start after {OLLAMA_RETRY_COUNT} retries");
     }
 
     Ok(command)

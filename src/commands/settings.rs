@@ -1,4 +1,3 @@
-use eyre::{eyre, Result};
 use inquire::{Confirm, Select};
 use std::path::Path;
 
@@ -11,12 +10,9 @@ use crate::{settings::*, DriaEnv};
 ///
 /// ### Errors
 /// - If the environment file is not a file
-pub async fn change_settings(env_path: &Path) -> Result<()> {
+pub async fn change_settings(env_path: &Path) -> eyre::Result<()> {
     if !env_path.exists() {
-        return Err(eyre!(
-            "Environment file does not exist: {}",
-            env_path.display()
-        ));
+        eyre::bail!("Environment file does not exist: {}", env_path.display());
     }
 
     // an environment object is created from the existing environment variables

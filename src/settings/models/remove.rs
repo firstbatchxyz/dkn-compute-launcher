@@ -1,6 +1,5 @@
-use eyre::eyre;
+use dkn_executor::ollama_rs::Ollama;
 use inquire::MultiSelect;
-use ollama_rs::Ollama;
 
 use crate::{utils::check_ollama, DriaEnv};
 
@@ -8,7 +7,7 @@ use crate::{utils::check_ollama, DriaEnv};
 pub async fn remove_local_models(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     // ensure Ollama is available
     if !check_ollama(dria_env).await {
-        return Err(eyre!("Ollama is not available, please run Ollama server."));
+        eyre::bail!("Ollama is not available, please run Ollama server.");
     }
 
     // create ollama instance

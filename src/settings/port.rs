@@ -13,9 +13,7 @@ pub fn edit_port(dria_env: &mut DriaEnv) -> eyre::Result<()> {
     // ensure the address starts with `/ip4/0.0.0.0/tcp/` and ends with a number
     let mut parts = addr.split('/').collect::<Vec<_>>();
     if parts[1] != "ip4" || parts[2] != "0.0.0.0" || parts[3] != "tcp" {
-        return Err(eyre::eyre!(
-            "The listen address must start with \"/ip4/0.0.0.0/tcp\"."
-        ));
+        eyre::bail!("The listen address must start with /ip4/0.0.0.0/tcp");
     }
     let port = parts[4].parse::<u16>().unwrap();
 
