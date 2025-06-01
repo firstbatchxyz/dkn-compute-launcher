@@ -383,7 +383,7 @@ dependencies = [
 
 [[package]]
 name = "dkn-compute-launcher"
-version = "0.1.15"
+version = "0.1.16"
 dependencies = [
  "clap",
  "colored",

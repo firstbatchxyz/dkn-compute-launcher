@@ -150,7 +150,14 @@ pub async fn run_compute_node(
 
     // spawn compute node
     let compute_process = Command::new(exe_path)
+        // add env variable for the path, respecting the `--profile` option
         .env(DKN_COMPUTE_ENV_KEY, env_path)
+        // let compute node know that it is started by the launcher
+        // see: https://github.com/firstbatchxyz/dkn-compute-node/blob/master/compute/src/config.rs#L126
+        .env(
+            "DKN_EXEC_PLATFORM",
+            format!("launcher/v{DKN_LAUNCHER_VERSION}"),
+        )
         .spawn()
         .wrap_err("failed to spawn compute node")?;
 

@@ -85,9 +85,8 @@ pub fn edit_log_level(dria_env: &mut DriaEnv) -> eyre::Result<()> {
 enum LogModules {
     DknComputeNode,
     DknP2P,
-    DknWorkflows,
+    DknExecutor,
     Libp2p,
-    OllamaWorkflows,
 }
 
 impl LogModules {
@@ -100,9 +99,8 @@ impl LogModules {
         match self {
             Self::DknComputeNode => "dkn_compute",
             Self::DknP2P => "dkn_p2p",
-            Self::DknWorkflows => "dkn_workflows",
+            Self::DknExecutor => "dkn_executor",
             Self::Libp2p => "libp2p",
-            Self::OllamaWorkflows => "ollama_workflows",
         }
     }
 }
@@ -113,9 +111,8 @@ impl std::fmt::Display for LogModules {
         match self {
             Self::DknComputeNode => write!(f, "Dria Compute Node: Core"),
             Self::DknP2P => write!(f, "Dria Compute Node: P2P"),
-            Self::DknWorkflows => write!(f, "Dria Compute Node: Workflows"),
+            Self::DknExecutor => write!(f, "Dria Compute Node: Executors"),
             Self::Libp2p => write!(f, "Low-level Lib2p Modules"),
-            Self::OllamaWorkflows => write!(f, "Ollama Workflows"),
         }
     }
 }
