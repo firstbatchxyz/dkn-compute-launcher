@@ -1,6 +1,6 @@
 use dkn_executor::{ollama_rs::Ollama, ModelProvider};
 use eyre::{Context, Result};
-use std::{collections::HashSet, path::Path};
+use std::{collections::HashSet, env, path::Path};
 use tokio::process::Command;
 use tokio_util::sync::CancellationToken;
 
@@ -149,15 +149,14 @@ pub async fn run_compute_node(
     tokio::spawn(async move { crate::utils::wait_for_termination(cancellation_clone).await });
 
     // spawn compute node
+    let exec_platform = env::var("DKN_EXEC_PLATFORM")
+        .unwrap_or_else(|_| format!("launcher/v{DKN_LAUNCHER_VERSION}")); // default to launcher value if not set
     let compute_process = Command::new(exe_path)
         // add env variable for the path, respecting the `--profile` option
         .env(DKN_COMPUTE_ENV_KEY, env_path)
         // let compute node know that it is started by the launcher
         // see: https://github.com/firstbatchxyz/dkn-compute-node/blob/master/compute/src/config.rs#L126
-        .env(
-            "DKN_EXEC_PLATFORM",
-            format!("launcher/v{DKN_LAUNCHER_VERSION}"),
-        )
+        .env("DKN_EXEC_PLATFORM", exec_platform)
         .spawn()
         .wrap_err("failed to spawn compute node")?;
 
