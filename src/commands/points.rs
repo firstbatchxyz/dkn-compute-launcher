@@ -1,9 +1,14 @@
 use colored::Colorize;
 use eyre::Context;
 
-use crate::utils::{DriaEnv, LAUNCHER_USER_AGENT};
+use crate::utils::{get_network_env, DriaEnv, LAUNCHER_USER_AGENT};
 
-const POINTS_API_BASE_URL: &str = "https://mainnet.dkn.dria.co/points/v0/total/node/";
+#[inline]
+fn get_points_api_url(address: &str) -> String {
+    let network = get_network_env();
+    let address = address.trim_start_matches("0x");
+    format!("https://{network}.dkn.dria.co/points/v0/total/node/0x{address}")
+}
 
 #[derive(Debug, serde::Deserialize)]
 pub struct PointsRes {
@@ -43,11 +48,7 @@ pub async fn show_points() -> eyre::Result<()> {
 }
 
 async fn get_points(address: &str) -> eyre::Result<PointsRes> {
-    let url = format!(
-        "{}/0x{}",
-        POINTS_API_BASE_URL,
-        address.trim_start_matches("0x")
-    );
+    let url = get_points_api_url(address);
 
     let client = reqwest::Client::builder()
         .user_agent(LAUNCHER_USER_AGENT)

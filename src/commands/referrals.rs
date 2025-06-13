@@ -9,9 +9,6 @@ use crate::utils::{referrals::*, DriaEnv, Selectable};
 pub async fn handle_referrals() -> eyre::Result<()> {
     // ensure system is healthy
     let client = ReferralsClient::default();
-    if !client.healthcheck().await {
-        eyre::bail!("Referrals API is offline.");
-    }
 
     // get wallet secret from env
     let mut dria_env = DriaEnv::new_from_env();
