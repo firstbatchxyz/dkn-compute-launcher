@@ -1,11 +1,14 @@
+use crate::utils::{crypto::eip191_hash, get_network_env};
 use eyre::{Context, Result};
 use libsecp256k1::SecretKey;
 
-use crate::utils::crypto::eip191_hash;
-
 use super::LAUNCHER_USER_AGENT;
 
-const REFERRALS_API_BASE_URL: &str = "https://mainnet.dkn.dria.co/referrals/v0/";
+#[inline]
+fn get_referrals_api_base_url() -> String {
+    let network = get_network_env();
+    format!("https://{network}.dkn.dria.co/referral/v0")
+}
 
 pub struct ReferralsClient {
     base_url: String,
@@ -14,30 +17,18 @@ pub struct ReferralsClient {
 
 impl Default for ReferralsClient {
     fn default() -> Self {
-        Self::new(REFERRALS_API_BASE_URL)
+        Self::new(get_referrals_api_base_url())
     }
 }
 
 impl ReferralsClient {
-    pub fn new(base_url: &str) -> Self {
+    pub fn new(base_url: String) -> Self {
         let client = reqwest::Client::builder()
             .user_agent(LAUNCHER_USER_AGENT)
             .build()
             .expect("could not create reqwest client");
 
-        Self {
-            base_url: base_url.to_string(),
-            client,
-        }
-    }
-
-    /// Simple healthcheck for the referrals API.
-    pub async fn healthcheck(&self) -> bool {
-        self.client
-            .get(format!("{}/health", self.base_url))
-            .send()
-            .await
-            .is_ok_and(|r| r.status().is_success())
+        Self { base_url, client }
     }
 
     /// Returns a list of addresses of the users referred by the given `address`.
@@ -192,13 +183,6 @@ impl ReferralsClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[tokio::test]
-    #[ignore]
-    async fn test_health() {
-        let ok = ReferralsClient::default().healthcheck().await;
-        assert!(ok);
-    }
 
     #[tokio::test]
     #[ignore]

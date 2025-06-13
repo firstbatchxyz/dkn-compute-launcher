@@ -48,3 +48,17 @@ pub const PROGRESS_BAR_CHARS: &str = "=>-";
 /// `UserAgent` header value for the launcher, used for HTTP requests.
 pub const LAUNCHER_USER_AGENT: &str =
     concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
+
+/// Returns the network type based on the `DKN_NETWORK` environment variable.
+///
+/// This is usually not used at all by the user, but rather used in testing and development.
+#[inline(always)]
+pub fn get_network_env() -> String {
+    std::env::var("DKN_NETWORK")
+        .map(|s| match s.as_str() {
+            // only accept `testnet` as a valid network, otherwise default to `mainnet`
+            "testnet" => s,
+            _ => "mainnet".to_string(),
+        })
+        .unwrap_or_else(|_| "mainnet".to_string())
+}
