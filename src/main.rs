@@ -122,6 +122,7 @@ async fn main() -> eyre::Result<()> {
                 .await;
         }
         Commands::Referrals => commands::handle_referrals().await?,
+        Commands::Check => commands::check_command().await?,
     };
 
     Ok(())
