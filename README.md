@@ -24,8 +24,8 @@
     <a href="https://github.com/foresterre/cargo-msrv" target="_blank">
         <img alt="MSRV" src="https://img.shields.io/badge/1.81.0-F74B01?logo=rust&logoColor=white&label=msrv"/>
     </a>
-    <a href="https://discord.gg/dria" target="_blank">
-        <img alt="Discord" src="https://dcbadge.vercel.app/api/server/dria?style=flat">
+    <a href="https://discord.com/invite/XwxZFkpFuQ" target="_blank">
+        <img alt="Discord" src="https://img.shields.io/discord/1088019643618308200">
     </a>
 </p>
 
