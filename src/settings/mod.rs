@@ -4,8 +4,9 @@ mod models;
 pub use models::edit_models; // used by `setup` command
 pub use models::show_model_settings_menu;
 
-mod apikey;
-pub use apikey::{edit_api_keys, DriaApiKeyKind};
+// TODO: we no longer have an API key requirement
+// mod apikey;
+// pub use apikey::{edit_api_keys, DriaApiKeyKind};
 
 mod wallet;
 pub use wallet::edit_wallet;
@@ -30,8 +31,8 @@ pub enum Settings {
     Models,
     /// Configure Ollama settings.
     Ollama,
-    /// Configure your API Keys.
-    ApiKeys,
+    // Configure your API Keys.
+    // ApiKeys,
     /// Configure log-levels.
     LogLevels,
     /// Quit settings menu.
@@ -54,7 +55,7 @@ impl std::fmt::Display for Settings {
             Self::Port => write!(f, "Port"),
             Self::Models => write!(f, "Models"),
             Self::Ollama => write!(f, "Ollama"),
-            Self::ApiKeys => write!(f, "API Keys"),
+            // Self::ApiKeys => write!(f, "API Keys"),
             Self::LogLevels => write!(f, "Log Levels"),
             Self::SaveExit => write!(f, "{}", "✓ Save & Exit".bold().green()),
             Self::Abort => write!(f, "{}", "✗ Abort Changes".bold().red()),

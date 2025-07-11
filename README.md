@@ -33,7 +33,7 @@ The **Dria Compute Launcher** is a simple and efficient way to set up and run th
 
 It is packed with many features:
 
-- [x] **Settings Menu**: You can change various settings such as your wallet, ports and API keys, all without leaving the launcher. You can also open a raw text-editor in terminal.
+- [x] **Settings Menu**: You can change all settings such as your wallet, all without leaving the launcher. You can also open a raw text-editor in terminal.
 - [x] **Model Selection**: You can choose your models with a nice menu.
 - [x] **Model Benchmarking**: You can measure TPS for Ollama models to see if your machine can handle them.
 - [x] **Automatic Updates**: Launcher will automatically update a running compute node when there is an update & restart it; furthermore, it will update itself when there is a new launcher as well!
@@ -110,11 +110,9 @@ dkn-compute-launcher <some-command> --help
 
 ### Model Providers
 
-The purpose of running a Dria Compute Node is to serve LLMs to the network. These models can either be locally-hosted models via Ollama, or API-based models such as Gemini and OpenAI.
+The purpose of running a Dria Compute Node is to serve LLMs to the network. These models can either be locally-hosted models via Ollama, and more local-model providers in the future!
 
-- To serve API-based models ([OpenAI](https://openai.com/), [Gemini](https://gemini.google.com/app), [OpenRouter](https://openrouter.ai/)), you will need to get their API keys.
-
-- To serve a locally-hosted model with [Ollama](https://ollama.com/), you of course need Ollama installed, and you must make sure that your machine can handle your chosen models. See ["Measuring Local Models"](#measuring-local-models) chapter below to see the command-line tools that help you measure TPS.
+- To serve a locally-hosted model with [Ollama](https://ollama.com/), you need Ollama installed, and you must make sure that your machine can handle your chosen models. See ["Measuring Local Models"](#measuring-local-models) chapter below to see the command-line tools that help you measure TPS.
 
 ### Starting a Node
 
@@ -160,7 +158,6 @@ You will be greeted with a menu, where you can navigate with arrow keys <kbd>↑
   Port
   Models
   Ollama
-  API Keys
   Log Levels
   ✓ Save & Exit
   ✗ Abort Changes
@@ -172,7 +169,6 @@ Using this menu, you are able to change the following settings:
 - **Port**: edit your listen address port, defaults to `4001`
 - **Models**: view all models & edit the models that you want to serve
 - **Ollama**: edit host & port of the Ollama server
-- **API Keys**: change API keys for providers
 - **Log Levels**: change log-levels for modules within compute node & launcher
 
 Within a menu, you can go back by selecting <kbd>← Go Back</kbd>. Within the main menu, you can select <kbd>✓ Save & Exit</kbd> to save your changes & write them to the environment file, or you can choose <kbd>✗ Abort Changes</kbd> to abort all changes.
@@ -200,13 +196,10 @@ Click on `Edit model selection` to select models for your node.
 ```sh
 ? Select a model provider:
 > ollama
-  openai
-  gemini
-  openrouter
   ← Go Back
 ```
 
-Here, you can select a provider to choose models served by them, where you will be greeted with the following menu:
+Here, you can select a provider (currently Ollama alone) to choose models served by them, where you will be greeted with the following menu:
 
 ```sh
 > Select a model provider: ollama

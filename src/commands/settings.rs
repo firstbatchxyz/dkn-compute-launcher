@@ -58,9 +58,9 @@ pub async fn change_settings(env_path: &Path) -> eyre::Result<()> {
             Settings::Ollama => {
                 crate::settings::edit_ollama(&mut dria_env)?;
             }
-            Settings::ApiKeys => {
-                crate::settings::edit_api_keys(&mut dria_env)?;
-            }
+            // Settings::ApiKeys => {
+            //     crate::settings::edit_api_keys(&mut dria_env)?;
+            // }
             Settings::LogLevels => {
                 crate::settings::edit_log_level(&mut dria_env)?;
             }

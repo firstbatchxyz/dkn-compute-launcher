@@ -81,16 +81,16 @@ impl ComputeInstance {
                _ = compute_node_update_interval.tick() => {
                   if !self.check_updates { continue; }
 
-                  if let Err(e) = self.handle_compute_update().await {
-                    log::error!("Error updating compute node: {}", e);
+                  if let Err(err) = self.handle_compute_update().await {
+                    log::error!("Error updating compute node: {err}");
                   }
               },
               // launcher self-update checks
                _ = launcher_update_interval.tick() => {
                   if !self.check_updates { continue; }
 
-                  if let Err(e) = self.handle_launcher_update().await {
-                    log::error!("Error updating launcher: {}", e);
+                  if let Err(err) = self.handle_launcher_update().await {
+                    log::error!("Error updating launcher: {err}");
                   }
               },
             }

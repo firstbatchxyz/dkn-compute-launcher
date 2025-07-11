@@ -63,7 +63,7 @@ where
 impl<T: Display> Display for Selectable<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Some(ref value) => write!(f, "{}", value),
+            Self::Some(ref value) => write!(f, "{value}"),
             Self::None => write!(f, "{}", DESELECT_MSG.bold()),
         }
     }

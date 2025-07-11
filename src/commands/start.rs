@@ -1,11 +1,11 @@
 use dkn_executor::{ollama_rs::Ollama, ModelProvider};
 use eyre::{Context, Result};
-use std::{collections::HashSet, env, path::Path};
+use std::{env, path::Path};
 use tokio::process::Command;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-    settings::{self, DriaApiKeyKind},
+    settings,
     utils::{
         check_ollama, configure_fdlimit, pull_model_with_progress, spawn_ollama, ComputeInstance,
     },
@@ -63,17 +63,17 @@ pub async fn run_compute_node(
     dria_env.ask_for_key_if_required()?;
 
     // check API keys for the providers that are used with the selected models
-    let providers = models
-        .iter()
-        .map(|model| model.provider())
-        .collect::<HashSet<_>>();
-    for api_key in DriaApiKeyKind::from_providers(providers.into_iter()) {
-        if dria_env.get(api_key.name()).is_none() {
-            log::info!("Provide {} because you are using its model", api_key);
-            let new_value = api_key.prompt_api(&dria_env)?;
-            dria_env.set(api_key.name(), new_value);
-        }
-    }
+    // let providers = models
+    //     .iter()
+    //     .map(|model| model.provider())
+    //     .collect::<HashSet<_>>();
+    // for api_key in DriaApiKeyKind::from_providers(providers.into_iter()) {
+    //     if dria_env.get(api_key.name()).is_none() {
+    //         log::info!("Provide {} because you are using its model", api_key);
+    //         let new_value = api_key.prompt_api(&dria_env)?;
+    //         dria_env.set(api_key.name(), new_value);
+    //     }
+    // }
 
     // check if Ollama is required & running, and run it if not
     let ollama_models = models

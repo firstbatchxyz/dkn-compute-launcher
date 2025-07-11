@@ -34,8 +34,8 @@ pub fn configure_fdlimit() {
 
         // only do this if soft-limit is below the target
         if soft < target_soft {
-            if let Err(e) = rlimit::Resource::NOFILE.set(target_soft, hard) {
-                log::error!("Failed to set file-descriptor limits: {}, you may need to run as administrator!", e);
+            if let Err(err) = rlimit::Resource::NOFILE.set(target_soft, hard) {
+                log::error!("Failed to set file-descriptor limits: {err}, you may need to run as administrator!");
             } else {
                 log::warn!("Using new resource limits (soft / hard): {target_soft} / {hard}");
             }
