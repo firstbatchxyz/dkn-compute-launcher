@@ -30,6 +30,10 @@ pub use uninstall::uninstall_launcher;
 mod points;
 pub use points::show_points;
 
+mod check;
+pub use check::check_command;
+
+
 /// Launcher commands.
 #[derive(clap::Subcommand)]
 pub enum Commands {
@@ -43,6 +47,8 @@ pub enum Commands {
     Referrals,
     /// Show your $DRIA points.
     Points,
+    /// Fetch and display model usage statistics in the last 7 days
+    Check,
     /// Uninstall the launcher & its files.
     Uninstall {
         /// Backup the environment file to the given path.
