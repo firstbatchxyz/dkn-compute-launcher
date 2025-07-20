@@ -50,6 +50,7 @@ colored = "2.2.0"
 # requests and LLMs
 dkn-executor = { git = "https://github.com/firstbatchxyz/dkn-compute-node" }
 reqwest = { version = "0.12.12", features = ["rustls-tls", "json"] }
+prettytable = "0.10.0"
 
 # crypto stuff
 sha3 = "0.10.8"
